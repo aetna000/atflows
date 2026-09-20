@@ -9,3 +9,13 @@ AtFlows is published to PyPI as `atflows`. The publisher credential is stored lo
 5. Verify the exact version exists on PyPI and that a clean environment can install it. Create or verify the matching GitHub release, and record the tag, commit, artifact versions, and test results.
 
 AtMem's exact `atflows` dependency pin must not be merged or tagged until the matching AtFlows version is available on PyPI; otherwise its CI installation gates fail before tests begin.
+
+For a coordinated AtFlows + AtMem + AtMem.ai release, use the cross-repository
+checklist in the AtMem repository's `docs/release-coordination.md`. Before the
+AtMem documentation PR is considered ready, compare this release note and the
+standalone/AtMem-managed setup guide with the AtMem public website source
+(`docs/website/atflows.md`) and the private website's imported docs. Check exact
+versions, install commands, startup and login behavior, data boundaries, and
+limitations. AtFlows publication alone does not update AtMem.ai; the private
+website needs an owner-reviewed PR and a separate validated-main Firebase
+Hosting deployment.
