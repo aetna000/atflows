@@ -4,4 +4,4 @@ This repository uses [GitHub Spec Kit](https://github.com/github/spec-kit) 1.0.4
 
 For a new bounded feature, use `$speckit-specify`, `$speckit-plan`, `$speckit-tasks`, and `$speckit-analyze` before implementation. Keep one feature per numbered directory in `specs/`. The four initial directories state requirements and preliminary plans; their tasks are not implemented merely because these documents exist.
 
-The machine-local active feature pointer `.specify/feature.json` is ignored by Git. To refresh the official scaffold, review the installed `specify` version and use its documented integration update process. Do not copy tool commands from another repository by hand.
+The machine-local active feature pointer `.specify/feature.json` is ignored by Git. The [direct OTLP protobuf feature](../specs/005-otlp-protobuf/spec.md) is the next compatibility target for OpenClaw. To refresh the official scaffold, review the installed `specify` version and use its documented integration update process. Do not copy tool commands from another repository by hand.

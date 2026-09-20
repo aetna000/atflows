@@ -7,11 +7,12 @@ This is a requirements pathway, not a claim that the features below already ship
 | Phase | Spec | Shippable outcome |
 | --- | --- | --- |
 | 1 | [Configurable storage](../specs/001-production-storage/spec.md) | Local SQLite unchanged; opt-in PostgreSQL with migrations, tenant scope, and operational checks |
-| 2 | [CLI and MCP](../specs/002-cli-mcp/spec.md) | Consistent `atflows` commands and an opt-in, read-only local MCP server |
-| 3 | [AtMem and AtFlows AtBot](../specs/003-atmem-atbot/spec.md) | Optional AtMem memory context and a separate AtFlows AtBot package for trace intelligence |
-| 4 | [Jev decisions](../specs/004-jev-decisions/spec.md) | Typed Jev decisions over explicit, authorized inputs with visible fallback |
+| 2 | [Direct OTLP protobuf](../specs/005-otlp-protobuf/spec.md) | OpenClaw exports traces, logs, and metrics directly to AtFlows while JSON clients keep working |
+| 3 | [CLI and MCP](../specs/002-cli-mcp/spec.md) | Consistent `atflows` commands and an opt-in, read-only local MCP server |
+| 4 | [AtMem and AtFlows AtBot](../specs/003-atmem-atbot/spec.md) | Optional AtMem memory context and a separate AtFlows AtBot package for trace intelligence |
+| 5 | [Jev decisions](../specs/004-jev-decisions/spec.md) | Typed Jev decisions over explicit, authorized inputs with visible fallback |
 
-The tracks can be developed separately after shared contracts are fixed. AtMem/AtBot and Jev can be tested against SQLite before hosted storage is complete; a hosted release depends on storage and tenant gates.
+The tracks can be developed separately after shared contracts are fixed. Direct OTLP/protobuf works locally without hosted storage; exposing it in a hosted service depends on authentication and tenant gates from phase 1. AtMem/AtBot and Jev can also be tested against SQLite before hosted storage is complete.
 
 ## Package boundaries
 
