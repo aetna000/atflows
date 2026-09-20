@@ -1,6 +1,6 @@
 # AtFlows release checklist
 
-AtFlows is maintained by Javad Taghia. The original upstream code is credited in the README and MIT license.
+AtFlows is maintained by Javad Taghia. AtFlows changes use Apache 2.0, and inherited LLMFlow code remains under MIT. Include `LICENSE`, `LICENSE-MIT-LLMFLOW`, and `NOTICE` in every distribution.
 
 1. Update versions in `pyproject.toml`, `atflows/__init__.py`, and `package.json`.
 2. Run `bun install`, `bun run build`, `bun run typecheck`, and the local server tests.

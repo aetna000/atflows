@@ -12,5 +12,5 @@ AtFlows tracks requests, traces, tokens, costs, logs, metrics, models and sessio
 
 Source: https://github.com/aetna000/atflows
 Upstream credit: https://github.com/HelgeSverre/llmflow
-License: MIT; original Helge Sverre notice retained in LICENSE.
+Licenses: Apache-2.0 for AtFlows changes (LICENSE); inherited LLMFlow code remains MIT with the Helge Sverre notice (LICENSE-MIT-LLMFLOW).
 Maintainer: Javad Taghia, https://github.com/javadtaghia

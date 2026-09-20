@@ -1,4 +1,4 @@
-include README.md LICENSE package.json bun.lock
+include README.md LICENSE LICENSE-MIT-LLMFLOW NOTICE package.json bun.lock
 recursive-include apps *
 recursive-include packages *
 recursive-include public *

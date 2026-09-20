@@ -14,7 +14,10 @@
   },
   "files": [
     "index.js",
-    "index.d.ts"
+    "index.d.ts",
+    "LICENSE",
+    "LICENSE-MIT-LLMFLOW",
+    "NOTICE"
   ],
   "keywords": [
     "llm",
@@ -27,7 +30,7 @@
     "agents"
   ],
   "author": "Javad Taghia <taghia.javad@gmail.com>",
-  "license": "MIT",
+  "license": "Apache-2.0 AND MIT",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/aetna000/atflows.git",

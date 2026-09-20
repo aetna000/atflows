@@ -313,4 +313,4 @@ await span(opts, async () => {
 
 ## License
 
-MIT
+AtFlows changes are licensed under [Apache 2.0](LICENSE). Code inherited from LLMFlow remains subject to the [MIT license and Helge Sverre's copyright notice](LICENSE-MIT-LLMFLOW). See [NOTICE](NOTICE) for attribution.

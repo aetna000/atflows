@@ -5,11 +5,11 @@
 AtFlows is a local observability tool for LLM applications. Point your SDK at it, see your costs, tokens, and latency in real-time.
 
 ```bash
-python -m pip install atflows==0.1b2
+python -m pip install atflows==0.1b3
 atflows
 ```
 
-AtFlows `0.1b2` is a beta release. AtFlows uses Bun (>=1.1.0) to run its local server. Install Bun before starting the command. The first launch prepares the bundled runtime in `~/.cache/atflows` and needs package network access.
+AtFlows `0.1b3` is a beta release. AtFlows uses Bun (>=1.1.0) to run its local server. Install Bun before starting the command. The first launch prepares the bundled runtime in `~/.cache/atflows` and needs package network access.
 
 Dashboard: [localhost:3000](http://localhost:3000) · Proxy: [localhost:8080](http://localhost:8080)
 
@@ -22,7 +22,7 @@ Dashboard: [localhost:3000](http://localhost:3000) · Proxy: [localhost:8080](ht
 The package, CLI and GitHub repository are named `atflows`.
 
 ```bash
-python -m pip install atflows==0.1b2
+python -m pip install atflows==0.1b3
 atflows
 ```
 
@@ -195,8 +195,8 @@ For advanced usage, see the [docs/](docs/) folder:
 
 ## License
 
-MIT © [Helge Sverre](https://github.com/HelgeSverre) and [Javad Taghia](https://github.com/javadtaghia)
+AtFlows changes by Javad Taghia are licensed under [Apache 2.0](LICENSE). The inherited LLMFlow code remains subject to its original [MIT license and Helge Sverre copyright notice](LICENSE-MIT-LLMFLOW). Both license texts and the [NOTICE](NOTICE) are included with the Python package.
 
 ## Credits
 
-AtFlows is a rebrand and continuation of [LLMFlow by Helge Sverre](https://github.com/HelgeSverre/llmflow). Original code remains under the MIT license in [LICENSE](LICENSE). Rebrand, packaging and dashboard work by [Javad Taghia](https://github.com/javadtaghia).
+AtFlows is a rebrand and continuation of [LLMFlow by Helge Sverre](https://github.com/HelgeSverre/llmflow). Original code remains under the MIT license in [LICENSE-MIT-LLMFLOW](LICENSE-MIT-LLMFLOW). Rebrand, packaging and dashboard work by [Javad Taghia](https://github.com/javadtaghia).
