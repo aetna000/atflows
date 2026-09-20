@@ -9,9 +9,12 @@ Start AtFlows first (`atflows`, with Bun installed for release `0.1b3`), then ad
 environment = "dev"
 log_user_prompt = false
 exporter = { otlp-http = { endpoint = "http://127.0.0.1:3000/v1/logs", protocol = "json" } }
+trace_exporter = { otlp-http = { endpoint = "http://127.0.0.1:3000/v1/traces", protocol = "json" } }
 ```
 
-Restart the Codex client, run a new local session, and open `http://127.0.0.1:3000` to inspect **Logs**. Codex batches exported records, so they may appear after the client flushes or exits. The dashboard records telemetry Codex exports; it does not automatically observe private model traffic, editor actions, or sessions that cannot reach your local AtFlows server.
+Restart the Codex client, run a new local session, and open `http://127.0.0.1:3000` to inspect **Logs** and **Traces**. Codex batches exported records, so they may appear after the client flushes or exits. The dashboard records telemetry Codex exports; it does not automatically observe private model traffic, editor actions, or sessions that cannot reach your local AtFlows server.
+
+The log and trace exporters are separate settings. Without `trace_exporter`, Codex events can appear in **Logs** while **Traces** remains empty. AtFlows' model proxy at `http://127.0.0.1:8080/v1` is a different service path and requires provider authentication from the calling SDK.
 
 Use the user-level config file. Current Codex ignores `otel` in a project-local `.codex/config.toml`. Keep `log_user_prompt = false` unless you explicitly want prompt text exported.
 

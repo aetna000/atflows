@@ -51,9 +51,10 @@ function normalizeId(hexId) {
  * Convert nanoseconds timestamp to milliseconds
  */
 function nanoToMs(nanoStr) {
-    if (!nanoStr) return Date.now()
+    if (!nanoStr) return null
     const nano = BigInt(nanoStr)
-    return Number(nano / BigInt(1000000))
+    if (nano <= 0n) return null
+    return Number(nano / 1000000n)
 }
 
 /**
@@ -190,11 +191,13 @@ function processOtlpLogs(body) {
                 try {
                     const attrs = extractAttributes(logRecord.attributes)
                     const logId = uuidv4()
+                    const observedTime = nanoToMs(logRecord.observedTimeUnixNano)
+                    const eventTime = nanoToMs(logRecord.timeUnixNano)
 
                     db.insertLog({
                         id: logId,
-                        timestamp: nanoToMs(logRecord.timeUnixNano),
-                        observed_timestamp: nanoToMs(logRecord.observedTimeUnixNano),
+                        timestamp: eventTime ?? observedTime ?? Date.now(),
+                        observed_timestamp: observedTime,
                         severity_number: logRecord.severityNumber || null,
                         severity_text: getSeverityText(
                             logRecord.severityNumber,

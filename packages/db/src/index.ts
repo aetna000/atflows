@@ -135,6 +135,10 @@ function initSchema() {
         CREATE INDEX IF NOT EXISTS idx_logs_severity ON logs(severity_number);
     `)
 
+    // Older OTLP JSON senders can set timeUnixNano=0 while providing a valid
+    // observedTimeUnixNano. Restore those records to the visible timeline.
+    db.exec('UPDATE logs SET timestamp=observed_timestamp WHERE timestamp=0 AND observed_timestamp>0')
+
     // Metrics table for OTLP metrics ingestion (v0.2.2+)
     db.exec(`
         CREATE TABLE IF NOT EXISTS metrics (
