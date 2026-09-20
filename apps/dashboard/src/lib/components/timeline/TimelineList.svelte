@@ -5,7 +5,7 @@
     selectTimelineItem,
     type TimelineItem,
   } from '$lib/stores/timeline.svelte'
-  import { formatTime, formatLatency, formatCost } from '$lib/utils/format'
+  import { formatTime, formatUtcIso, formatLatency, formatCost } from '$lib/utils/format'
   import EmptyState from '$lib/components/shared/EmptyState.svelte'
 
   function getTypeClass(type: string): string {
@@ -49,7 +49,7 @@
       >
         <div class="timeline-item-header">
           <span class="span-badge span-{getTypeClass(item.type)}">{item.type}</span>
-          <span class="timeline-item-time">{formatTime(item.timestamp)}</span>
+          <time class="timeline-item-time" datetime={formatUtcIso(item.timestamp)} title={`UTC: ${formatUtcIso(item.timestamp)}`}>{formatTime(item.timestamp)}</time>
         </div>
         <div class="timeline-item-title">{item.title}</div>
         {#if item.subtitle}

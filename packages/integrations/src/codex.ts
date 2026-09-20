@@ -16,7 +16,7 @@ export function hashText(value: string) {
 }
 
 export function ownedBlock(dashboardUrl: string) {
-    return `${START_MARKER}\n[otel]\nenvironment = "dev"\nlog_user_prompt = false\nexporter = { otlp-http = { endpoint = "${dashboardUrl}/v1/logs", protocol = "json" } }\ntrace_exporter = { otlp-http = { endpoint = "${dashboardUrl}/v1/traces", protocol = "json" } }\n${END_MARKER}`
+    return `${START_MARKER}\n[otel]\nenvironment = "dev"\nlog_user_prompt = false\nexporter = { otlp-http = { endpoint = "${dashboardUrl}/v1/logs", protocol = "json" } }\ntrace_exporter = { otlp-http = { endpoint = "${dashboardUrl}/v1/traces", protocol = "json" } }\nmetrics_exporter = { otlp-http = { endpoint = "${dashboardUrl}/v1/metrics", protocol = "json" } }\n${END_MARKER}`
 }
 
 export function planCodexConfig(current: string, dashboardUrl: string) {

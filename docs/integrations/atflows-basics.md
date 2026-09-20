@@ -10,7 +10,7 @@ The current server defaults to dashboard port 1337 unless `DASHBOARD_PORT` is se
 The package, CLI and GitHub repository are named `atflows`.
 
 ```bash
-python -m pip install atflows==0.1b5
+python -m pip install atflows
 atflows init
 ```
 
@@ -98,7 +98,7 @@ Use path prefixes or the `X-AtFlows-Provider` header:
 
 ## OpenTelemetry Support
 
-If you're using LangChain, LlamaIndex, or other instrumented frameworks, confirm the exporter uses a format supported by the installed AtFlows release. The current receiver supports OTLP/HTTP JSON; protobuf support is planned in [feature 005](../../specs/005-otlp-protobuf/spec.md).
+If you're using LangChain, LlamaIndex, or another instrumented framework, confirm the exporter uses a format supported by your installed AtFlows build. Release `0.1.0` accepts OTLP/HTTP JSON and protobuf for traces, logs, and metrics. See the [OpenClaw connection guide](./openclaw.md) for a tested protobuf setup.
 
 ```python
 # Python - point OTLP exporter to AtFlows

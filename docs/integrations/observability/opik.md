@@ -39,7 +39,7 @@ Commands that reference local files must be run from `examples/observability/opi
 
 6. View traces:
    - **Opik UI**: http://localhost:5173
-   - **AtFlows Dashboard**: http://localhost:3000
+   - **AtFlows Dashboard**: http://localhost:1337
 
 ## Comet Cloud
 

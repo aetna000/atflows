@@ -23,9 +23,11 @@ export interface Span {
   id: string
   trace_id: string
   parent_id?: string
-  name: string
+  name?: string
+  span_name?: string
   span_type?: string
-  start_time: number
+  start_time?: number
+  timestamp?: number
   end_time?: number
   duration_ms?: number
   status?: string

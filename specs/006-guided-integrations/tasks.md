@@ -24,11 +24,11 @@
 
 **Independent test**: Follow one telemetry and one proxy recipe with an installed wheel; verify destination and capture scope.
 
-- [X] T011 [US1] Create reviewed profiles for Codex CLI, OpenClaw, Gemini CLI, Aider, LangChain, Vercel AI SDK, OpenAI-compatible SDKs, generic OTLP, supported provider routes, and outbound observability destinations in `packages/integrations/src/catalog.ts`, each linked to `docs/integrations/`.
+- [X] T011 [US1] Create reviewed profiles for Codex CLI, OpenClaw, Gemini CLI, Aider, LangChain, Vercel AI SDK, OpenAI-compatible SDKs, generic OTLP, supported provider routes, and outbound observability destinations in `packages/integrations/src/index.ts`, each linked to `docs/integrations/`.
 - [X] T012 [US1] Build searchable Connect landing and detail views in `apps/dashboard/src/lib/components/connect/`, linked from `apps/dashboard/src/App.svelte` and the main tabs/navigation.
 - [X] T013 [US1] Present one recommended connection path first, with route, prerequisites, capture scope, required OTLP encoding, compatibility state, privacy defaults, detected editable file path, and copyable manual steps in secondary details.
 - [ ] T014 [US1] Validate and repair historical setup commands in `docs/integrations/` against installed artifacts; keep `README.md` and `examples/**/README.md` as short links to canonical guides.
-- [ ] T015 [US1] Add dashboard and installed-wheel tests for generated custom-port recipes and blocked OpenClaw state in `e2e/playwright/` and `apps/server/test/`.
+- [ ] T015 [US1] Add dashboard and installed-wheel tests for generated custom-port recipes and supported OpenClaw state in `e2e/playwright/` and `apps/server/test/`.
 
 ## Phase 4: User Story 2 - Apply local setup safely (P1)
 
@@ -60,7 +60,7 @@
 **Independent test**: Inspect every catalog entry and run the supported recipes against installed artifacts.
 
 - [ ] T025 [US4] Validate Aider, Gemini CLI, LangChain, and Vercel AI SDK profiles against their current versions; update `packages/integrations/src/catalog.ts` and `docs/integrations/` with evidence dates.
-- [X] T026 [US4] Gate OpenClaw direct setup on feature 005 protobuf receiver and installed-wheel tests; otherwise retain blocked status in `packages/integrations/src/catalog.ts`.
+- [X] T026 [US4] Gate OpenClaw direct setup on feature 005 protobuf receiver and installed-wheel tests; otherwise retain blocked status in `packages/integrations/src/index.ts`.
 - [ ] T027 [US4] Add catalog completeness and claim-verification tests in `apps/server/test/integrations-catalog.js`.
 
 ## Phase 7: User Story 5 - Name a connection across models (P2)
@@ -109,3 +109,22 @@
 ## Implementation strategy
 
 Ship the smallest truthful path first: Connect catalog plus Codex telemetry recipe and one verified proxy SDK recipe. Add safe local apply only after the preview, backup, and guard tests pass. Expand profiles one at a time and keep unsupported modes visibly blocked.
+
+## Phase 9: 0.1b6 connection audit
+
+- [X] T039 Correct generic OTLP catalog wording for shipped JSON and protobuf support, and reject an OTLP/gRPC claim (FR-002, FR-019).
+- [X] T040 Classify Helicone as a model proxy passthrough rather than an OTLP export destination; correct stale dashboard-port references in destination guides (FR-002, FR-003).
+- [X] T041 Show authenticated, real-event OpenClaw trace/log/metric timestamps for the guide's default service name, with a custom-name limitation (FR-007, US3/AC2).
+- [X] T042 Add catalog guide-completeness and blocked-auto-apply checks plus an OpenClaw activity endpoint regression test (FR-008, SC-005).
+- [ ] T043 Verify each advertised provider proxy route with an installed AtFlows artifact and a deterministic upstream or explicitly scoped live test; record provider/client version, route, authentication prerequisites, capture fields, and date before claiming validated compatibility (FR-002, FR-009, SC-005).
+- [ ] T044 Validate Jaeger, Phoenix, Langfuse, and Opik outbound JSON export against a pinned destination version; record failures and authentication contracts; keep them marked Needs validation until then (FR-002, FR-009, SC-005).
+- [ ] T045 Validate the Helicone passthrough with a pinned client and destination version; check headers and capture scope; keep it marked Needs validation until then (FR-002, FR-009, SC-005).
+- [ ] T046 Replace historical commands in Gemini CLI, Aider, LangChain, Vercel AI SDK, and RAG guides with versioned recipes only after an installed-artifact test, and maintain visible blockers otherwise (FR-009, FR-013, T014, T025).
+- [ ] T047 Extend evidence-based connection verification beyond Codex and default-name OpenClaw, including custom service names, proxy calls, and destination failures without asserting success from a health check (FR-007, FR-018, T022-T024).
+- [ ] T048 Repair the legacy server test runner to authenticate dashboard API reads, then run the full release gate against an installed wheel (FR-012, T035).
+- [X] T049 Attach validation dates and artifact evidence to available profiles; mark provider routes and the OpenAI-compatible SDK recipe Needs validation until installed client tests pass (FR-008, FR-009).
+- [X] T050 Show Working only for tested profiles and Available soon for the remaining catalog entries; hide setup controls for unverified routes while preserving their research guides (FR-008, SC-005).
+- [X] T051 Add separate LangChain, Pydantic AI, and AtBots catalog entries and guides; sort working profiles before greyed, unverified profiles (FR-001, FR-008).
+- [X] T052 Validate a pinned Pydantic AI agent turn and a pinned AtBots task against an installed AtFlows package; verify model proxy behavior and recorded usage before promoting either profile (FR-009, SC-005). Agent telemetry spans remain outside this proxy recipe.
+- [X] T053 Validate LangChain Python ChatOpenAI and Claude Code against an installed AtFlows wheel; publish exact model proxy and OTLP recipes, including the beta trace and content-capture limits.
+- [X] T054 Exclude proxy GET/HEAD preflight calls from model traces so AtBots `/v1/models` checks do not inflate the Models tab.

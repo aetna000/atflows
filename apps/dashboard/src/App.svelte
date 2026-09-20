@@ -9,21 +9,34 @@
   import AnalyticsTab from '$lib/components/analytics/AnalyticsTab.svelte'
   import SessionsTab from '$lib/components/sessions/SessionsTab.svelte'
   import ConnectTab from '$lib/components/connect/ConnectTab.svelte'
+  import DatabaseTab from '$lib/components/settings/DatabaseTab.svelte'
   import Login from '$lib/components/layout/Login.svelte'
   import { api } from '$lib/api/client'
   import { tabState, initTabHashSync, setTab, validTabs } from '$lib/stores/tabs.svelte'
   import { initTheme, toggleTheme } from '$lib/stores/theme.svelte'
   import { initWebSocket, closeWebSocket } from '$lib/stores/websocket.svelte'
   import { loadStats, initStatsSync } from '$lib/stores/stats.svelte'
+  import atflowsPackage from '../../../package.json'
+  import { authAccount, type Account } from '$lib/stores/auth.svelte'
+  import UsersTab from '$lib/components/settings/UsersTab.svelte'
+  import AccountTab from '$lib/components/settings/AccountTab.svelte'
 
   let authState = $state<'loading' | 'signed-out' | 'change-password' | 'authenticated'>('loading')
   let stopDashboard: (() => void) | undefined
+
+  $effect(() => {
+    if (authState !== 'authenticated') return
+    const role = authAccount.value?.role
+    if (role === 'viewer' && tabState.current !== 'models' && tabState.current !== 'analytics' && tabState.current !== 'account') setTab('models')
+    else if (role !== 'administrator' && ['connect', 'database', 'users'].includes(tabState.current)) setTab('timeline')
+  })
 
   function startDashboard() {
     if (stopDashboard) return
     initTheme()
     initTabHashSync()
-    initWebSocket()
+    if (authAccount.value?.role === 'viewer' && tabState.current !== 'models' && tabState.current !== 'analytics' && tabState.current !== 'account') setTab('models')
+    if (authAccount.value?.role !== 'viewer') initWebSocket()
     loadStats()
     initStatsSync()
 
@@ -133,8 +146,9 @@
   }
 
   onMount(() => {
-    api.get<{ authenticated: boolean; password_change_required: boolean }>('/api/auth/status')
+    api.get<{ authenticated: boolean; password_change_required: boolean; account: Account | null }>('/api/auth/status')
       .then((status) => {
+        authAccount.value = status.account
         authState = status.authenticated ? status.password_change_required ? 'change-password' : 'authenticated' : 'signed-out'
         if (authState === 'authenticated') startDashboard()
       })
@@ -142,17 +156,15 @@
     return () => { stopDashboard?.(); closeWebSocket() }
   })
 
-  function signedIn(changeRequired: boolean) {
+  function signedIn(changeRequired: boolean, account: Account) {
+    authAccount.value = account
     authState = changeRequired ? 'change-password' : 'authenticated'
     if (!changeRequired) startDashboard()
   }
 
   async function signOut() {
     await fetch('/api/auth/logout', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: '{}' })
-    stopDashboard?.()
-    stopDashboard = undefined
-    closeWebSocket()
-    authState = 'signed-out'
+    window.location.reload()
   }
 </script>
 
@@ -162,13 +174,26 @@
 
     <main>
 
-    <div
+    <div id="accountTab" class="tab-content {tabState.current === 'account' ? 'active' : ''}" data-testid="account-tab-panel"><AccountTab /></div>
+
+    {#if authAccount.value?.role === 'administrator'}<div
       id="connectTab"
       class="tab-content {tabState.current === 'connect' ? 'active' : ''}"
       data-testid="connect-tab-panel"
     >
       <ConnectTab />
     </div>
+      <div id="usersTab" class="tab-content {tabState.current === 'users' ? 'active' : ''}" data-testid="users-tab-panel">
+        <UsersTab />
+      </div>
+    <div
+      id="databaseTab"
+      class="tab-content {tabState.current === 'database' ? 'active' : ''}"
+      data-testid="database-tab-panel"
+    >
+      <DatabaseTab />
+    </div>
+    {/if}
 
     <div
       id="timelineTab"
@@ -222,5 +247,22 @@
     </main>
   {:else if authState === 'signed-out' || authState === 'change-password'}
     <Login onsignedin={signedIn} mustChange={authState === 'change-password'} />
+  {/if}
+  {#if authState !== 'loading'}
+    <footer class="product-footer" aria-label="AtMem.ai and AtFlows links">
+      <div class="footer-versions">
+        <span class="footer-label">Current build</span>
+        <span class="footer-version-chip">AtFlows <strong>{atflowsPackage.version}</strong></span>
+      </div>
+      <nav aria-label="Project links">
+        <a href="https://atmem.ai/" target="_blank" rel="noopener noreferrer">AtMem.ai ↗</a>
+        <a href="mailto:hello@atmem.ai">hello@atmem.ai</a>
+        <a href="https://atmem.ai/about" target="_blank" rel="noopener noreferrer">About AtMem</a>
+        <a href="https://x.com/AtMemAi" target="_blank" rel="noopener noreferrer">X ↗</a>
+        <a href="https://github.com/aetna000/atmem" target="_blank" rel="noopener noreferrer">AtMem repo ↗</a>
+        <a href="https://github.com/aetna000/atflows" target="_blank" rel="noopener noreferrer">AtFlows repo ↗</a>
+        <a href="https://github.com/javadtaghia" target="_blank" rel="noopener noreferrer">By Javad Taghia ↗</a>
+      </nav>
+    </footer>
   {/if}
 </div>

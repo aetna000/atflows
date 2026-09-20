@@ -9,7 +9,8 @@ These example recipes were moved out of the example READMEs. They are historical
 | Jaeger | [Guide](./observability/jaeger.md) | [`examples/observability/jaeger`](../../examples/observability/jaeger) |
 | Phoenix | [Guide](./observability/phoenix.md) | [`examples/observability/phoenix`](../../examples/observability/phoenix) |
 | Langfuse | [Guide](./observability/langfuse.md) | [`examples/observability/langfuse`](../../examples/observability/langfuse) |
-| Helicone | [Guide](./observability/helicone.md) | [`examples/observability/helicone`](../../examples/observability/helicone) |
 | Opik | [Guide](./observability/opik.md) | [`examples/observability/opik`](../../examples/observability/opik) |
 
 The Connect catalog in [feature 006](../../specs/006-guided-integrations/spec.md) will show the tested transport, destination URL, credentials needed, and validation status for each option.
+
+[Helicone](./observability/helicone.md) is a separate model proxy passthrough path, not an OTLP export destination. Its recipe also needs an installed-artifact test.

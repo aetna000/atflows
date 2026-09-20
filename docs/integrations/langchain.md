@@ -1,80 +1,22 @@
-# LangChain + AtFlows Proxy Example
+# LangChain → AtFlows
 
-> **Validation status:** This guide was moved from the example README. Its commands and endpoint compatibility must be checked against the current tool and installed AtFlows release before being offered as automatic setup.
+**Working:** LangChain OpenAI 1.3.3 model calls passed through AtFlows and appeared in Traces with model and token usage. This route records model calls; LangChain chain and tool spans need separate instrumentation.
 
+1. Start AtFlows: `atflows`.
+2. Install the Python integration: `pip install langchain-openai`.
+3. Use the local Ollama proxy route with a model your Ollama server has installed:
 
-This example demonstrates how to trace LangChain.js applications with AtFlows by routing API calls through the proxy.
+   ```python
+   from langchain_openai import ChatOpenAI
 
-## How It Works
-
-LangChain is configured to send OpenAI API calls through the AtFlows proxy at `http://localhost:8080/v1`. The proxy:
-
-1. Logs the request
-2. Forwards it to OpenAI
-3. Logs the response with token usage and cost
-4. Returns the response to your app
-
-## Setup
-
-Run the first AtFlows start command from the repository root. Then change to `examples/langchain/` before running this example's install and run commands.
-
-1. Start AtFlows from the project root:
-
-   ```bash
-   npm install
-   npm start
+   model = ChatOpenAI(
+       model="your-model",
+       base_url="http://127.0.0.1:8080/ollama/v1",
+       api_key="local",
+   )
+   print(model.invoke("Hello").content)
    ```
 
-2. Install example dependencies:
+4. Open **Activity → Traces** and find the model call. Usage appears when the upstream response provides it.
 
-   ```bash
-   npm install
-   ```
-
-3. Set your OpenAI API key in `.env` at the project root:
-
-   ```bash
-   OPENAI_API_KEY=sk-your-key
-   ```
-
-4. Run the example:
-
-   ```bash
-   npm start
-   ```
-
-5. View traces at [http://localhost:1337](http://localhost:1337)
-
-## Key Code
-
-```javascript
-import { ChatOpenAI } from '@langchain/openai'
-
-// Configure LangChain to use AtFlows proxy
-const model = new ChatOpenAI({
-  modelName: 'gpt-4o-mini',
-  temperature: 0.7,
-  configuration: {
-    baseURL: 'http://localhost:8080/v1',
-  },
-})
-```
-
-## What Gets Traced
-
-AtFlows automatically captures:
-
-- **Model**: The LLM model used (e.g., `gpt-4o-mini`)
-- **Tokens**: Input and output token counts
-- **Messages**: The messages sent to the model
-- **Completions**: The model's responses
-- **Duration**: How long each call took
-- **Cost**: Estimated cost based on token usage
-
-## Configuration
-
-| Variable            | Default                    | Description                      |
-| ------------------- | -------------------------- | -------------------------------- |
-| `ATFLOW_PROXY`     | `http://localhost:8080/v1` | AtFlows proxy URL                |
-| `ATFLOW_DASHBOARD` | `http://localhost:1337`    | Dashboard URL for viewing traces |
-| `OPENAI_API_KEY`    | (required)                 | Your OpenAI API key              |
+For a hosted OpenAI model, set `base_url="http://127.0.0.1:8080/v1"` and use your normal `OPENAI_API_KEY` as the client key. The local Ollama route above is the tested recipe. The Connect screen displays the active proxy port if yours differs from 8080.

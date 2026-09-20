@@ -35,6 +35,9 @@ export function initWebSocket() {
   ws.onclose = () => {
     connectionStatus.value = 'disconnected'
     ws = null
+    fetch('/api/auth/status').then((response) => response.json()).then((status) => {
+      if (!status.authenticated) window.location.reload()
+    }).catch(() => {})
     if (shouldConnect) retryTimer = setTimeout(initWebSocket, Math.min((retryDelay *= 1.5), WS_MAX_RETRY))
   }
 

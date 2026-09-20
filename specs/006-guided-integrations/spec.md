@@ -2,7 +2,7 @@
 
 **Feature Branch**: `006-guided-integrations`
 **Created**: 2026-09-20
-**Status**: Draft
+**Status**: In progress; AtFlows 0.1b6 ships the catalog, Codex setup, and direct OpenClaw receiver
 **Input**: Make AtFlows easy to connect to Codex and every integration listed in the repository, with clear setup guidance in the dashboard and less manual configuration.
 
 ## User Scenarios & Testing
@@ -106,7 +106,7 @@ A user can ask AtFlows AtBot why an integration is not working and receive an ex
 
 ### Functional Requirements
 
-- **FR-001**: The dashboard MUST provide a searchable **Connect** area with setup status for Codex CLI, OpenClaw, Gemini CLI, Aider, LangChain, Vercel AI SDK, generic OpenAI-compatible SDK and OTLP routes, RAG/AtFlows SDK examples, supported provider paths, and the listed outbound observability destinations.
+- **FR-001**: The dashboard MUST provide a searchable **Connect** area with setup status for Codex CLI, OpenClaw, Claude Code, Gemini CLI, Aider, LangChain, Pydantic AI, the separate AtBots agent package, Vercel AI SDK, generic OpenAI-compatible SDK and OTLP routes, RAG/AtFlows SDK examples, supported provider paths, and the listed outbound observability destinations.
 - **FR-002**: Each entry MUST state its connection method, supported signals or calls, prerequisites, current compatibility, privacy implications, and a working manual recipe.
 - **FR-003**: Generated examples MUST use the running server's actual addresses and distinguish dashboard/OTLP endpoints from model proxy endpoints.
 - **FR-004**: A local setup assistant MUST support inspect, preview, apply, verify, and undo for integrations whose configuration can be changed safely; unsupported environments MUST offer copyable manual steps.
@@ -156,6 +156,6 @@ A user can ask AtFlows AtBot why an integration is not working and receive an ex
 
 - Local setup is opt in. Copyable instructions are the universal fallback.
 - Codex is initially prioritized for OTLP telemetry; routing its authenticated model transport through the proxy is a separate capability that requires proof of compatibility.
-- OpenClaw direct OTLP setup depends on completion and installed-artifact validation of feature 005; until then its catalog status is blocked or limited to a separately verified proxy route.
+- OpenClaw direct OTLP setup passed source, clean-wheel, and local Gateway tests in 0.1b6. The manual setup is available; guided apply and per-connection verification remain planned.
 - The first release covers local single-user setup. Hosted administration and remote configuration require the authentication and tenant controls in feature 001.
 - AtFlows AtBot is a separate planned package in feature 003. Connect remains fully usable when it is absent.

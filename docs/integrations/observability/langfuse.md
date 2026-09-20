@@ -40,7 +40,7 @@ Commands that reference local files must be run from `examples/observability/lan
 
 6. View traces:
    - **Langfuse UI**: http://localhost:3001
-   - **AtFlows Dashboard**: http://localhost:3000
+   - **AtFlows Dashboard**: http://localhost:1337
 
 ## Langfuse Cloud
 

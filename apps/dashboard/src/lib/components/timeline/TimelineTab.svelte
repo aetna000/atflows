@@ -4,11 +4,14 @@
   import TimelineDetail from './TimelineDetail.svelte'
   import {
     timelineFilters,
+    timelineItems,
     loadTimeline,
     clearFilters,
     initTimelineSync,
   } from '$lib/stores/timeline.svelte'
-  import { tabState } from '$lib/stores/tabs.svelte'
+  import { tabState, setTab } from '$lib/stores/tabs.svelte'
+  import { downloadJson } from '$lib/utils/export'
+  import { authAccount } from '$lib/stores/auth.svelte'
 
   let searchInput = $state('')
   let debounceTimer: ReturnType<typeof setTimeout>
@@ -53,6 +56,11 @@
     }
   })
 </script>
+
+{#if authAccount.value?.role === 'administrator'}<button type="button" class="connect-hint" data-testid="timeline-connect-hint" onclick={() => setTab('connect')}>
+  <span><strong>Connect your first tool</strong><small>Choose Codex, Claude Code, OpenClaw, or an app to see setup steps for this server.</small></span>
+  <span class="connect-hint-action">Open Connect →</span>
+</button>{/if}
 
 <div class="filter-bar" data-testid="timeline-filters">
   <input
@@ -105,6 +113,7 @@
   >
     Clear
   </button>
+  {#if authAccount.value?.role === 'evidence_collector' || authAccount.value?.role === 'administrator'}<button type="button" class="btn-secondary" onclick={() => downloadJson('timeline', { filters: timelineFilters, records: timelineItems })} disabled={timelineItems.length === 0}>Export JSON</button>{/if}
 </div>
 
 <div class="split-layout">

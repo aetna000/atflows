@@ -1,7 +1,7 @@
 # Feature Specification: Direct OTLP protobuf ingestion
 
 **Created**: 2026-09-20
-**Status**: Draft
+**Status**: Implemented locally; legacy JSON test harness authentication update remains
 **Input**: Make OpenClaw's OTLP/HTTP protobuf exporter connect directly to AtFlows.
 
 ## User scenarios and testing

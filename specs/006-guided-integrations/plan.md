@@ -15,7 +15,7 @@ Build a versioned integration catalog shown in a dashboard Connect area. Each en
 **Target Platform**: Local macOS, Linux, native Windows, and WSL where supported by the chosen tool; remote dashboard is documentation only
 **Project Type**: Local web dashboard, server API, CLI companion
 **Performance Goals**: Connect view usable within 2 seconds of dashboard load; preview within 1 second for small config files
-**Constraints**: No credentials in browser or logs; no config writes before explicit apply; no direct OpenClaw claim until feature 005 passes
+**Constraints**: No credentials in browser or logs; no config writes before explicit apply; OpenClaw direct support requires the feature 005 installed-wheel evidence; this gate passed for AtFlows 0.1b6
 **Scale/Scope**: Coding tools, SDKs, provider routes, and outbound observability entries; one local user, multiple named connections
 
 ## Constitution Check
@@ -46,7 +46,7 @@ e2e/playwright/
 
 ## Phase 0: Research
 
-See [research.md](./research.md). Audit every existing example against current product documentation and actual AtFlows route behavior before marking it supported. Codex's user-level OTLP configuration, actual config path per OS, generic OTLP encoding, and OpenClaw's protobuf dependency are priority checks. The Python wrapper's help text claims port 3000 while the server defaults to 1337 unless an override is set; setup must use the bound port and repair this mismatch.
+See [research.md](./research.md). Audit every existing example against current product documentation and actual AtFlows route behavior before marking it supported. Codex's user-level OTLP configuration, actual config path per OS, generic OTLP encoding, and OpenClaw's protobuf dependency are priority checks. The Python wrapper now advertises 1337. Recipes must use the actual bound port because startup can select another free port.
 
 ## Phase 1: Design
 
@@ -60,7 +60,7 @@ See [data-model.md](./data-model.md), [contracts/setup-api.md](./contracts/setup
 4. Connection nicknames and evidence-based matching across model changes.
 5. Safe setup support for other editable integrations after profile-specific tests, with exact native/WSL paths.
 6. Optional read-only AtFlows AtBot help after feature 003 is available.
-7. OpenClaw direct setup only after feature 005 receiver and wheel tests pass.
+7. OpenClaw direct setup shipped in 0.1b6 after feature 005 receiver and wheel tests; guided apply and per-connection evidence remain follow-up work.
 
 ## Post-Design Constitution Check
 

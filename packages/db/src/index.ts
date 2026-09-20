@@ -640,6 +640,18 @@ export function getLastCodexActivity() {
         : { signal: 'logs', timestamp: logs.timestamp }
 }
 
+export function getOpenClawActivity() {
+    const service = 'openclaw-gateway'
+    const latest = (table: 'traces' | 'logs' | 'metrics') =>
+        (db.query(`SELECT MAX(timestamp) AS timestamp FROM ${table} WHERE service_name = $service`).get({ $service: service }) as { timestamp: number | null }).timestamp
+    return {
+        service_name: service,
+        traces: latest('traces'),
+        logs: latest('logs'),
+        metrics: latest('metrics'),
+    }
+}
+
 export function getCodexConnection() {
     const row = db.query("SELECT nickname, created_at, updated_at FROM connections WHERE profile_id = 'codex-cli'").get() as {
         nickname: string

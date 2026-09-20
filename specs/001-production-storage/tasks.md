@@ -6,3 +6,5 @@
 - [ ] T004 Implement PostgreSQL adapter, pooling, migrations, and startup health.
 - [ ] T005 Thread tenant identity through dashboard API, proxy, and OTLP paths; test denials.
 - [ ] T006 Document backup, restore, export/import, and clean-wheel release verification.
+- [X] T007 Show the active SQLite engine, resolved database file, data directory, and path source under Settings → Database through an authenticated read-only API.
+- [ ] T008 Extend Settings → Database with the active PostgreSQL backend and a validated external database setup flow when T004-T005 ship; redact credentials in all responses.

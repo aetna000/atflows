@@ -1,5 +1,6 @@
 <script lang="ts">
   import { sessionsState } from '$lib/stores/sessions.svelte'
+  import { formatLocalIso, formatUtcIso } from '$lib/utils/format'
 
   interface Props {
     onOpenTrace: (traceId: string) => void
@@ -7,9 +8,6 @@
 
   let { onOpenTrace }: Props = $props()
 
-  function fmt(ms: number) {
-    return new Date(ms).toLocaleTimeString()
-  }
 </script>
 
 {#if sessionsState.selected}
@@ -30,7 +28,7 @@
     <ol class="trace-list">
       {#each sessionsState.selected.traces as t (t.trace_id)}
         <li onclick={() => onOpenTrace(t.trace_id)}>
-          <span class="time">{fmt(t.started_at)}</span>
+          <time class="time" datetime={formatUtcIso(t.started_at)} title={`UTC: ${formatUtcIso(t.started_at)}`}>{formatLocalIso(t.started_at)}</time>
           <span class="trace-id mono">{t.trace_id.slice(0, 8)}…</span>
           <span class="spans">{t.span_count} spans</span>
           <span class="cost">${t.cost.toFixed(4)}</span>
@@ -67,7 +65,7 @@
   }
   .trace-list li {
     display: grid;
-    grid-template-columns: 80px 100px 1fr 80px auto;
+    grid-template-columns: minmax(220px, auto) 100px 1fr 80px auto;
     gap: 12px;
     padding: 8px;
     cursor: pointer;

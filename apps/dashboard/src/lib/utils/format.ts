@@ -1,21 +1,26 @@
-export function formatTime(timestamp: number | string): string {
-  const date = new Date(typeof timestamp === 'string' ? timestamp : timestamp)
-  const now = new Date()
-  const isToday = date.toDateString() === now.toDateString()
+function validDate(timestamp: number | string): Date | null {
+  const date = new Date(timestamp)
+  return Number.isNaN(date.getTime()) ? null : date
+}
 
-  if (isToday) {
-    return date.toLocaleTimeString('en-US', {
-      hour: '2-digit',
-      minute: '2-digit',
-      second: '2-digit',
-    })
-  }
-  return date.toLocaleDateString('en-US', {
-    month: 'short',
-    day: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit',
-  })
+const two = (value: number) => String(value).padStart(2, '0')
+const three = (value: number) => String(value).padStart(3, '0')
+
+export function formatLocalIso(timestamp: number | string): string {
+  const date = validDate(timestamp)
+  if (!date) return '—'
+  const offsetMinutes = -date.getTimezoneOffset()
+  const sign = offsetMinutes >= 0 ? '+' : '-'
+  const offset = `${sign}${two(Math.floor(Math.abs(offsetMinutes) / 60))}:${two(Math.abs(offsetMinutes) % 60)}`
+  return `${date.getFullYear()}-${two(date.getMonth() + 1)}-${two(date.getDate())}T${two(date.getHours())}:${two(date.getMinutes())}:${two(date.getSeconds())}.${three(date.getMilliseconds())}${offset}`
+}
+
+export function formatUtcIso(timestamp: number | string): string {
+  return validDate(timestamp)?.toISOString() ?? '—'
+}
+
+export function formatTime(timestamp: number | string): string {
+  return formatLocalIso(timestamp)
 }
 
 export function formatNumber(num: number | null | undefined): string {

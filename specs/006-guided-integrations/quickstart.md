@@ -1,10 +1,16 @@
-# Planned user journey
+# Guided connection journey
 
-1. Install and start AtFlows. Open the dashboard and choose **Connect**.
-2. Select Codex. AtFlows shows the detected config file path and a prepared endpoint. Give this connection a nickname, review the telemetry-only capture scope and privacy setting, then select **Connect** and restart Codex.
-3. Run one Codex session. Verify server reachability, configuration match, and an actual log or trace as separate states.
-4. Select an OpenAI-compatible SDK. Copy the proxy endpoint and use an existing provider credential. Send one request and verify the model request appears.
-5. Undo the Codex change. Confirm unrelated configuration remains intact and future Codex sessions stop exporting to AtFlows.
-6. Select OpenClaw. If feature 005 is not shipped and tested, direct OTLP setup is visibly unavailable; the UI does not offer a broken one-click action.
-7. Switch the Codex session from Luna to Sol. Both sessions remain under the chosen connection nickname, while each trace keeps its actual model.
-8. If optional AtFlows AtBot is installed and enabled, ask why a connection has no events. The answer cites the selected guide and redacted diagnostics; it cannot edit the configuration.
+## Available in AtFlows 0.1b6
+
+1. Install and start AtFlows. Open **Settings → Connect**.
+2. Select **Codex CLI**. Inspect the detected user-level config path, review the proposed telemetry block, apply it, and restart Codex. The local planner supports undo; the status panel separates configuration from last observed activity.
+3. Select **OpenClaw**. Install a diagnostics plugin matching the OpenClaw version, copy the manual OTLP/HTTP protobuf configuration, restart the Gateway, and run an agent turn. The activity panel shows trace, log, and metric timestamps for the default `openclaw-gateway` service name.
+4. Select **Generic OTLP/HTTP**. Choose JSON or protobuf and send a real trace, log, or metric to the dashboard port. OTLP/gRPC is not supported.
+
+## Remaining acceptance journeys
+
+1. Validate an OpenAI-compatible SDK and each named provider route against an installed AtFlows artifact before promoting the catalog status. A listed proxy URL alone does not prove upstream compatibility.
+2. Validate Gemini CLI, Aider, LangChain, Vercel AI SDK, RAG, Helicone passthrough, and Jaeger/Phoenix/Langfuse/Opik exports against pinned versions and document exact evidence.
+3. Add per-connection event evidence for proxy and export routes, custom OpenClaw service names, and stale endpoint detection. Separate server readiness from actual received traffic.
+4. Add stable connection identity across model changes. A display nickname alone cannot identify two indistinguishable Codex sources.
+5. Integrate the distinct AtFlows AtBot package as opt-in, cited, read-only configuration help after feature 003 ships.

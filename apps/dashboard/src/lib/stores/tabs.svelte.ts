@@ -7,6 +7,9 @@ export const validTabs = [
   'metrics',
   'models',
   'analytics',
+  'database',
+  'users',
+  'account',
 ] as const
 export type Tab = (typeof validTabs)[number]
 

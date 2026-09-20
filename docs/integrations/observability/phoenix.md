@@ -31,7 +31,7 @@ Commands that reference local files must be run from `examples/observability/pho
 
 5. View traces:
    - **Phoenix UI**: http://localhost:6006
-   - **AtFlows Dashboard**: http://localhost:3000
+   - **AtFlows Dashboard**: http://localhost:1337
 
 ## Arize Cloud
 

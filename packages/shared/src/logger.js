@@ -18,7 +18,7 @@ const c = {
 }
 
 function timestamp() {
-    return new Date().toISOString().slice(11, 23)
+    return new Date().toISOString()
 }
 
 function formatDuration(ms) {
@@ -35,7 +35,7 @@ function formatTokens(tokens) {
 const logger = {
     // Startup messages
     startup(message) {
-        console.log(`${c.cyan}[atflows]${c.reset} ${message}`)
+        console.log(`${c.dim}${timestamp()}${c.reset} ${c.cyan}[atflows]${c.reset} ${message}`)
     },
 
     // URL highlighting (yellow)
@@ -44,15 +44,15 @@ const logger = {
     },
 
     info(message) {
-        console.log(`${c.dim}[atflows]${c.reset} ${message}`)
+        console.log(`${c.dim}${timestamp()} [atflows]${c.reset} ${message}`)
     },
 
     warn(message) {
-        console.log(`${c.yellow}[atflows]${c.reset} ${message}`)
+        console.log(`${c.dim}${timestamp()}${c.reset} ${c.yellow}[atflows]${c.reset} ${message}`)
     },
 
     error(message) {
-        console.log(`${c.red}[atflows]${c.reset} ${message}`)
+        console.log(`${c.dim}${timestamp()}${c.reset} ${c.red}[atflows]${c.reset} ${message}`)
     },
 
     // Request logging - compact by default

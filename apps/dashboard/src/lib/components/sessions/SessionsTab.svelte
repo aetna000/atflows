@@ -2,6 +2,8 @@
   import { onMount } from 'svelte'
   import { sessionsState, loadSessions } from '$lib/stores/sessions.svelte'
   import { setTab } from '$lib/stores/tabs.svelte'
+  import { downloadJson } from '$lib/utils/export'
+  import { authAccount } from '$lib/stores/auth.svelte'
   import SessionList from './SessionList.svelte'
   import SessionDetail from './SessionDetail.svelte'
 
@@ -23,6 +25,7 @@
 </script>
 
 <div class="sessions-tab">
+  {#if authAccount.value?.role === 'evidence_collector' || authAccount.value?.role === 'administrator'}<div class="session-export"><button type="button" class="btn-secondary" onclick={() => downloadJson(view === 'detail' ? 'session-detail' : 'sessions', view === 'detail' ? sessionsState.selected : { records: sessionsState.list, total: sessionsState.total })} disabled={view === 'detail' ? !sessionsState.selected : sessionsState.list.length === 0}>Export JSON</button></div>{/if}
   {#if view === 'list'}
     <SessionList onSelect={openSession} />
   {:else}
@@ -36,6 +39,7 @@
     height: 100%;
     overflow: auto;
   }
+  .session-export { display: flex; justify-content: flex-end; padding: 8px 16px; }
   .back {
     background: none;
     border: 0;

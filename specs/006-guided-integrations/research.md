@@ -1,31 +1,45 @@
 # Research: guided integration setup
 
-## Existing AtFlows behavior
+**Audit date:** 2026-09-20. **Installed artifact:** AtFlows 0.1b6 PyPI wheel. A route existing in source is not proof that an external tool can use it; `available` means the stated route and versioned recipe have passed an installed-artifact test.
 
-- The dashboard/OTLP receiver and model proxy have different ports and paths; recipes must derive both from the running server and never conflate them. The server defaults to dashboard port 1337 and proxy port 8080; the Python CLI help currently advertises 3000 without setting that value. Startup can choose another free port.
-- `docs/integrations/codex-cli.md` uses user-level OTLP JSON for logs and traces; this does not reroute Codex's authenticated model calls.
-- `docs/integrations/openclaw.md` says the plugin exports OTLP/HTTP protobuf while direct protobuf ingest is specified in feature 005, not yet established as shipped.
-- The former Aider README used a nonexistent `/proxy/openai/v1` path on the dashboard port; its new guide removes the broken command. Former Gemini CLI setting keys are unverified; that guide does not offer a copy recipe until validation.
-- `docs/integrations/` now holds the setup guides, including LangChain, Vercel AI SDK, RAG, and outbound observability destinations. Example READMEs are pointers only.
+## Shipped route evidence
+
+| Connection | Current status | Evidence and limit |
+| --- | --- | --- |
+| Codex CLI | Available for local OTLP JSON telemetry | The local configuration planner and status parser have temporary-home tests in `apps/server/test/integrations-setup.test.ts`. Logs, traces, and metrics use distinct endpoints. This does not proxy Codex model calls or promise cost fields. |
+| OpenClaw | Available for manual OTLP/HTTP protobuf setup | OpenClaw 2026.9.1 with its matching official diagnostics-otel plugin sent real traces, logs, and metrics to source and clean-wheel receivers. `apps/server/test/otlp-protobuf.test.ts` covers the protocol. Observed spans lacked a session ID; guided apply is not implemented. |
+| OpenAI-compatible SDK | Needs validation | `apps/server/test/providers.js` covers OpenAI routing and response normalization. A fresh installed-wheel client smoke test for the catalog recipe is still required by T035. |
+| Generic OTLP/HTTP | JSON and protobuf receiver available | The 0.1b6 clean wheel accepted traces, logs, and metrics in protobuf; JSON parity is covered in `apps/server/test/otlp-protobuf.test.ts`. OTLP/gRPC is not supported. |
+| Individual provider routes | Needs validation | The provider registry and unit tests cover path resolution. Eleven catalog routes have not each passed an installed-wheel upstream call. Do not treat a listed URL as proof of upstream credentials or live compatibility. |
+| Helicone | Needs validation, proxy passthrough | `/passthrough/helicone/v1` exists in the server. Helicone is a model gateway route, not an OTLP export destination; no installed-artifact live test has passed. |
+| Jaeger, Phoenix, Langfuse, Opik | Needs validation, outbound export | `packages/otlp/src/export.js` sends OTLP/HTTP JSON to configured endpoints. Destination versions, authentication, and end-to-end delivery have not passed installed-artifact tests. |
+| Gemini CLI, Aider, Vercel AI SDK, RAG | Needs validation | Their guides describe historical examples. Product configuration keys, current dependency versions, and installed-wheel results are still needed before promoting a profile. |
+| LangChain | Available for Python model proxy calls | LangChain OpenAI 1.3.3 ChatOpenAI invoked a mock OpenAI-compatible model through an installed AtFlows 0.1b6 wheel. The request, model, and returned token usage were recorded in Traces. Chain and tool spans were not tested. |
+| Pydantic AI | Available for model proxy calls | Pydantic AI 1.107.5 and 2.46.0 Agents completed turns through the installed AtFlows 0.1b6 wheel; model and returned token usage were recorded. Agent spans were not tested. |
+| AtBots | Available for model proxy calls | Installed AtBots 0.2.0 with its required Pydantic AI 2.46.0 selected an `openai-compatible` provider, passed its `/v1/models` preflight, completed a task through the installed AtFlows 0.1b6 wheel, and produced a model trace with usage. AtBots task/tool events were not tested. This is distinct from the planned AtFlows AtBot assistant in feature 003. |
+| Claude Code | Available for OTLP/HTTP telemetry | Claude Code 2.1.236 completed a local turn with prompt/tool content logging disabled and exported 3 traces, 7 logs, and 12 metrics to an isolated installed AtFlows 0.1b6 wheel. Enhanced traces are beta. |
+
+Gemini CLI `0.46.0` was also run against an isolated source receiver with the official `local`/`http` telemetry environment settings and prompt logging disabled. It exited with code 41 because no Gemini authentication method was configured. No telemetry arrived. This test leaves compatibility unknown; it does not establish a receiver failure. The official telemetry settings were checked against https://github.com/google-gemini/gemini-cli/blob/main/docs/cli/telemetry.md on 2026-09-20.
+
+The framework smoke used an isolated OpenAI-compatible mock upstream and the clean `atflows==0.1b6` wheel. LangChain, Pydantic AI, and AtBots each made one successful model call, with 5 prompt and 2 completion tokens reported by the mock. AtBots also made a `/v1/models` availability check. The server now excludes GET/HEAD proxy checks from model traces so those checks do not create `unknown` model rows. A real Ollama model and hosted provider credentials were not part of this test. Claude Code used the local authenticated CLI and an isolated wheel receiver; no repository Claude configuration was created.
+
+## Product and security constraints
+
+- The dashboard/OTLP receiver and model proxy use separate ports; recipes derive addresses from the running server. Defaults are dashboard 1337 and proxy 8080. The Python CLI help now states 1337. A free-port fallback can change either actual address.
+- OpenClaw OTLP protobuf support shipped in feature 005 with AtFlows 0.1b6. The receiver is local and unauthenticated; the dashboard listener now binds to loopback by default. `DASHBOARD_HOST` can expose it and requires a trusted network or an authenticated front end.
+- `docs/integrations/` is the maintained documentation location. Legacy example commands must retain a visible validation warning until tested. An example or Docker Compose file alone does not prove integration support.
+- Helicone must be represented as a proxy path. The outbound export module emits JSON; its destination catalog must not imply protobuf or Helicone OTLP support.
+- The connection status panel has Codex configuration and last-event evidence plus OpenClaw trace/log/metric timestamps for the guide's default `openclaw-gateway` service name. Custom OpenClaw service names, provider proxy calls, and export destinations still lack per-connection evidence. Tasks T022–T024 and T047 cover this gap.
+- A Codex nickname is stored for the local profile, but per-instance identity, ambiguity handling, and trace filtering across models are still covered by T028–T031.
 
 ## External compatibility baseline
 
-- Official Codex configuration documentation places `otel` at user scope and lists distinct log, trace, and metric exporters. The default log and trace exporters are disabled. See https://learn.chatgpt.com/docs/config-file/config-advanced and https://developers.openai.com/es-419/docs/config-file/config-sample (checked 2026-09-20).
-- Recheck all external tool versions and configuration keys at implementation and release time. A recipe is supported only when it passes a versioned test against the installed AtFlows artifact.
+Official Codex configuration documentation places `otel` at user scope and lists distinct log, trace, and metric exporters. The default log and trace exporters are disabled. See https://learn.chatgpt.com/docs/config-file/config-advanced and https://developers.openai.com/es-419/docs/config-file/config-sample (checked 2026-09-20). OpenClaw's official diagnostics guide is https://docs.openclaw.ai/gateway/opentelemetry; the local test used matching OpenClaw and plugin versions 2026.9.1. Other external guides still require fresh versioned checks under T002 and T025.
 
 ## Decisions
 
-1. Show **telemetry**, **model proxy**, and **both** as explicit, verified routes, never as synonyms.
-2. Offer manual copy steps for every entry; enable apply only for allowlisted local files and known formats.
-3. Do not infer successful integration from endpoint health. Show first real event separately.
-4. Use a guarded, reversible local change flow. Never send config contents or credentials to a remote dashboard.
-5. Mark OpenClaw direct export pending until feature 005 is implemented and wheel-tested.
-
-## Read-only review findings incorporated
-
-- Detect the actual bound port and diagnose stale configured endpoints.
-- Require explicit OTLP encoding compatibility for generic exporters.
-- Use key-scoped undo after unrelated file changes; protect and expire backups.
-- Cover outbound observability destinations and provider paths in the catalog.
-- Give configuration path details for native Windows, WSL, macOS, Linux, and custom homes.
-- Add usability study tasks and a 100-configuration corpus to substantiate success criteria.
+1. Keep telemetry, model proxy, and outbound export distinct in the catalog and UI.
+2. Promote a route only when the stated external recipe passes an installed-artifact test. Keep unverified entries visible with precise blockers.
+3. Show server reachability, configuration status, and first real event separately. A health check is not a connected state.
+4. Keep configuration writes local, previewed, reversible, and limited to an allowlisted file. Never expose credentials in the browser.
+5. Revalidate upstream tool versions and configuration keys at each release. Record test date, tool version, and artifact version before changing a status label.

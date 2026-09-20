@@ -8,11 +8,13 @@
     "./traces": "./src/traces.js",
     "./logs": "./src/logs.js",
     "./metrics": "./src/metrics.js",
+    "./protobuf": "./src/protobuf.js",
     "./export": "./src/export.js"
   },
   "dependencies": {
     "@atflows/db": "workspace:*",
     "@atflows/pricing": "workspace:*",
-    "@atflows/shared": "workspace:*"
+    "@atflows/shared": "workspace:*",
+    "@opentelemetry/otlp-proto-exporter-base": "0.51.1"
   }
 }

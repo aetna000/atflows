@@ -12,7 +12,11 @@
   const ROW_HEIGHT_PX = 28
   const OVERSCAN = 8
 
-  const viewport = new TraceViewport(spans)
+  let viewport = $derived(new TraceViewport(spans))
+
+  $effect(() => {
+    viewport.select(spans[0]?.id ?? null)
+  })
 
   let scrollEl: HTMLDivElement
   let scrollTop = $state(0)

@@ -51,7 +51,7 @@ Your App → AtFlows Proxy → Helicone Gateway → OpenAI
 
 4. View analytics:
    - **Helicone Dashboard**: https://helicone.ai/dashboard
-   - **AtFlows Dashboard**: http://localhost:3000
+   - **AtFlows Dashboard**: http://localhost:1337
 
 ## Self-Hosted Helicone
 
@@ -129,5 +129,5 @@ const response = await client.chat.completions.create({
 })
 
 console.log(response.choices[0].message.content)
-// Logged in both AtFlows (localhost:3000) and Helicone (helicone.ai)
+// Logged in both AtFlows (localhost:1337) and Helicone (helicone.ai)
 ```

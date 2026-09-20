@@ -19,6 +19,7 @@ An operator can run AtFlows locally with the existing SQLite data or choose a pr
 - **FR-004**: Require authenticated tenant scope for all hosted writes and reads.
 - **FR-005**: Use versioned, repeatable migrations; document backup, restore, and SQLite export/import.
 - **FR-006**: Keep connection secrets out of logs, CLI output, and dashboard responses.
+- **FR-007**: Settings MUST show the active database engine and storage location. When PostgreSQL support ships, it MUST show which backend is active and provide an explicit, validated selection flow without exposing connection secrets.
 
 ## Success criteria
 

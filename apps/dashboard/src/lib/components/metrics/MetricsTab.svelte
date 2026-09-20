@@ -11,6 +11,9 @@
     clearFilters,
   } from '$lib/stores/metrics.svelte'
   import { tabState } from '$lib/stores/tabs.svelte'
+  import { metrics, metricsSummary } from '$lib/stores/metrics.svelte'
+  import { downloadJson } from '$lib/utils/export'
+  import { authAccount } from '$lib/stores/auth.svelte'
 
   function handleNameChange(e: Event) {
     metricFilters.name = (e.target as HTMLSelectElement).value
@@ -85,6 +88,7 @@
   >
     Clear
   </button>
+  {#if authAccount.value?.role === 'evidence_collector' || authAccount.value?.role === 'administrator'}<button type="button" class="btn-secondary" onclick={() => downloadJson('metrics', { filters: metricFilters, records: metrics, summary: metricsSummary })} disabled={metrics.length === 0 && metricsSummary.length === 0}>Export JSON</button>{/if}
 </div>
 
 <div class="metrics-layout">

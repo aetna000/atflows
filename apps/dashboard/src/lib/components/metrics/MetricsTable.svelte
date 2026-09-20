@@ -1,6 +1,6 @@
 <script lang="ts">
   import { metrics, type Metric } from '$lib/stores/metrics.svelte'
-  import { formatTime } from '$lib/utils/format'
+  import { formatTime, formatUtcIso } from '$lib/utils/format'
   import EmptyState from '$lib/components/shared/EmptyState.svelte'
 
   function formatValue(m: Metric): string {
@@ -31,7 +31,7 @@
     {:else}
       {#each metrics as metric (metric.id)}
         <tr class="trace-row">
-          <td>{formatTime(metric.timestamp)}</td>
+          <td><time datetime={formatUtcIso(metric.timestamp)} title={`UTC: ${formatUtcIso(metric.timestamp)}`}>{formatTime(metric.timestamp)}</time></td>
           <td>
             <span class="metric-badge metric-{metric.metric_type || 'gauge'}">
               {metric.metric_type || 'gauge'}

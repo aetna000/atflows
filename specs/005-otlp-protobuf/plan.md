@@ -1,6 +1,6 @@
 # Implementation Plan: Direct OTLP protobuf ingestion
 
-**Status**: Preliminary
+**Status**: Implemented in the source build; see `tasks.md` for the remaining legacy test harness work
 **Spec**: [spec.md](spec.md)
 
 ## Technical context

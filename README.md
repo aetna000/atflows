@@ -5,11 +5,11 @@
 AtFlows is a local observability tool for LLM applications. Point your SDK at it, see your costs, tokens, and latency in real-time.
 
 ```bash
-python -m pip install atflows==0.1b5
+python -m pip install atflows
 atflows init
 ```
 
-AtFlows `0.1b5` is a beta release. AtFlows uses Bun (>=1.1.0) to run its local server. Install Bun before starting the command. The first launch prepares the bundled runtime in `~/.cache/atflows` and needs package network access.
+AtFlows `0.1.0` is the first stable package release for local use. AtFlows uses Bun (>=1.1.0) to run its local server. Install Bun before starting the command. The first launch prepares the bundled runtime in `~/.cache/atflows` and needs package network access.
 
 `atflows init` creates a temporary Local Administrator password, starts the server, and opens the sign-in page with it filled in. Choose a permanent password to finish setup. If access is lost, run `atflows users recover-administrator`; it issues a new temporary password. OTLP ingestion and the model proxy remain available to configured clients.
 
@@ -17,12 +17,15 @@ Run `atflow` or `atflow status` to list live dashboard and proxy addresses. `atf
 
 Dashboard: [localhost:1337](http://localhost:1337) by default · Proxy: [localhost:8080](http://localhost:8080)
 
+Both listeners bind to `127.0.0.1` by default. `DASHBOARD_HOST` and `PROXY_HOST` can change their bind addresses for a trusted deployment; OTLP ingestion has no built-in authentication.
+
 ---
 
 ## Get started
 
 See the [setup and connection guide](docs/integrations/atflows-basics.md) and the [integration catalog](docs/integrations/README.md) for provider routes, telemetry, and tool-specific instructions.
-See the [0.1b5 release notes](docs/releases/v0.1b5.md) for this beta's changes and current limitations.
+Working recipes cover [Claude Code](docs/integrations/claude-code.md), [OpenClaw](docs/integrations/openclaw.md), [LangChain](docs/integrations/langchain.md), [Pydantic AI](docs/integrations/pydantic-ai.md), and [AtBots](docs/integrations/atbots.md). Choose a connection in the dashboard for your running addresses and guided steps.
+See the [0.1.0 release notes](https://github.com/aetna000/atflows/blob/main/docs/releases/v0.1.0.md) for changes and current limitations.
 
 ---
 
@@ -36,7 +39,7 @@ six packages under `packages/`). Bun is required.
 git clone https://github.com/aetna000/atflows.git
 cd atflows && bun install
 
-# Server (dashboard on :3000, proxy on :8080)
+# Server (dashboard on :1337, proxy on :8080)
 bun run dev
 
 # Dashboard dev server with HMR (separate terminal, proxies /api + /ws)

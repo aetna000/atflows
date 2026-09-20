@@ -104,9 +104,40 @@ export function codexSetupStatus(dashboardUrl: string) {
     const found = fs.existsSync(target)
     const contents = readConfig(target)
     const managed = contents.includes(START_MARKER)
-    const configured = contents.includes(`${dashboardUrl}/v1/logs`) &&
-        contents.includes(`${dashboardUrl}/v1/traces`)
-    return { config_path: target, config_found: found, configured, managed, endpoint_stale: managed && !configured }
+    let otel: Record<string, unknown> = {}
+    let config_error = false
+    let has_otel = false
+    try {
+        const parsed = contents.trim() ? Bun.TOML.parse(contents) as Record<string, unknown> : {}
+        has_otel = Object.hasOwn(parsed, 'otel')
+        if (parsed.otel && typeof parsed.otel === 'object' && !Array.isArray(parsed.otel)) {
+            otel = parsed.otel as Record<string, unknown>
+        }
+    } catch {
+        config_error = true
+    }
+    const destination = new URL(dashboardUrl)
+    const hasExporter = (key: string, signal: string) => {
+        const value = otel[key]
+        if (!value || typeof value !== 'object' || Array.isArray(value)) return false
+        const http = (value as Record<string, unknown>)['otlp-http']
+        if (!http || typeof http !== 'object' || Array.isArray(http)) return false
+        const settings = http as Record<string, unknown>
+        if (settings.protocol !== 'json' || typeof settings.endpoint !== 'string') return false
+        try {
+            const endpoint = new URL(settings.endpoint)
+            const loopback = (host: string) => ['127.0.0.1', 'localhost', '[::1]'].includes(host)
+            return endpoint.protocol === destination.protocol &&
+                endpoint.port === destination.port &&
+                (endpoint.hostname === destination.hostname || (loopback(endpoint.hostname) && loopback(destination.hostname))) &&
+                endpoint.pathname === `/v1/${signal}`
+        } catch {
+            return false
+        }
+    }
+    const configured = hasExporter('exporter', 'logs') && hasExporter('trace_exporter', 'traces')
+    const metrics_configured = hasExporter('metrics_exporter', 'metrics')
+    return { config_path: target, config_found: found, configured, metrics_configured, managed, has_otel, config_error, endpoint_stale: managed && (!configured || !metrics_configured) }
 }
 
 export function applyCodexSetup(previewId: string, dataDir: string) {

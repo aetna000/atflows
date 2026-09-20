@@ -31,7 +31,7 @@ Commands that reference local files must be run from `examples/observability/jae
 
 5. View traces:
    - **Jaeger UI**: http://localhost:16686
-   - **AtFlows Dashboard**: http://localhost:3000
+   - **AtFlows Dashboard**: http://localhost:1337
 
 ## Configuration
 

@@ -1,6 +1,8 @@
 <script lang="ts">
   import { selectedItem, selectedItemData, relatedLogs } from '$lib/stores/timeline.svelte'
-  import { formatTime } from '$lib/utils/format'
+  import JsonCode from '$lib/components/shared/JsonCode.svelte'
+  import { downloadJson } from '$lib/utils/export'
+  import { authAccount } from '$lib/stores/auth.svelte'
 </script>
 
 <div class="panel-right" data-testid="timeline-detail-panel">
@@ -19,14 +21,13 @@
           .join(' · ')}
       {/if}
     </span>
+    {#if selectedItem.value && (authAccount.value?.role === 'evidence_collector' || authAccount.value?.role === 'administrator')}
+      <button type="button" class="btn-secondary" onclick={() => downloadJson('timeline-detail', { item: selectedItem.value, detail: selectedItemData.value, related_logs: relatedLogs })}>Export JSON</button>
+    {/if}
   </div>
   <div class="detail-body">
     <div class="detail-section">
-      <pre data-testid="timeline-detail-data">{JSON.stringify(
-          selectedItemData.value || {},
-          null,
-          2,
-        )}</pre>
+      <JsonCode text={JSON.stringify(selectedItemData.value || {}, null, 2)} testId="timeline-detail-data" />
     </div>
     {#if relatedLogs.length > 0}
       <div class="detail-section">
@@ -34,7 +35,7 @@
         <div data-testid="related-logs">
           {#each relatedLogs as log}
             <div class="related-log-item">
-              <pre>{JSON.stringify(log, null, 2)}</pre>
+              <JsonCode text={JSON.stringify(log, null, 2)} />
             </div>
           {/each}
         </div>
@@ -51,9 +52,4 @@
     margin-bottom: 8px;
   }
 
-  .related-log-item pre {
-    font-size: 11px;
-    white-space: pre-wrap;
-    word-break: break-all;
-  }
 </style>

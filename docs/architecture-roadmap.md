@@ -1,16 +1,17 @@
 # AtFlows architecture pathway
 
-This is a requirements pathway, not a claim that the features below already ship. Release `0.1b5` has Python and npm launch commands, a Bun and SQLite runtime, proxy, OTLP ingest, and Svelte dashboard. It has no AtFlows MCP server or AtMem, AtBot, or Jev integration.
+This table distinguishes shipped work from requirements still on the roadmap. Release `0.1.0` has a Python CLI, a Bun and SQLite runtime, proxy, OTLP/HTTP JSON and protobuf ingest, a Svelte dashboard, and local dashboard user roles. It has no AtFlows MCP server or AtMem, AtBot, or Jev package integration.
 
 ## Delivery order
 
-| Phase | Spec | Shippable outcome |
+| Phase | Spec | Status and outcome |
 | --- | --- | --- |
-| 1 | [Configurable storage](../specs/001-production-storage/spec.md) | Local SQLite unchanged; opt-in PostgreSQL with migrations, tenant scope, and operational checks |
-| 2 | [Direct OTLP protobuf](../specs/005-otlp-protobuf/spec.md) | OpenClaw exports traces, logs, and metrics directly to AtFlows while JSON clients keep working |
-| 3 | [CLI and MCP](../specs/002-cli-mcp/spec.md) | Consistent `atflows` commands and an opt-in, read-only local MCP server |
-| 4 | [AtMem and AtFlows AtBot](../specs/003-atmem-atbot/spec.md) | Optional AtMem memory context and a separate AtFlows AtBot package for trace intelligence |
-| 5 | [Jev decisions](../specs/004-jev-decisions/spec.md) | Typed Jev decisions over explicit, authorized inputs with visible fallback |
+| 1 | [Configurable storage](../specs/001-production-storage/spec.md) | Planned: opt-in PostgreSQL with migrations, tenant scope, and operational checks |
+| 2 | [Direct OTLP protobuf](../specs/005-otlp-protobuf/spec.md) | Shipped locally: OpenClaw traces, logs, and metrics while JSON clients keep working |
+| 3 | [Guided connections](../specs/006-guided-integrations/spec.md) | Partial: Codex setup and tested manual recipes for OpenClaw, Claude Code, LangChain, Pydantic AI, and AtBots work; per-connection checks remain planned |
+| 4 | [CLI and MCP](../specs/002-cli-mcp/spec.md) | Planned: consistent `atflows` commands and an opt-in, read-only local MCP server |
+| 5 | [AtMem and AtFlows AtBot](../specs/003-atmem-atbot/spec.md) | Planned: optional AtMem memory context and a separate AtFlows AtBot package for trace intelligence |
+| 6 | [Jev decisions](../specs/004-jev-decisions/spec.md) | Planned: typed Jev decisions over explicit, authorized inputs with visible fallback |
 
 The tracks can be developed separately after shared contracts are fixed. Direct OTLP/protobuf works locally without hosted storage; exposing it in a hosted service depends on authentication and tenant gates from phase 1. AtMem/AtBot and Jev can also be tested against SQLite before hosted storage is complete.
 

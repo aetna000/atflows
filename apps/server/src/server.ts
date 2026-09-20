@@ -4,10 +4,11 @@ import path from 'path'
 import fs from 'fs'
 import os from 'os'
 import crypto from 'crypto'
+import { gunzipSync } from 'node:zlib'
 import getPort from 'get-port'
 import { getIntegrationCatalog } from '@atflows/integrations'
 import { previewCodexSetup, applyCodexSetup, undoCodexSetup, codexSetupStatus, getLatestCodexChangeId } from '@atflows/integrations/local-config'
-import { createLocalAuth } from './auth'
+import { createLocalAuth, requiredDashboardRole, allowsRole } from './auth'
 
 // CommonJS workspace packages
 const { calculateCost } = require('@atflows/pricing')
@@ -22,6 +23,7 @@ const {
 const { processOtlpTraces } = require('@atflows/otlp/traces')
 const { processOtlpLogs } = require('@atflows/otlp/logs')
 const { processOtlpMetrics } = require('@atflows/otlp/metrics')
+const { decodeExport, encodeResponse } = require('@atflows/otlp/protobuf')
 const { initExportHooks, EXPORT_ENABLED } = require('@atflows/otlp/export')
 
 // Passthrough handlers for native API formats
@@ -89,6 +91,8 @@ interface TokenUsage {
 
 const PROXY_PORT = await getPort({ port: Number(process.env.PROXY_PORT || 8080) })
 const DASHBOARD_PORT = await getPort({ port: Number(process.env.DASHBOARD_PORT || 1337) })
+const DASHBOARD_HOST = process.env.DASHBOARD_HOST || '127.0.0.1'
+const PROXY_HOST = process.env.PROXY_HOST || '127.0.0.1'
 const localAuth = createLocalAuth(db.DATA_DIR)
 let boundDashboardPort = DASHBOARD_PORT
 let boundProxyPort = PROXY_PORT
@@ -179,10 +183,23 @@ function logInteraction(
 }
 
 // WebSocket clients for real-time updates
-const wsClients = new Set<{ send: (data: string) => void; close: () => void }>()
+type DashboardSocket = Bun.ServerWebSocket<{ cookie: string }>
+const wsClients = new Set<DashboardSocket>()
+
+function pruneDashboardSockets() {
+    for (const client of wsClients) {
+        const request = new Request('http://localhost/api/stats', { headers: { Cookie: client.data.cookie } })
+        const account = localAuth.account(request)
+        if (!account || account.password_change_required || account.role === 'viewer') {
+            client.close()
+            wsClients.delete(client)
+        }
+    }
+}
 
 function broadcast(data: unknown) {
     const message = JSON.stringify(data)
+    pruneDashboardSockets()
     for (const client of wsClients) {
         try {
             client.send(message)
@@ -270,7 +287,8 @@ function getMimeType(filePath: string): string {
 
 // Dashboard server
 function startDashboardServer() {
-    return Bun.serve({
+    return Bun.serve<{ cookie: string }>({
+        hostname: DASHBOARD_HOST,
         port: DASHBOARD_PORT,
 
         websocket: {
@@ -292,24 +310,39 @@ function startDashboardServer() {
 
             // WebSocket upgrade
             if (pathname === '/ws') {
-                if (!localAuth.ready(req)) return new Response('Not authorized', { status: 401 })
-                if (server.upgrade(req)) return new Response(null)
+                const origin = req.headers.get('origin')
+                if (origin && origin !== url.origin) return new Response('Origin check failed', { status: 403 })
+                if (!localAuth.ready(req) || localAuth.role(req) === 'viewer') return new Response('Not authorized', { status: 401 })
+                if (server.upgrade(req, { data: { cookie: req.headers.get('cookie') || '' } })) return new Response(null)
                 return new Response('WebSocket upgrade failed', { status: 400 })
             }
 
             // API routes
             if (pathname.startsWith('/api/')) {
+                if (pathname === '/api/spans') {
+                    const origin = req.headers.get('origin')
+                    if (origin && origin !== url.origin) return new Response('Origin check failed', { status: 403 })
+                }
                 const peer = server.requestIP(req)?.address || ''
                 const authResponse = await localAuth.route(req, peer)
                 if (authResponse) {
-                    if (pathname === '/api/auth/logout' && authResponse.ok) {
-                        for (const client of wsClients) client.close()
-                        wsClients.clear()
+                    if (authResponse.ok && (
+                        pathname === '/api/auth/logout' || pathname === '/api/auth/change-password' ||
+                        pathname === '/api/users/update' || pathname === '/api/users/reset-password'
+                    )) {
+                        pruneDashboardSockets()
                     }
                     return authResponse
                 }
                 if (pathname !== '/api/health' && pathname !== '/api/spans' && !localAuth.ready(req)) {
                     return Response.json({ error: 'Sign in required' }, { status: 401 })
+                }
+                if (pathname !== '/api/health' && pathname !== '/api/spans') {
+                    const role = localAuth.role(req)
+                    const required = requiredDashboardRole(pathname, req.method)
+                    if (!allowsRole(role, required)) {
+                        return Response.json({ error: `${required === 'administrator' ? 'Administrator' : 'Investigator'} access required` }, { status: 403 })
+                    }
                 }
                 if (req.method !== 'GET' && pathname !== '/api/spans' && !localAuth.sameOrigin(req)) {
                     return Response.json({ error: 'Origin check failed' }, { status: 403 })
@@ -323,6 +356,8 @@ function startDashboardServer() {
                 pathname.startsWith('/v1/logs') ||
                 pathname.startsWith('/v1/metrics')
             ) {
+                const origin = req.headers.get('origin')
+                if (origin && origin !== url.origin) return new Response('Origin check failed', { status: 403 })
                 return handleOtlpRoute(req, url)
             }
 
@@ -524,6 +559,16 @@ async function handleApiRoute(req: Request, url: URL, peerAddress: string): Prom
             return Response.json({ status: 'ok', timestamp: Date.now(), instance_id: instanceId })
         }
 
+        if (pathname === '/api/settings/database' && method === 'GET') {
+            return Response.json({
+                engine: 'SQLite',
+                location: path.resolve(db.DB_PATH),
+                data_directory: path.resolve(db.DATA_DIR),
+                configured_by: process.env.DB_PATH ? 'DB_PATH' : process.env.DATA_DIR ? 'DATA_DIR' : 'default',
+                external_database_supported: false,
+            })
+        }
+
         if (pathname === '/api/integrations' && method === 'GET') {
             const host = isLoopback(peerAddress) ? '127.0.0.1' : url.hostname
             const dashboardUrl = `${url.protocol}//${host}:${boundDashboardPort}`
@@ -554,6 +599,10 @@ async function handleApiRoute(req: Request, url: URL, peerAddress: string): Prom
                 connection: db.getCodexConnection(),
                 latest_change_id: getLatestCodexChangeId(db.DATA_DIR),
             })
+        }
+
+        if (pathname === '/api/integrations/openclaw/status' && method === 'GET') {
+            return Response.json(db.getOpenClawActivity())
         }
 
         if (pathname === '/api/integrations/codex-cli/nickname' && method === 'POST') {
@@ -1103,56 +1152,81 @@ async function handleApiRoute(req: Request, url: URL, peerAddress: string): Prom
     }
 }
 
-// OTLP route handler - processes OpenTelemetry data
+function otlpLimit(name: string, fallback: number) {
+    const value = Number(process.env[name])
+    return Number.isSafeInteger(value) && value > 0 ? value : fallback
+}
+
+const OTLP_MAX_COMPRESSED_BYTES = otlpLimit('OTLP_MAX_COMPRESSED_BYTES', 4 * 1024 * 1024)
+const OTLP_MAX_DECODED_BYTES = otlpLimit('OTLP_MAX_DECODED_BYTES', 16 * 1024 * 1024)
+
+async function readOtlpBody(req: Request) {
+    const reader = req.body?.getReader()
+    if (!reader) return Buffer.alloc(0)
+    const chunks: Buffer[] = []
+    let length = 0
+    try {
+        while (true) {
+            const { done, value } = await reader.read()
+            if (done) break
+            length += value.byteLength
+            if (length > OTLP_MAX_COMPRESSED_BYTES) {
+                await reader.cancel()
+                throw new Error('body-too-large')
+            }
+            chunks.push(Buffer.from(value))
+        }
+    } finally {
+        reader.releaseLock()
+    }
+    return Buffer.concat(chunks, length)
+}
+
 async function handleOtlpRoute(req: Request, url: URL): Promise<Response> {
-    const pathname = url.pathname
+    const signal = url.pathname.slice('/v1/'.length)
+    if (!['traces', 'logs', 'metrics'].includes(signal)) return Response.json({ error: 'Not Found' }, { status: 404 })
+    if (req.method !== 'POST') return Response.json({ error: 'Method not allowed' }, { status: 405 })
+
+    const mediaType = (req.headers.get('content-type') || 'application/json').split(';', 1)[0].trim().toLowerCase()
+    const binary = mediaType === 'application/x-protobuf'
+    if (!binary && mediaType !== 'application/json') return Response.json({ error: 'Unsupported OTLP media type' }, { status: 415 })
+    const errorResponse = (status: number, message: string) => binary
+        ? new Response(encodeResponse(signal, 0, message), { status, headers: { 'Content-Type': 'application/x-protobuf' } })
+        : Response.json({ error: message }, { status })
+    const encoding = (req.headers.get('content-encoding') || 'identity').trim().toLowerCase()
+    if (encoding !== 'identity' && encoding !== 'gzip') return errorResponse(415, 'Unsupported content encoding')
+    const declaredSize = Number(req.headers.get('content-length') || 0)
+    if (declaredSize > OTLP_MAX_COMPRESSED_BYTES) return errorResponse(413, 'OTLP body too large')
+
+    let body: unknown
+    try {
+        let bytes = await readOtlpBody(req)
+        if (encoding === 'gzip') bytes = gunzipSync(bytes, { maxOutputLength: OTLP_MAX_DECODED_BYTES })
+        if (bytes.length > OTLP_MAX_DECODED_BYTES) return errorResponse(413, 'OTLP body too large')
+        body = binary ? decodeExport(signal, bytes) : JSON.parse(bytes.toString('utf8'))
+    } catch (error) {
+        const cause = error as NodeJS.ErrnoException
+        return errorResponse(cause.message === 'body-too-large' || cause.code === 'ERR_BUFFER_TOO_LARGE' ? 413 : 400, 'Invalid OTLP body')
+    }
 
     try {
-        const body = await req.json()
-
-        if (pathname === '/v1/traces' && req.method === 'POST') {
-            const results = processOtlpTraces(body)
-            return Response.json({
-                partialSuccess:
-                    results.rejected > 0
-                        ? {
-                              rejectedSpans: results.rejected,
-                              errorMessage: results.errors.slice(0, 5).join('; '),
-                          }
-                        : undefined,
+        const processors: Record<string, (value: unknown) => { rejected: number; errors: string[] }> = {
+            traces: processOtlpTraces,
+            logs: processOtlpLogs,
+            metrics: processOtlpMetrics,
+        }
+        const results = processors[signal](body)
+        if (binary) {
+            return new Response(encodeResponse(signal, results.rejected, results.rejected ? `${results.rejected} record(s) rejected` : ''), {
+                status: 200,
+                headers: { 'Content-Type': 'application/x-protobuf' },
             })
         }
-
-        if (pathname === '/v1/logs' && req.method === 'POST') {
-            const results = processOtlpLogs(body)
-            return Response.json({
-                partialSuccess:
-                    results.rejected > 0
-                        ? {
-                              rejectedLogRecords: results.rejected,
-                              errorMessage: results.errors.slice(0, 5).join('; '),
-                          }
-                        : undefined,
-            })
-        }
-
-        if (pathname === '/v1/metrics' && req.method === 'POST') {
-            const results = processOtlpMetrics(body)
-            return Response.json({
-                partialSuccess:
-                    results.rejected > 0
-                        ? {
-                              rejectedDataPoints: results.rejected,
-                              errorMessage: results.errors.slice(0, 5).join('; '),
-                          }
-                        : undefined,
-            })
-        }
-
-        return Response.json({ error: 'Not Found' }, { status: 404 })
-    } catch (error) {
-        log.error(`OTLP error: ${(error as Error).message}`)
-        return Response.json({ error: (error as Error).message }, { status: 500 })
+        const field = { traces: 'rejectedSpans', logs: 'rejectedLogRecords', metrics: 'rejectedDataPoints' }[signal]!
+        return Response.json({ partialSuccess: results.rejected ? { [field]: results.rejected, errorMessage: results.errors.slice(0, 5).join('; ') } : undefined })
+    } catch {
+        log.error(`OTLP ${signal} processing failed`)
+        return errorResponse(500, 'OTLP processing failed')
     }
 }
 
@@ -1256,23 +1330,25 @@ async function handleProxyRequest(req: Request, url: URL): Promise<Response> {
                 respHeaders[key] = value
             })
 
-            logInteraction(
-                traceId,
-                req.method,
-                url.pathname,
-                req.headers,
-                body,
-                {
-                    status: upstreamRes.status,
-                    headers: respHeaders,
-                    data: normalized.data,
-                    usage,
-                    model: normalized.model,
-                },
-                duration,
-                null,
-                provider.name,
-            )
+            if (req.method !== 'GET' && req.method !== 'HEAD') {
+                logInteraction(
+                    traceId,
+                    req.method,
+                    url.pathname,
+                    req.headers,
+                    body,
+                    {
+                        status: upstreamRes.status,
+                        headers: respHeaders,
+                        data: normalized.data,
+                        usage,
+                        model: normalized.model,
+                    },
+                    duration,
+                    null,
+                    provider.name,
+                )
+            }
 
             return Response.json(normalized.data, { status: upstreamRes.status })
         } else {
@@ -1682,6 +1758,7 @@ async function processPassthroughStreamForLogging(
 // Proxy server
 function startProxyServer() {
     return Bun.serve({
+        hostname: PROXY_HOST,
         port: PROXY_PORT,
 
         async fetch(req) {

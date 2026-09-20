@@ -5,6 +5,8 @@
   import { formatNumber, formatCost, formatLatency } from '$lib/utils/format'
   import { tabState } from '$lib/stores/tabs.svelte'
   import EmptyState from '$lib/components/shared/EmptyState.svelte'
+  import { downloadJson } from '$lib/utils/export'
+  import { authAccount } from '$lib/stores/auth.svelte'
 
   let clearingModel = $state<string | null | undefined>(undefined)
   let clearError = $state('')
@@ -37,6 +39,7 @@
   })
 </script>
 
+{#if authAccount.value?.role === 'evidence_collector' || authAccount.value?.role === 'administrator'}<div class="model-export"><button type="button" class="btn-secondary" onclick={() => downloadJson('models', { records: modelStats })} disabled={modelStats.length === 0}>Export JSON</button></div>{/if}
 <div class="model-grid" data-testid="model-stats">
   {#if clearError}<div class="model-clear-error" role="alert">{clearError}</div>{/if}
   {#if modelStats.length === 0}
@@ -48,13 +51,13 @@
       <div class="model-card">
         <div class="model-card-header">
           <h3 class="model-card-name">{model.model ?? 'Unassigned model'}</h3>
-          <button
+          {#if authAccount.value?.role === 'administrator'}<button
             class="model-clear-button"
             type="button"
             onclick={() => clearModel(model.model, model.request_count)}
             disabled={clearingModel !== undefined}
             title={`Clear traces for ${model.model ?? 'unassigned model'}`}
-          >{clearingModel === model.model ? 'Clearing…' : 'Clear'}</button>
+          >{clearingModel === model.model ? 'Clearing…' : 'Clear'}</button>{/if}
         </div>
         <div class="model-card-stats">
           <div class="model-stat">
@@ -94,6 +97,7 @@
 </div>
 
 <style>
+  .model-export { display: flex; justify-content: flex-end; padding: 8px; }
   .model-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));

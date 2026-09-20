@@ -2,11 +2,11 @@
 
 import os
 from pathlib import Path
+import secrets
 import shutil
 import signal
 import subprocess
 import sys
-from urllib.parse import urlencode
 import webbrowser
 
 from . import __version__
@@ -66,6 +66,9 @@ def main() -> int:
         if setup_password:
             setup_environment = os.environ.copy()
             setup_environment.pop("ATFLOWS_ADMIN_PASSWORD", None)
+            setup_token = secrets.token_urlsafe(32)
+            setup_environment["ATFLOWS_SETUP_TOKEN"] = setup_token
+            setup_environment["ATFLOWS_SETUP_PREFILL_PASSWORD"] = setup_password
             process = subprocess.Popen([bun, "run", "apps/server/src/server.ts"], cwd=cache,
                                        env=setup_environment, stdout=subprocess.PIPE,
                                        stderr=subprocess.STDOUT, text=True, bufsize=1)
@@ -75,7 +78,7 @@ def main() -> int:
                     print(line, end="", flush=True)
                     if line.startswith("[atflows] Dashboard:"):
                         address = line.split("Dashboard:", 1)[1].strip()
-                        url = f"{address}/?{urlencode({'username': 'administrator', 'password': setup_password})}"
+                        url = f"{address}/#setup={setup_token}"
                         webbrowser.open(url)
                 return process.wait()
             except KeyboardInterrupt:

@@ -152,6 +152,8 @@ function determineSpanType(attrs) {
     // Check span name patterns
     const spanName = attrs._spanName || ''
     if (spanName.includes('embed')) return 'embedding'
+    if (spanName === 'openclaw.model.call' || spanName === 'openclaw.model.usage') return 'llm'
+    if (spanName === 'openclaw.run' || spanName === 'openclaw.harness.run') return 'agent'
     if (spanName.includes('retriev') || spanName.includes('search')) return 'retrieval'
     if (spanName.includes('agent')) return 'agent'
     if (spanName.includes('tool') || spanName.includes('function')) return 'tool'
@@ -167,6 +169,7 @@ function extractModel(attrs) {
     return (
         attrs['gen_ai.request.model'] ||
         attrs['gen_ai.response.model'] ||
+        attrs['openclaw.model'] ||
         attrs['llm.model'] ||
         attrs['model'] ||
         null
@@ -180,16 +183,21 @@ function extractTokens(attrs) {
     return {
         prompt:
             attrs['gen_ai.usage.prompt_tokens'] ||
+            attrs['gen_ai.usage.input_tokens'] ||
+            attrs['openclaw.tokens.input'] ||
             attrs['llm.usage.prompt_tokens'] ||
             attrs['llm.token_count.prompt'] ||
             0,
         completion:
             attrs['gen_ai.usage.completion_tokens'] ||
+            attrs['gen_ai.usage.output_tokens'] ||
+            attrs['openclaw.tokens.output'] ||
             attrs['llm.usage.completion_tokens'] ||
             attrs['llm.token_count.completion'] ||
             0,
         total:
             attrs['gen_ai.usage.total_tokens'] ||
+            attrs['openclaw.tokens.total'] ||
             attrs['llm.usage.total_tokens'] ||
             attrs['llm.token_count.total'] ||
             0,
@@ -293,7 +301,7 @@ function transformSpan(span, resourceAttrs, scopeAttrs) {
     // (e.g. "my-agent") and was previously masquerading as the provider
     // whenever instrumentation forgot to emit gen_ai.system.
     const provider =
-        attrs['gen_ai.system'] || attrs['gen_ai.provider.name'] || attrs['llm.vendor'] || null
+        attrs['gen_ai.system'] || attrs['gen_ai.provider.name'] || attrs['openclaw.provider'] || attrs['llm.vendor'] || null
 
     // Extract service name
     const serviceName = resourceAttrs['service.name'] || scopeAttrs?.name || 'otel'

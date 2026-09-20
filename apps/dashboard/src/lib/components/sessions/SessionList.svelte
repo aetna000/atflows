@@ -1,5 +1,6 @@
 <script lang="ts">
   import { sessionsState, loadSession } from '$lib/stores/sessions.svelte'
+  import { formatLocalIso, formatUtcIso } from '$lib/utils/format'
 
   interface Props {
     onSelect: (id: string) => void
@@ -7,16 +8,6 @@
 
   let { onSelect }: Props = $props()
 
-  function fmtDate(ms: number): string {
-    return new Date(ms).toISOString().slice(0, 19).replace('T', ' ')
-  }
-  function fmtAgo(ms: number): string {
-    const diff = Date.now() - ms
-    if (diff < 60_000) return `${Math.floor(diff / 1000)}s ago`
-    if (diff < 3_600_000) return `${Math.floor(diff / 60_000)}m ago`
-    if (diff < 86_400_000) return `${Math.floor(diff / 3_600_000)}h ago`
-    return `${Math.floor(diff / 86_400_000)}d ago`
-  }
 </script>
 
 <table class="sessions-table">
@@ -43,7 +34,7 @@
         <td>{s.trace_count}</td>
         <td>{s.total_tokens.toLocaleString()}</td>
         <td>${s.total_cost.toFixed(4)}</td>
-        <td title={fmtDate(s.last_seen)}>{fmtAgo(s.last_seen)}</td>
+        <td><time datetime={formatUtcIso(s.last_seen)} title={`UTC: ${formatUtcIso(s.last_seen)}`}>{formatLocalIso(s.last_seen)}</time></td>
       </tr>
     {/each}
   </tbody>

@@ -4,6 +4,8 @@
   import { tabState } from '$lib/stores/tabs.svelte'
   import { formatNumber, formatCost } from '$lib/utils/format'
   import EmptyState from '$lib/components/shared/EmptyState.svelte'
+  import { downloadJson } from '$lib/utils/export'
+  import { authAccount } from '$lib/stores/auth.svelte'
 
   function handleDaysChange(e: Event) {
     analyticsDays.value = parseInt((e.target as HTMLSelectElement).value, 10)
@@ -54,6 +56,7 @@
   >
     Refresh
   </button>
+  {#if authAccount.value?.role === 'evidence_collector' || authAccount.value?.role === 'administrator'}<button type="button" class="btn-secondary" onclick={() => downloadJson('analytics', { days: analyticsDays.value, ...analytics })} disabled={analytics.daily.length === 0 && analytics.by_tool.length === 0 && analytics.by_model.length === 0}>Export JSON</button>{/if}
 </div>
 
 <div class="analytics-grid" data-testid="analytics-grid">

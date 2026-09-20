@@ -1,5 +1,5 @@
-# OpenClaw and AtFlows today
+# OpenClaw and AtFlows
 
-Integration setup and compatibility notes are maintained in the [AtFlows integration guide](../../docs/integrations/openclaw.md).
+The source build accepts direct OTLP/HTTP protobuf export from OpenClaw's official diagnostics plugin. Follow the tested [AtFlows integration guide](../../docs/integrations/openclaw.md) for plugin setup, local verification, and published wheel limits.
 
 The example source files remain in this directory.

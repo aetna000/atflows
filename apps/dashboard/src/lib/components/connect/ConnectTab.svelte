@@ -3,6 +3,7 @@
   import { api } from '$lib/api/client'
   import { marked } from 'marked'
   import DOMPurify from 'dompurify'
+  import { formatLocalIso, formatUtcIso } from '$lib/utils/format'
 
   interface Integration {
     id: string
@@ -18,6 +19,8 @@
     steps: string[]
     snippet?: string
     canAutoConfigure: boolean
+    validatedAt?: string
+    validatedWith?: string
   }
 
   let integrations = $state<Integration[]>([])
@@ -26,7 +29,9 @@
   let error = $state('')
   let copiedField = $state('')
   let localControlsError = $state('')
-  let codexStatus = $state<{ config_path: string; config_found: boolean; configured: boolean; managed: boolean; endpoint_stale: boolean; latest_change_id: string | null; last_event: { signal: string; timestamp: number } | null; connection: { nickname: string | null; models: string[] } } | null>(null)
+  let codexStatus = $state<{ config_path: string; config_found: boolean; configured: boolean; metrics_configured: boolean; managed: boolean; has_otel: boolean; config_error: boolean; endpoint_stale: boolean; latest_change_id: string | null; last_event: { signal: string; timestamp: number } | null; connection: { nickname: string | null; models: string[] } } | null>(null)
+  let openclawStatus = $state<{ service_name: string; traces: number | null; logs: number | null; metrics: number | null } | null>(null)
+  let openclawStatusError = $state('')
   let nickname = $state('')
   let preview = $state<{ preview_id: string; config_path: string; settings: string; changed: boolean } | null>(null)
   let changeId = $state('')
@@ -37,11 +42,13 @@
   let guideOverride = $state('')
   let dashboardUrl = $state('')
   let proxyUrl = $state('')
+  let metricsSetting = $derived(`metrics_exporter = { otlp-http = { endpoint = "${dashboardUrl}/v1/metrics", protocol = "json" } }`)
 
-  let filtered = $derived(integrations.filter((item) =>
-    `${item.name} ${item.category} ${item.mode}`.toLowerCase().includes(query.toLowerCase()),
-  ))
+  let filtered = $derived(integrations
+    .filter((item) => `${item.name} ${item.category} ${item.mode}`.toLowerCase().includes(query.toLowerCase()))
+    .sort((a, b) => Number(b.status === 'available') - Number(a.status === 'available')))
   let selected = $derived(integrations.find((item) => item.id === selectedId))
+  let workingCount = $derived(integrations.filter((item) => item.status === 'available').length)
 
   onMount(async () => {
     try {
@@ -54,6 +61,7 @@
       }
       dashboardUrl = response.dashboard_url
       proxyUrl = response.proxy_url
+      await refreshOpenClaw()
       try {
         const status = await api.get<NonNullable<typeof codexStatus>>('/api/integrations/codex-cli/status')
         codexStatus = status
@@ -102,10 +110,20 @@
 
   function chooseIntegration(id: string) {
     selectedId = id
+    if (id === 'openclaw') void refreshOpenClaw()
     guideOverride = ''
     const url = new URL(window.location.href)
     url.searchParams.delete('guide')
     history.replaceState(null, '', `${url.pathname}${url.search}${url.hash}`)
+  }
+
+  async function refreshOpenClaw() {
+    try {
+      openclawStatus = await api.get('/api/integrations/openclaw/status')
+      openclawStatusError = ''
+    } catch {
+      openclawStatusError = 'Could not read OpenClaw activity.'
+    }
   }
 
   async function copy(value: string, field: string) {
@@ -119,9 +137,7 @@
   }
 
   function statusLabel(status: Integration['status']) {
-    if (status === 'available') return 'Available'
-    if (status === 'needs-validation') return 'Needs validation'
-    return 'Planned'
+    return status === 'available' ? 'Working' : 'Available soon'
   }
 
   function routeLabel(mode: Integration['mode']) {
@@ -170,7 +186,7 @@
       }
       codexStatus = await api.get('/api/integrations/codex-cli/status')
       preview = null
-      setupMessage = 'Codex configured. Restart Codex, run a new session, then check Logs and Traces.'
+      setupMessage = 'Codex configured. Restart Codex, run a new session, then check Logs, Traces, and Metrics.'
     } catch (cause) {
       setupMessage = (cause as Error).message
     } finally {
@@ -212,7 +228,7 @@
 <section class="connect-layout" data-testid="connect-tab">
   <div class="connect-intro">
     <h2>Connect a tool</h2>
-    <p>Choose a tool. Follow the steps here.</p>
+    <p>{workingCount} working · {integrations.length - workingCount} available soon</p>
   </div>
 
   {#if error}<p class="connect-error" role="alert">{error}</p>{/if}
@@ -223,7 +239,7 @@
       <label for="connect-search">Find a tool or provider</label>
       <input id="connect-search" type="search" placeholder="Codex, OpenClaw, OpenAI…" bind:value={query} />
       {#each filtered as item (item.id)}
-        <button type="button" class:selected={selectedId === item.id} onclick={() => chooseIntegration(item.id)}>
+        <button type="button" class:selected={selectedId === item.id} class:soon={item.status !== 'available'} onclick={() => chooseIntegration(item.id)}>
           <span>{item.name}</span>
           <small>{item.category} · {statusLabel(item.status)}</small>
         </button>
@@ -231,7 +247,7 @@
       {#if integrations.length && !filtered.length}<p>No matching integrations.</p>{/if}
     </aside>
 
-    <div class="connect-detail">
+    <div class="connect-detail" class:soon={selected?.status !== 'available'}>
       {#if selected}
         <div class="connect-heading">
           <div>
@@ -240,6 +256,7 @@
           </div>
           <span class="connect-badge" class:pending={selected.status !== 'available'}>{statusLabel(selected.status)}</span>
         </div>
+        {#if selected.validatedAt}<p class="connect-validation">Checked {selected.validatedAt}: {selected.validatedWith}</p>{/if}
 
         <div class="connect-facts">
           <div><strong>Route</strong><span>{routeLabel(selected.mode)}</span></div>
@@ -247,10 +264,10 @@
         </div>
 
         {#if selected.status !== 'available'}
-          <p class="connect-notice" role="status">{selected.status === 'planned' ? 'Direct setup is not supported yet.' : 'Setup for this tool has not been verified with the current release.'} {selected.summary}</p>
+          <p class="connect-notice" role="status">This setup is awaiting a verified test with an installed AtFlows package. The guide shows current research; setup controls will appear when it works end to end.</p>
         {/if}
 
-        <ol class="connect-wizard">
+        {#if selected.status === 'available'}<ol class="connect-wizard">
           <li>
             <strong>Get ready</strong>
             <p>{selected.prerequisite}</p>
@@ -258,7 +275,7 @@
           {#each selected.steps as step}
             <li><strong>{step}</strong></li>
           {/each}
-        </ol>
+        </ol>{/if}
 
         {#if selected.id === 'codex-cli' && codexStatus}
           <div class="connect-path">
@@ -277,9 +294,16 @@
           </div>
           <div class="connect-path">
             <strong>Connection check</strong>
-            <span>{codexStatus.configured ? 'Configuration points to this AtFlows server.' : codexStatus.endpoint_stale ? 'Configuration points to an old AtFlows port. Preview an update.' : 'Codex is not configured for this AtFlows server.'}</span>
+            <span>{codexStatus.config_error ? 'The Codex configuration file is not valid TOML. Fix it before using this connection.' : codexStatus.configured ? 'Logs and traces point to this AtFlows server.' : codexStatus.endpoint_stale ? 'Configuration points to an old AtFlows port. Preview an update.' : 'Codex is not configured for this AtFlows server.'}</span>
+            {#if codexStatus.configured && !codexStatus.metrics_configured}
+              <span>Metrics are not connected. {codexStatus.managed ? 'Review Codex setup to add metrics, or add this line under [otel]:' : 'Add this line under [otel] in your Codex configuration file:'}</span>
+              <code>{metricsSetting}</code>
+              <button type="button" class="copy-metrics" onclick={() => copy(metricsSetting, 'metrics')}>{copiedField === 'metrics' ? 'Copied' : 'Copy metrics setting'}</button>
+            {:else if codexStatus.metrics_configured}
+              <span>Metrics exporter points to this AtFlows server.</span>
+            {/if}
             {#if codexStatus.last_event}
-              <span>Last Codex {codexStatus.last_event.signal} event: {new Date(codexStatus.last_event.timestamp).toLocaleString()}</span>
+              <span>Last Codex {codexStatus.last_event.signal} event: <time datetime={formatUtcIso(codexStatus.last_event.timestamp)} title={`UTC: ${formatUtcIso(codexStatus.last_event.timestamp)}`}>{formatLocalIso(codexStatus.last_event.timestamp)}</time></span>
             {:else}
               <span>AtFlows is ready; no Codex event has arrived yet. Restart Codex and run a new session.</span>
             {/if}
@@ -297,10 +321,12 @@
             {/if}
           </div>
           <div class="connect-setup">
-            {#if !codexStatus.configured || codexStatus.managed}
+            {#if codexStatus.managed || (!codexStatus.has_otel && !codexStatus.config_error)}
               <button type="button" onclick={previewCodex} disabled={setupBusy}>Review Codex setup</button>
+            {:else if codexStatus.has_otel && !codexStatus.managed}
+              <p>Codex already has telemetry settings. Add only the missing exporter lines under your existing <code>[otel]</code> section; AtFlows will not overwrite it.</p>
             {:else}
-              <p>Codex already points here through settings you manage. AtFlows will leave that configuration untouched.</p>
+              <p>Fix the Codex configuration file before using automatic setup.</p>
             {/if}
             {#if changeId}<button type="button" onclick={undoCodex} disabled={setupBusy}>Undo AtFlows setup</button>{/if}
             {#if setupMessage}<p role="status">{setupMessage}</p>{/if}
@@ -312,14 +338,28 @@
           </div>
         {/if}
 
-        {#if selected.endpoint}
+        {#if selected.id === 'openclaw'}
+          <div class="connect-path">
+            <strong>OpenClaw activity</strong>
+            <small>Matched to the default <code>openclaw-gateway</code> service name. A custom service name will need a separate check.</small>
+            {#if openclawStatusError}<span role="alert">{openclawStatusError}</span>{/if}
+            {#if openclawStatus}
+              {#each ['traces', 'logs', 'metrics'] as signal}
+                <span>{signal}: {openclawStatus[signal as 'traces' | 'logs' | 'metrics'] ? formatLocalIso(openclawStatus[signal as 'traces' | 'logs' | 'metrics']!) : 'No event seen yet'}</span>
+              {/each}
+            {/if}
+            <button type="button" class="copy-metrics" onclick={refreshOpenClaw}>Check again</button>
+          </div>
+        {/if}
+
+        {#if selected.status === 'available' && selected.endpoint && selected.id !== 'codex-cli'}
           <div class="connect-copy">
             <strong>{selected.mode === 'proxy' ? 'Set this base URL' : selected.id === 'codex-cli' ? 'Codex logs endpoint' : 'Set this endpoint'}</strong>
             <code>{selected.endpoint}</code>
             <button type="button" onclick={() => copy(selected.endpoint!, 'address')}>{copiedField === 'address' ? 'Copied' : 'Copy URL'}</button>
           </div>
         {/if}
-        {#if selected.snippet}
+        {#if selected.status === 'available' && selected.snippet}
           <div class="connect-copy">
             <strong>{settingsLabel(selected)}</strong>
             <pre>{selected.snippet}</pre>
@@ -327,7 +367,7 @@
           </div>
         {/if}
         <details class="connect-document" open={!!guideOverride}>
-          <summary>Detailed instructions for {guideOverride ? guideOverride.replaceAll('/', ' / ').replaceAll('-', ' ') : selected.name}</summary>
+          <summary>{selected.status === 'available' ? 'Detailed instructions' : 'Research and current blocker'} for {guideOverride ? guideOverride.replaceAll('/', ' / ').replaceAll('-', ' ') : selected.name}</summary>
           {#if guideError}<p role="alert">{guideError}</p>{/if}
           {#if guideHtml}<div class="guide-body">{@html guideHtml}</div>{:else if !guideError}<p>Loading instructions…</p>{/if}
         </details>
@@ -353,7 +393,13 @@
   .connect-list input { padding: 8px; background: var(--bg-primary); border: 1px solid var(--border-primary); color: var(--text-primary); margin-bottom: 8px; }
   .connect-list button { display: flex; flex-direction: column; text-align: left; gap: 3px; background: transparent; border: 1px solid transparent; color: var(--text-primary); padding: 9px; cursor: pointer; font: inherit; }
   .connect-list button:hover, .connect-list button.selected { border-color: var(--accent-primary); background: var(--bg-tertiary); }
+  .connect-list button.soon { color: var(--text-tertiary); opacity: .65; filter: grayscale(1); }
+  .connect-list button.soon:hover, .connect-list button.soon.selected { opacity: .9; border-color: var(--border-primary); background: var(--bg-tertiary); }
+  .connect-list button.soon small { color: inherit; }
   .connect-list small { color: var(--text-tertiary); }
+  .connect-detail.soon .connect-heading h3 { color: var(--text-tertiary); }
+  .connect-detail.soon .connect-facts { opacity: .7; }
+  .connect-detail.soon .connect-notice { border-left-color: var(--border-primary); }
   .connect-heading { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; margin-bottom: 18px; }
   .connect-badge { color: var(--accent-primary); font-size: 11px; border: 1px solid currentColor; padding: 4px 7px; white-space: nowrap; }
   .connect-badge.pending { color: var(--text-tertiary); }
@@ -364,6 +410,7 @@
   .connect-path, .connect-copy { display: flex; flex-direction: column; gap: 8px; padding: 12px; border: 1px solid var(--border-primary); margin-bottom: 12px; color: var(--text-primary); }
   .connect-path code, .connect-copy code, .connect-copy pre { display: block; overflow-x: auto; overflow-wrap: anywhere; background: var(--bg-primary); padding: 9px; color: var(--accent-primary); font-size: 12px; }
   .connect-path small { color: var(--text-tertiary); }
+  .copy-metrics { align-self: flex-start; padding: 6px 10px; background: var(--bg-tertiary); border: 1px solid var(--border-primary); color: var(--text-primary); cursor: pointer; }
   .connect-path details { color: var(--text-secondary); font-size: 12px; }
   .connect-path summary { cursor: pointer; }
   .connect-path li { margin-top: 6px; }

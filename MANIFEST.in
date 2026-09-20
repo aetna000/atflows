@@ -4,4 +4,6 @@ recursive-include packages *
 recursive-include public *
 recursive-include docs/integrations *
 prune node_modules
-recursive-exclude * node_modules
+prune apps/dashboard/node_modules
+prune apps/server/node_modules
+prune packages/otlp/node_modules

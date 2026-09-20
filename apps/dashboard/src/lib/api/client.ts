@@ -1,7 +1,17 @@
+let reloadingForSignIn = false
+
+function checkResponse(res: Response) {
+  if (res.status === 401 && !reloadingForSignIn) {
+    reloadingForSignIn = true
+    window.location.reload()
+  }
+  if (!res.ok) throw new Error(`API error: ${res.status}`)
+}
+
 export const api = {
   async get<T>(url: string): Promise<T> {
     const res = await fetch(url)
-    if (!res.ok) throw new Error(`API error: ${res.status}`)
+    checkResponse(res)
     return res.json()
   },
 
@@ -11,7 +21,7 @@ export const api = {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(body),
     })
-    if (!res.ok) throw new Error(`API error: ${res.status}`)
+    checkResponse(res)
     return res.json()
   },
 
@@ -20,7 +30,7 @@ export const api = {
       method: 'DELETE',
       headers: { 'X-AtFlows-Action': action },
     })
-    if (!res.ok) throw new Error(`API error: ${res.status}`)
+    checkResponse(res)
     return res.json()
   },
 }

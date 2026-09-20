@@ -1,5 +1,6 @@
 <script lang="ts">
   import { formatLatency } from '$lib/utils/format'
+  import JsonCode from '$lib/components/shared/JsonCode.svelte'
 
   interface Props {
     span: Record<string, unknown> | null
@@ -50,7 +51,7 @@
         </button>
       {/each}
     </nav>
-    <pre class="body">{asJson(span[activeTab])}</pre>
+    <div class="body"><JsonCode text={asJson(span[activeTab])} /></div>
   </div>
 {:else}
   <div class="detail-panel empty">Select a span to see its details.</div>
@@ -61,7 +62,8 @@
     display: flex;
     flex-direction: column;
     height: 100%;
-    border-left: 1px solid var(--row-border);
+    min-height: 0;
+    overflow: hidden;
     font-family: var(--font-sans);
   }
   .detail-panel.empty {
@@ -105,6 +107,7 @@
   }
   .body {
     flex: 1;
+    min-height: 0;
     overflow: auto;
     padding: 12px 16px;
     font-family: var(--font-mono);
