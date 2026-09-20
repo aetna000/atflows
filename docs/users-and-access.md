@@ -1,6 +1,6 @@
 # Users and access
 
-AtFlows 0.1.1 supports two explicit modes. Without `ATFLOWS_ATMEM_AUTH_URL`,
+AtFlows 0.1.2 supports two explicit modes. Without `ATFLOWS_ATMEM_AUTH_URL`,
 it keeps its standalone local accounts and the instructions below apply.
 To use AtMem as the **only account authority**, start an AtMem dashboard on
 `127.0.0.1` and then start AtFlows with its exact dashboard origin:
