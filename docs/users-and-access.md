@@ -1,5 +1,31 @@
 # Users and access
 
+AtFlows 0.1.1 supports two explicit modes. Without `ATFLOWS_ATMEM_AUTH_URL`,
+it keeps its standalone local accounts and the instructions below apply.
+To use AtMem as the **only account authority**, start an AtMem dashboard on
+`127.0.0.1` and then start AtFlows with its exact dashboard origin:
+
+```bash
+ATFLOWS_ATMEM_AUTH_URL=http://127.0.0.1:ATMEM_PORT atflows init
+```
+
+Replace `ATMEM_PORT` with the port shown by `atmem status`. Open both dashboards
+using `127.0.0.1`, not different hostnames. Sign in once at the AtMem dashboard;
+AtFlows reads that live AtMem session and applies its current role. Creating,
+disabling or changing a user in AtMem takes effect on the next AtFlows request.
+AtFlows does not create a second Administrator password or accept its local
+accounts in this mode. Its account page links to AtMem, and its local user
+management API is disabled. Signing out of AtFlows ends the AtMem session too.
+If AtMem is unavailable, protected AtFlows requests fail closed. Telemetry
+ingestion and the model proxy keep their existing local-listener behavior.
+
+Delegation is opt-in and only accepts a same-host numeric-loopback HTTP origin.
+Existing AtFlows accounts and password hashes remain on disk; no passwords or
+users are copied between products. Restart without the setting to return to
+standalone login. AtMem must be running for delegated dashboard access.
+
+## Standalone AtFlows accounts
+
 Sign in as `administrator`, then open **Settings → Users & access**. Create an account, choose its role, and give the one-time temporary password to that user. At first sign-in they must choose a new password.
 
 | Role | Dashboard access |

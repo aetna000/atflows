@@ -59,6 +59,7 @@ function httpRequest(method, path, body = null) {
             method,
             headers: {
                 'Content-Type': 'application/json',
+                ...(path.startsWith('/api/') ? { Cookie: process.env.ATFLOWS_TEST_COOKIE || '', Origin: ATFLOW_URL } : {}),
             },
         }
 
@@ -112,7 +113,7 @@ async function testWebSocketConnection() {
     console.log(`\n${c.cyan}Test 1: WebSocket Connection${c.reset}`)
 
     return new Promise((resolve) => {
-        const ws = new WebSocket(WS_URL)
+        const ws = new WebSocket(WS_URL, { headers: { Cookie: process.env.ATFLOWS_TEST_COOKIE || '', Origin: ATFLOW_URL } })
         let connected = false
         let helloReceived = false
 
@@ -234,8 +235,8 @@ async function testChildSpanBroadcast(ws, parentTraceId) {
 async function testMultipleClients() {
     console.log(`\n${c.cyan}Test 4: Multiple WebSocket Clients${c.reset}`)
 
-    const ws1 = new WebSocket(WS_URL)
-    const ws2 = new WebSocket(WS_URL)
+    const ws1 = new WebSocket(WS_URL, { headers: { Cookie: process.env.ATFLOWS_TEST_COOKIE || '', Origin: ATFLOW_URL } })
+    const ws2 = new WebSocket(WS_URL, { headers: { Cookie: process.env.ATFLOWS_TEST_COOKIE || '', Origin: ATFLOW_URL } })
 
     await new Promise((resolve) => {
         let ready = 0
@@ -283,7 +284,7 @@ async function testMultipleClients() {
 async function testReconnection() {
     console.log(`\n${c.cyan}Test 5: Reconnection${c.reset}`)
 
-    const ws = new WebSocket(WS_URL)
+    const ws = new WebSocket(WS_URL, { headers: { Cookie: process.env.ATFLOWS_TEST_COOKIE || '', Origin: ATFLOW_URL } })
 
     await new Promise((resolve, reject) => {
         ws.on('open', resolve)
@@ -296,7 +297,7 @@ async function testReconnection() {
     await new Promise((resolve) => setTimeout(resolve, 100))
 
     // Reconnect
-    const ws2 = new WebSocket(WS_URL)
+    const ws2 = new WebSocket(WS_URL, { headers: { Cookie: process.env.ATFLOWS_TEST_COOKIE || '', Origin: ATFLOW_URL } })
 
     let reconnected = false
     let helloReceived = false

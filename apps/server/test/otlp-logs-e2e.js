@@ -45,6 +45,7 @@ function httpRequest(method, path, body = null) {
             method,
             headers: {
                 'Content-Type': 'application/json',
+                ...(path.startsWith('/api/') ? { Cookie: process.env.ATFLOWS_TEST_COOKIE || '', Origin: ATFLOW_URL } : {}),
             },
         }
 

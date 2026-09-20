@@ -1,6 +1,6 @@
 <script lang="ts">
   import { onMount } from 'svelte'
-  import type { Account } from '$lib/stores/auth.svelte'
+  import { authMode, type Account } from '$lib/stores/auth.svelte'
   let { onsignedin, mustChange = false }: { onsignedin: (changeRequired: boolean, account: Account) => void; mustChange?: boolean } = $props()
   let username = $state('administrator')
   let password = $state('')
@@ -18,6 +18,10 @@
   }
 
   onMount(() => {
+    if (authMode.value === 'atmem') {
+      const interval = setInterval(() => { void refreshAtMemSession() }, 1500)
+      return () => clearInterval(interval)
+    }
     const setup = new URLSearchParams(window.location.hash.slice(1)).get('setup')
     if (!setup) return
     history.replaceState(null, '', `${window.location.pathname}${window.location.search}`)
@@ -33,6 +37,15 @@
       } catch (cause) { error = (cause as Error).message }
     })()
   })
+
+  async function refreshAtMemSession() {
+    try {
+      const response = await fetch('/api/auth/status', { cache: 'no-store' })
+      if (!response.ok) return
+      const status = await response.json()
+      if (status.authenticated && !status.password_change_required && status.account) onsignedin(false, status.account)
+    } catch { /* AtMem may be unavailable until the user starts it. */ }
+  }
 
   async function signIn(event: SubmitEvent) {
     event.preventDefault()
@@ -87,7 +100,15 @@
     </svg>
     <strong>AtMem.ai <span class="brand-separator">|</span> AtFlows</strong>
   </div>
-  <form class="login-card" onsubmit={mustChange ? changePassword : signIn}>
+  {#if authMode.value === 'atmem'}
+  <div class="login-card">
+    <span class="login-eyebrow">SHARED LOCAL ACCOUNT</span>
+    <h1>{mustChange ? 'Finish setup in AtMem' : 'Sign in with AtMem'}</h1>
+    <p>AtMem manages your password and access to both dashboards. Sign in there, then return here; this page will update automatically.</p>
+    <a class="atmem-link" href={authMode.signInUrl} target="_blank" rel="noopener noreferrer">Open AtMem sign-in</a>
+    <button type="button" onclick={() => void refreshAtMemSession()}>I've signed in</button>
+  </div>
+  {:else}<form class="login-card" onsubmit={mustChange ? changePassword : signIn}>
     <span class="login-eyebrow">LOCAL OBSERVABILITY</span>
     <h1>{mustChange ? 'Choose your password' : 'Sign in to AtFlows'}</h1>
     <p>{mustChange ? 'Replace the temporary password to finish setup.' : 'Use your AtFlows account to sign in.'}</p>
@@ -116,6 +137,7 @@
     <small>First install? Run <code>atflows init</code>. It opens this form with the temporary Administrator password filled in.</small>
     <small>Lost access? Run <code>atflows users recover-administrator</code> in the local terminal. It creates a new temporary password.</small>
   </form>
+  {/if}
 </div>
 
 <style>
@@ -135,5 +157,6 @@
   button { margin-top: 12px; padding: 12px; border: 1px solid var(--accent-primary); background: var(--accent-primary); color: var(--bg-primary); font: inherit; font-weight: 700; cursor: pointer; }
   button:disabled { opacity: .6; cursor: wait; }
   .login-error { color: var(--error); }
+  .atmem-link { color: var(--accent-primary); font-weight: 700; }
   small { margin-top: 14px; line-height: 1.5; }
 </style>

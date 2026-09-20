@@ -14,6 +14,8 @@
 const { spawn, fork } = require('child_process')
 const path = require('path')
 const http = require('http')
+const fs = require('fs')
+const os = require('os')
 
 const c = {
     reset: '\x1b[0m',
@@ -33,6 +35,20 @@ const MAX_WAIT_MS = 10000
 const POLL_INTERVAL_MS = 200
 
 let serverProcess = null
+const testDataDir = fs.mkdtempSync(path.join(os.tmpdir(), 'atflows-release-test-'))
+const testPassword = `atflows-test-${require('crypto').randomBytes(16).toString('hex')}`
+let testCookie = ''
+
+async function signIn() {
+    const response = await fetch('http://localhost:3000/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Origin: 'http://localhost:3000' },
+        body: JSON.stringify({ username: 'administrator', password: testPassword }),
+    })
+    if (!response.ok) throw new Error(`Test administrator sign-in failed: ${response.status}`)
+    testCookie = response.headers.get('set-cookie')?.split(';', 1)[0] || ''
+    if (!testCookie) throw new Error('Test administrator session cookie missing')
+}
 
 async function waitForServer() {
     const start = Date.now()
@@ -72,7 +88,7 @@ function startServer() {
         serverProcess = spawn('bun', ['run', SERVER_FILE], {
             cwd: ROOT_DIR,
             stdio: ['ignore', 'pipe', 'pipe'],
-            env: { ...process.env, NODE_ENV: 'test', DASHBOARD_PORT: '3000', PROXY_PORT: '8080' },
+            env: { ...process.env, NODE_ENV: 'test', DASHBOARD_PORT: '3000', PROXY_PORT: '8080', DATA_DIR: testDataDir, ATFLOWS_ADMIN_PASSWORD: testPassword, ATFLOWS_ATMEM_AUTH_URL: '' },
         })
 
         let started = false
@@ -149,7 +165,7 @@ async function runTest(testFile) {
         const testProcess = spawn('bun', ['run', testPath], {
             cwd: ROOT_DIR,
             stdio: 'inherit',
-            env: { ...process.env, ATFLOW_URL: 'http://localhost:3000' },
+            env: { ...process.env, ATFLOW_URL: 'http://localhost:3000', ATFLOWS_TEST_COOKIE: testCookie },
         })
 
         testProcess.on('exit', (code) => {
@@ -196,6 +212,7 @@ async function main() {
             throw new Error('Server did not become ready')
         }
         console.log(`${c.green}Server ready${c.reset}`)
+        await signIn()
 
         // Run each test
         for (const testFile of testFiles) {
@@ -209,6 +226,7 @@ async function main() {
         exitCode = 1
     } finally {
         await stopServer()
+        fs.rmSync(testDataDir, { recursive: true, force: true })
     }
 
     console.log('')

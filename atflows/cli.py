@@ -17,29 +17,36 @@ from .status import print_status
 def main() -> int:
     args = sys.argv[1:]
     invoked_as = Path(sys.argv[0]).stem
+    delegated = bool(os.environ.get("ATFLOWS_ATMEM_AUTH_URL"))
     if args == ["status"] or (not args and invoked_as == "atflow"):
         return print_status()
     if args == ["start"]:
         args = []
     if args[:2] == ["users", "recover-administrator"]:
+        if delegated:
+            print("AtMem manages accounts in delegated mode; recover access with 'atmem users'.", file=sys.stderr)
+            return 2
         password = set_temporary_password(create_only=False)
         print(f"New temporary Administrator password: {password}")
         print("Sign in at the AtFlows dashboard and choose a permanent password.")
         return 0
     setup_password = None
     if args == ["init"]:
-        setup_password = set_temporary_password(create_only=True)
-        if setup_password is None:
-            print("AtFlows is already initialized. Use 'atflows users recover-administrator' to reset access.")
-            return 0
-        print(f"Temporary Administrator password: {setup_password}")
-        print("Starting AtFlows and opening the sign-in page...")
+        if delegated:
+            print("AtMem manages sign-in and users; starting AtFlows without a second Administrator password.")
+        else:
+            setup_password = set_temporary_password(create_only=True)
+            if setup_password is None:
+                print("AtFlows is already initialized. Use 'atflows users recover-administrator' to reset access.")
+                return 0
+            print(f"Temporary Administrator password: {setup_password}")
+            print("Starting AtFlows and opening the sign-in page...")
         args = []
     if any(arg in ("-v", "--version") for arg in args):
         print(f"atflows {__version__}")
         return 0
     if any(arg in ("-h", "--help") for arg in args):
-        print("AtFlows local LLM observability\n\nUsage: atflow [status|start|init|users recover-administrator]\n       atflows [status|start|init|users recover-administrator|--help|--version]\n\natflow and atflow status show running servers. atflows starts a server.\nDashboard: http://localhost:1337 by default (check the startup URL)\nProxy: http://localhost:8080 by default\nRequires Bun >=1.1.0 to start.")
+        print("AtFlows local LLM observability\n\nUsage: atflow [status|start|init|users recover-administrator]\n       atflows [status|start|init|users recover-administrator|--help|--version]\n\natflow and atflow status show running servers. atflows starts a server.\nSet ATFLOWS_ATMEM_AUTH_URL to a running AtMem loopback dashboard origin for optional shared login and AtMem-owned users.\nDashboard: http://127.0.0.1:1337 by default (check the startup URL)\nProxy: http://127.0.0.1:8080 by default\nRequires Bun >=1.1.0 to start.")
         return 0
     bun = shutil.which("bun")
     if bun is None:

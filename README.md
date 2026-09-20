@@ -9,7 +9,7 @@ python -m pip install atflows
 atflows init
 ```
 
-AtFlows `0.1.0` is the first stable package release for local use. AtFlows uses Bun (>=1.1.0) to run its local server. Install Bun before starting the command. The first launch prepares the bundled runtime in `~/.cache/atflows` and needs package network access.
+AtFlows `0.1.1` adds optional AtMem-owned dashboard login. AtFlows uses Bun (>=1.1.0) to run its local server. Install Bun before starting the command. The first launch prepares the bundled runtime in `~/.cache/atflows` and needs package network access.
 
 `atflows init` creates a temporary Local Administrator password, starts the server, and opens the sign-in page with it filled in. Choose a permanent password to finish setup. If access is lost, run `atflows users recover-administrator`; it issues a new temporary password. OTLP ingestion and the model proxy remain available to configured clients.
 
@@ -17,7 +17,7 @@ Run `atflow` or `atflow status` to list live dashboard and proxy addresses. `atf
 
 Dashboard: [localhost:1337](http://localhost:1337) by default · Proxy: [localhost:8080](http://localhost:8080)
 
-Both listeners bind to `127.0.0.1` by default. `DASHBOARD_HOST` and `PROXY_HOST` can change their bind addresses for a trusted deployment; OTLP ingestion has no built-in authentication.
+Both listeners bind to `127.0.0.1` by default. `DASHBOARD_HOST` and `PROXY_HOST` can change their bind addresses for a trusted deployment; OTLP ingestion has no built-in authentication. To use one AtMem account for both dashboards, start the AtMem dashboard and run `ATFLOWS_ATMEM_AUTH_URL=http://127.0.0.1:ATMEM_PORT atflows init` with its actual port. Open both dashboards using `127.0.0.1`. AtMem then owns users, roles and passwords; AtFlows' local accounts are inactive until you restart without this setting. See [users and access](docs/users-and-access.md).
 
 ---
 
@@ -25,7 +25,7 @@ Both listeners bind to `127.0.0.1` by default. `DASHBOARD_HOST` and `PROXY_HOST`
 
 See the [setup and connection guide](docs/integrations/atflows-basics.md) and the [integration catalog](docs/integrations/README.md) for provider routes, telemetry, and tool-specific instructions.
 Working recipes cover [Claude Code](docs/integrations/claude-code.md), [OpenClaw](docs/integrations/openclaw.md), [LangChain](docs/integrations/langchain.md), [Pydantic AI](docs/integrations/pydantic-ai.md), and [AtBots](docs/integrations/atbots.md). Choose a connection in the dashboard for your running addresses and guided steps.
-See the [0.1.0 release notes](https://github.com/aetna000/atflows/blob/main/docs/releases/v0.1.0.md) for changes and current limitations.
+See the [0.1.1 release notes](https://github.com/aetna000/atflows/blob/main/docs/releases/v0.1.1.md) for changes and current limitations.
 
 ---
 
