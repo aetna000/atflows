@@ -2,7 +2,10 @@ import * as db from '@atflows/db'
 import { safeJson } from '@atflows/db'
 import path from 'path'
 import fs from 'fs'
+import os from 'os'
 import getPort from 'get-port'
+import { getIntegrationCatalog } from '@atflows/integrations'
+import { previewCodexSetup, applyCodexSetup, undoCodexSetup, codexSetupStatus, getLatestCodexChangeId } from '@atflows/integrations/local-config'
 
 // CommonJS workspace packages
 const { calculateCost } = require('@atflows/pricing')
@@ -84,6 +87,8 @@ interface TokenUsage {
 
 const PROXY_PORT = await getPort({ port: Number(process.env.PROXY_PORT || 8080) })
 const DASHBOARD_PORT = await getPort({ port: Number(process.env.DASHBOARD_PORT || 1337) })
+let boundDashboardPort = DASHBOARD_PORT
+let boundProxyPort = PROXY_PORT
 
 // Types
 interface TraceData {
@@ -227,6 +232,7 @@ db.setInsertMetricHook((metric: db.MetricSummary) => {
 // included in the npm package via root `files` and served unchanged in
 // production/dev. apps/server/src → repo root is three levels up.
 const publicDir = path.join(import.meta.dir, '..', '..', '..', 'public')
+const guidesDir = path.join(import.meta.dir, '..', '..', '..', 'docs', 'integrations')
 
 function serveStaticFile(filePath: string): Response {
     const fullPath = path.join(publicDir, filePath)
@@ -288,7 +294,7 @@ function startDashboardServer() {
 
             // API routes
             if (pathname.startsWith('/api/')) {
-                return handleApiRoute(req, url)
+                return handleApiRoute(req, url, server.requestIP(req)?.address || '')
             }
 
             // OTLP routes
@@ -301,6 +307,21 @@ function startDashboardServer() {
             }
 
             // Static files
+            if (pathname.startsWith('/guides/')) {
+                const slug = pathname.slice('/guides/'.length)
+                if (!/^[a-z0-9/-]+$/.test(slug)) return new Response('Not Found', { status: 404 })
+                const file = path.resolve(guidesDir, `${slug}.md`)
+                if (!file.startsWith(guidesDir + path.sep) || !fs.existsSync(file)) {
+                    return new Response('Not Found', { status: 404 })
+                }
+                return new Response(Bun.file(file), {
+                    headers: {
+                        'Content-Type': 'text/markdown; charset=utf-8',
+                        'Content-Security-Policy': "default-src 'none'",
+                    },
+                })
+            }
+
             if (pathname === '/' || pathname === '/index.html') {
                 return serveStaticFile('index.html')
             }
@@ -474,7 +495,11 @@ async function handleProviderHealthCheck(): Promise<Response> {
 }
 
 // API route handler
-async function handleApiRoute(req: Request, url: URL): Promise<Response> {
+function isLoopback(address: string) {
+    return address === '127.0.0.1' || address === '::1' || address === '::ffff:127.0.0.1'
+}
+
+async function handleApiRoute(req: Request, url: URL, peerAddress: string): Promise<Response> {
     const pathname = url.pathname
     const method = req.method
 
@@ -482,6 +507,69 @@ async function handleApiRoute(req: Request, url: URL): Promise<Response> {
         // Health check
         if (pathname === '/api/health' && method === 'GET') {
             return Response.json({ status: 'ok', timestamp: Date.now() })
+        }
+
+        if (pathname === '/api/integrations' && method === 'GET') {
+            const host = isLoopback(peerAddress) ? '127.0.0.1' : url.hostname
+            const dashboardUrl = `${url.protocol}//${host}:${boundDashboardPort}`
+            const proxyUrl = `${url.protocol}//${host}:${boundProxyPort}`
+            return Response.json({
+                integrations: getIntegrationCatalog(dashboardUrl, proxyUrl),
+                dashboard_url: dashboardUrl,
+                proxy_url: proxyUrl,
+            })
+        }
+
+        if (pathname === '/api/integrations/codex-cli/status' && method === 'GET') {
+            if (!isLoopback(peerAddress)) return Response.json({ error: 'Local access only' }, { status: 403 })
+            const dashboardUrl = `http://127.0.0.1:${boundDashboardPort}`
+            return Response.json({
+                ...codexSetupStatus(dashboardUrl),
+                last_event: db.getLastCodexActivity(),
+                connection: db.getCodexConnection(),
+                latest_change_id: getLatestCodexChangeId(db.DATA_DIR),
+            })
+        }
+
+        if (pathname === '/api/integrations/codex-cli/nickname' && method === 'POST') {
+            if (
+                !isLoopback(peerAddress) ||
+                req.headers.get('origin') !== url.origin ||
+                req.headers.get('x-atflows-action') !== 'configure-codex'
+            ) return Response.json({ error: 'Local access only' }, { status: 403 })
+            const body = (await req.json()) as Record<string, unknown>
+            if (typeof body.nickname !== 'string') return Response.json({ error: 'Invalid nickname' }, { status: 400 })
+            try {
+                return Response.json(db.setCodexConnectionNickname(body.nickname))
+            } catch (error) {
+                return Response.json({ error: (error as Error).message }, { status: 400 })
+            }
+        }
+
+        if (pathname.startsWith('/api/integrations/codex-cli/') && method === 'POST') {
+            if (
+                !isLoopback(peerAddress) ||
+                req.headers.get('origin') !== url.origin ||
+                req.headers.get('x-atflows-action') !== 'configure-codex'
+            ) {
+                return Response.json({ error: 'Local access only' }, { status: 403 })
+            }
+            const body = (await req.json()) as Record<string, unknown>
+            try {
+                if (pathname.endsWith('/preview')) {
+                    const dashboardUrl = `http://127.0.0.1:${boundDashboardPort}`
+                    return Response.json(previewCodexSetup(dashboardUrl))
+                }
+                if (pathname.endsWith('/apply') && typeof body.preview_id === 'string') {
+                    return Response.json(applyCodexSetup(body.preview_id, db.DATA_DIR))
+                }
+                if (pathname.endsWith('/undo') && typeof body.change_id === 'string') {
+                    return Response.json(undoCodexSetup(body.change_id, db.DATA_DIR))
+                }
+                return Response.json({ error: 'Invalid setup request' }, { status: 400 })
+            } catch (error) {
+                return Response.json({ error: (error as Error).message }, { status: 409 })
+            }
         }
 
         // Provider health check
@@ -1679,11 +1767,11 @@ function main() {
         log.info('OTLP export enabled')
     }
 
-    startDashboardServer()
-    startProxyServer()
+    boundDashboardPort = startDashboardServer().port || DASHBOARD_PORT
+    boundProxyPort = startProxyServer().port || PROXY_PORT
 
-    console.log(`[atflows] Dashboard: http://localhost:${DASHBOARD_PORT}`)
-    console.log(`[atflows] Proxy:     http://localhost:${PROXY_PORT}`)
+    console.log(`[atflows] Dashboard: http://localhost:${boundDashboardPort}`)
+    console.log(`[atflows] Proxy:     http://localhost:${boundProxyPort}`)
 }
 
 if (import.meta.main) {

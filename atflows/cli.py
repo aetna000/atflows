@@ -15,7 +15,7 @@ def main() -> int:
         print(f"atflows {__version__}")
         return 0
     if any(arg in ("-h", "--help") for arg in args):
-        print("AtFlows local LLM observability\n\nUsage: atflows [--help] [--version]\nDashboard: http://localhost:3000\nProxy: http://localhost:8080\nRequires Bun >=1.1.0.")
+        print("AtFlows local LLM observability\n\nUsage: atflows [--help] [--version]\nDashboard: http://localhost:1337 by default (check the startup URL)\nProxy: http://localhost:8080 by default\nRequires Bun >=1.1.0.")
         return 0
     bun = shutil.which("bun")
     if bun is None:

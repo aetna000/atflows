@@ -2,7 +2,7 @@
 
 ## Quick Start
 
-The current server defaults to dashboard port 1337 unless `DASHBOARD_PORT` is set. The Python CLI help text currently says 3000, but it does not set that port; use the URL printed when the server starts. Check the startup output for the actual address. The model proxy defaults to port 8080.
+The current server defaults to dashboard port 1337 unless `DASHBOARD_PORT` is set. Check the startup output for the actual address; the server may select a free port if the requested one is busy. The model proxy defaults to port 8080.
 
 
 ### 1. Start AtFlows

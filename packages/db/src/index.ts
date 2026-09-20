@@ -100,6 +100,15 @@ function initSchema() {
         );
     `)
 
+    db.exec(`
+        CREATE TABLE IF NOT EXISTS connections (
+            profile_id TEXT PRIMARY KEY,
+            nickname TEXT NOT NULL,
+            created_at INTEGER NOT NULL,
+            updated_at INTEGER NOT NULL
+        );
+    `)
+
     // Logs table for OTLP logs ingestion (v0.2.1+)
     db.exec(`
         CREATE TABLE IF NOT EXISTS logs (
@@ -620,6 +629,40 @@ export function getStats() {
 export function getTraceCount() {
     const result = db.query('SELECT COUNT(*) as cnt FROM traces').get() as { cnt: number }
     return result.cnt
+}
+
+export function getLastCodexActivity() {
+    const traces = db.query("SELECT MAX(timestamp) AS timestamp FROM traces WHERE service_name IN ('codex_cli_rs', 'codex-cli')").get() as { timestamp: number | null }
+    const logs = db.query("SELECT MAX(timestamp) AS timestamp FROM logs WHERE service_name IN ('codex_cli_rs', 'codex-cli')").get() as { timestamp: number | null }
+    if (!traces.timestamp && !logs.timestamp) return null
+    return traces.timestamp && (!logs.timestamp || traces.timestamp > logs.timestamp)
+        ? { signal: 'traces', timestamp: traces.timestamp }
+        : { signal: 'logs', timestamp: logs.timestamp }
+}
+
+export function getCodexConnection() {
+    const row = db.query("SELECT nickname, created_at, updated_at FROM connections WHERE profile_id = 'codex-cli'").get() as {
+        nickname: string
+        created_at: number
+        updated_at: number
+    } | null
+    const models = db.query("SELECT DISTINCT model FROM traces WHERE service_name IN ('codex_cli_rs', 'codex-cli') AND model IS NOT NULL ORDER BY model").all() as { model: string }[]
+    return { nickname: row?.nickname || null, models: models.map((item) => item.model) }
+}
+
+export function setCodexConnectionNickname(nickname: string) {
+    const name = nickname.trim()
+    if (name.length > 80) throw new Error('Connection name must be 80 characters or fewer')
+    if (!name) {
+        db.query("DELETE FROM connections WHERE profile_id = 'codex-cli'").run()
+        return getCodexConnection()
+    }
+    const now = Date.now()
+    db.query(`INSERT INTO connections (profile_id, nickname, created_at, updated_at)
+        VALUES ('codex-cli', $nickname, $now, $now)
+        ON CONFLICT(profile_id) DO UPDATE SET nickname = excluded.nickname, updated_at = excluded.updated_at`)
+        .run({ $nickname: name, $now: now })
+    return getCodexConnection()
 }
 
 export function getDataCounts() {

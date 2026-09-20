@@ -2,6 +2,7 @@
   import { tabState, setTab, validTabs, type Tab } from '$lib/stores/tabs.svelte'
 
   const tabLabels: Record<Tab, string> = {
+    connect: 'Connect',
     timeline: 'Timeline',
     traces: 'Traces',
     sessions: 'Sessions',

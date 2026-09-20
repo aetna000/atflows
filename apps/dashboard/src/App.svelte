@@ -9,6 +9,7 @@
   import ModelsTab from '$lib/components/models/ModelsTab.svelte'
   import AnalyticsTab from '$lib/components/analytics/AnalyticsTab.svelte'
   import SessionsTab from '$lib/components/sessions/SessionsTab.svelte'
+  import ConnectTab from '$lib/components/connect/ConnectTab.svelte'
   import { tabState, initTabHashSync, setTab, validTabs } from '$lib/stores/tabs.svelte'
   import { initTheme, toggleTheme } from '$lib/stores/theme.svelte'
   import { initWebSocket } from '$lib/stores/websocket.svelte'
@@ -50,8 +51,8 @@
 
       if (isInputFocused) return
 
-      // Tab shortcuts: 1-6 for tabs
-      if (e.key >= '1' && e.key <= '6' && !e.ctrlKey && !e.metaKey && !e.altKey) {
+      // Tab shortcuts
+      if (e.key >= '1' && e.key <= '8' && !e.ctrlKey && !e.metaKey && !e.altKey) {
         const tabIndex = parseInt(e.key) - 1
         if (tabIndex < validTabs.length) {
           e.preventDefault()
@@ -132,6 +133,14 @@
 
   <main>
     <Tabs />
+
+    <div
+      id="connectTab"
+      class="tab-content {tabState.current === 'connect' ? 'active' : ''}"
+      data-testid="connect-tab-panel"
+    >
+      <ConnectTab />
+    </div>
 
     <div
       id="timelineTab"

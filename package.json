@@ -41,6 +41,7 @@
     "packages/*/package.json",
     "packages/pricing/pricing.fallback.json",
     "public/",
+    "docs/integrations/",
     "LICENSE",
     "LICENSE-MIT-LLMFLOW",
     "NOTICE"

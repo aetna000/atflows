@@ -9,7 +9,7 @@
     "dev": "bun run --hot src/server.ts",
     "demo": "bun run test/demo.js",
     "demo:many": "bun run test/demo.js --count=20",
-    "test": "bun run test/run-tests.js",
+    "test": "bun run test/run-tests.js && bun test test/integrations-setup.test.ts",
     "test:otlp": "bun run test/run-tests.js otlp-e2e.js",
     "test:ws": "bun run test/run-tests.js websocket-e2e.js",
     "test:logs": "bun run test/run-tests.js otlp-logs-e2e.js",
@@ -20,6 +20,7 @@
   },
   "dependencies": {
     "@atflows/db": "workspace:*",
+    "@atflows/integrations": "workspace:*",
     "@atflows/otlp": "workspace:*",
     "@atflows/pricing": "workspace:*",
     "@atflows/providers": "workspace:*",

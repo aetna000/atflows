@@ -2,5 +2,6 @@ include README.md LICENSE LICENSE-MIT-LLMFLOW NOTICE package.json bun.lock
 recursive-include apps *
 recursive-include packages *
 recursive-include public *
+recursive-include docs/integrations *
 prune node_modules
 recursive-exclude * node_modules

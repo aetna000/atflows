@@ -14,7 +14,7 @@ class BuildWithRuntime(build_py):
         target.mkdir(parents=True, exist_ok=True)
         for name in ("package.json", "bun.lock"):
             shutil.copy2(ROOT / name, target / name)
-        for name in ("apps", "packages", "public"):
+        for name in ("apps", "packages", "public", "docs/integrations"):
             shutil.copytree(ROOT / name, target / name, dirs_exist_ok=True,
                             ignore=shutil.ignore_patterns("node_modules", "test", "*.test.*", "*.spec.*", "dist", ".svelte-kit"))
 

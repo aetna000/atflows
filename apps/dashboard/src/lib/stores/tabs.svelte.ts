@@ -1,4 +1,5 @@
 export const validTabs = [
+  'connect',
   'timeline',
   'traces',
   'sessions',
