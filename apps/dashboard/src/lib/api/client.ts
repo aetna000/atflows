@@ -14,4 +14,13 @@ export const api = {
     if (!res.ok) throw new Error(`API error: ${res.status}`)
     return res.json()
   },
+
+  async delete<T>(url: string): Promise<T> {
+    const res = await fetch(url, {
+      method: 'DELETE',
+      headers: { 'X-AtFlows-Action': 'clear-demo-data' },
+    })
+    if (!res.ok) throw new Error(`API error: ${res.status}`)
+    return res.json()
+  },
 }

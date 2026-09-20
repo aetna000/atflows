@@ -1,8 +1,40 @@
 <script lang="ts">
+  import { onMount } from 'svelte'
+  import { api } from '$lib/api/client'
   import { stats } from '$lib/stores/stats.svelte'
   import { connectionStatus } from '$lib/stores/websocket.svelte'
   import { toggleTheme } from '$lib/stores/theme.svelte'
   import { formatNumber, formatCost, formatLatency } from '$lib/utils/format'
+
+  let demoCount = $state(0)
+  let clearingDemo = $state(false)
+  let demoError = $state('')
+
+  onMount(async () => {
+    try {
+      const result = await api.get<{ traces: number }>('/api/demo-data')
+      demoCount = result.traces
+    } catch {
+      demoError = 'Could not check demo data'
+    }
+  })
+
+  async function eraseDemoData() {
+    if (!demoCount || clearingDemo) return
+    const confirmed = window.confirm(
+      `Erase ${demoCount} demo trace${demoCount === 1 ? '' : 's'}? Your Codex and other activity will remain.`,
+    )
+    if (!confirmed) return
+    clearingDemo = true
+    demoError = ''
+    try {
+      await api.delete<{ deleted_traces: number }>('/api/demo-data')
+      window.location.reload()
+    } catch {
+      demoError = 'Could not erase demo data'
+      clearingDemo = false
+    }
+  }
 </script>
 
 <header data-testid="header">
@@ -41,6 +73,14 @@
         rel="noopener noreferrer"
         title="Install AtFlows from PyPI"
       >pip install atflows</a>
+      <button
+        class="clear-demo-button"
+        data-testid="clear-demo-data"
+        onclick={eraseDemoData}
+        disabled={demoCount === 0 || clearingDemo}
+        title={demoCount ? `Erase ${demoCount} demo traces` : 'No demo traces to erase'}
+      >{clearingDemo ? 'Erasing…' : 'Erase demo data'}</button>
+      {#if demoError}<span class="demo-error" role="alert">{demoError}</span>{/if}
       <button
         class="theme-toggle"
         data-testid="theme-toggle"

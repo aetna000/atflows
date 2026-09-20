@@ -167,6 +167,30 @@ h1.logo {
   text-decoration: underline;
 }
 
+.clear-demo-button {
+  padding: 5px 9px;
+  border: 1px solid var(--border-primary);
+  background: var(--bg-secondary);
+  color: var(--text-secondary);
+  font: inherit;
+  cursor: pointer;
+}
+
+.clear-demo-button:hover:not(:disabled) {
+  border-color: var(--error);
+  color: var(--error);
+}
+
+.clear-demo-button:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+
+.demo-error {
+  color: var(--error);
+  font-size: 12px;
+}
+
 /* Theme toggle */
 .theme-toggle {
   background: none;
