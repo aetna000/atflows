@@ -31,6 +31,7 @@ test('AtMem delegation uses live account roles and revocation without a second u
         expect(forwardedCookie).toBe('atmem_session=fixture_session_token_123456789')
         const status = await auth.route(request('/api/auth/status'))
         expect((await status?.json()).mode).toBe('atmem')
+        expect((await (await auth.route(request('/api/auth/status')))?.json()).sign_in_url).toBe(origin)
         expect((await auth.route(request('/api/users')))?.status).toBe(403)
         expect((await auth.route(request('/api/auth/login', 'POST')))?.status).toBe(409)
         enabled = false
@@ -50,4 +51,7 @@ test('delegation refuses remote or differently hosted AtMem authorities', () => 
     expect(() => createAtMemAuth('https://example.com', '127.0.0.1')).toThrow()
     expect(() => createAtMemAuth('http://127.0.0.1:57329', 'localhost')).toThrow()
     expect(() => createAtMemAuth('http://127.0.0.1:57329/path', '127.0.0.1')).toThrow()
+    expect(() => createAtMemAuth('http://user:pass@127.0.0.1:57329', '127.0.0.1')).toThrow()
+    expect(() => createAtMemAuth('http://127.0.0.1:57329/?next=elsewhere', '127.0.0.1')).toThrow()
+    expect(() => createAtMemAuth('http://example.com:57329', '127.0.0.1')).toThrow()
 })
