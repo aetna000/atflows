@@ -11,7 +11,6 @@
     summary: string
     captures: string
     prerequisite: string
-    guide: string
     endpoint?: string
     steps: string[]
     snippet?: string
@@ -46,7 +45,7 @@
         nickname = status.connection.nickname || ''
         changeId = status.latest_change_id || ''
       } catch {
-        localControlsError = 'Automatic Codex setup is available only when this dashboard is opened on the computer running AtFlows. Use the guide for manual setup.'
+        localControlsError = 'Automatic Codex setup needs a local dashboard. Copy the settings below into your user Codex config file.'
       }
     } catch {
       error = 'Could not load integration guidance. Check that AtFlows is running.'
@@ -67,6 +66,17 @@
     if (status === 'available') return 'Available'
     if (status === 'needs-validation') return 'Needs validation'
     return 'Planned'
+  }
+
+  function routeLabel(mode: Integration['mode']) {
+    if (mode === 'telemetry') return 'Send telemetry'
+    if (mode === 'proxy') return 'Route model calls'
+    if (mode === 'export') return 'Export records'
+    return 'Instrument your app'
+  }
+
+  function settingsLabel(item: Integration) {
+    return item.id === 'codex-cli' ? 'Codex settings' : item.id === 'openai-sdk' ? 'Python client setup' : 'Configuration'
   }
 
   async function setupPost<T>(action: 'preview' | 'apply' | 'undo' | 'nickname', body: unknown): Promise<T> {
@@ -146,7 +156,7 @@
 <section class="connect-layout" data-testid="connect-tab">
   <div class="connect-intro">
     <h2>Connect a tool</h2>
-    <p>Choose your tool. AtFlows shows the recommended route and the exact address for this running server.</p>
+    <p>Choose a tool. Follow the steps here.</p>
   </div>
 
   {#if error}<p class="connect-error" role="alert">{error}</p>{/if}
@@ -176,10 +186,23 @@
         </div>
 
         <div class="connect-facts">
-          <div><strong>Recommended route</strong><span>{selected.mode === 'telemetry' ? 'Telemetry export' : selected.mode === 'proxy' ? 'Model proxy' : selected.mode === 'export' ? 'Outbound export' : 'SDK spans'}</span></div>
-          <div><strong>What appears</strong><span>{selected.captures}</span></div>
-          <div><strong>Before you start</strong><span>{selected.prerequisite}</span></div>
+          <div><strong>Route</strong><span>{routeLabel(selected.mode)}</span></div>
+          <div><strong>Captured</strong><span>{selected.captures}</span></div>
         </div>
+
+        {#if selected.status !== 'available'}
+          <p class="connect-notice" role="status">{selected.status === 'planned' ? 'Direct setup is not supported yet.' : 'Setup for this tool has not been verified with the current release.'} {selected.summary}</p>
+        {/if}
+
+        <ol class="connect-wizard">
+          <li>
+            <strong>Get ready</strong>
+            <p>{selected.prerequisite}</p>
+          </li>
+          {#each selected.steps as step}
+            <li><strong>{step}</strong></li>
+          {/each}
+        </ol>
 
         {#if selected.id === 'codex-cli' && codexStatus}
           <div class="connect-path">
@@ -233,26 +256,20 @@
           </div>
         {/if}
 
-        <ol class="connect-steps">
-          {#each selected.steps as step}<li>{step}</li>{/each}
-        </ol>
-
         {#if selected.endpoint}
           <div class="connect-copy">
-            <strong>Address</strong>
+            <strong>{selected.mode === 'proxy' ? 'Set this base URL' : selected.id === 'codex-cli' ? 'Codex logs endpoint' : 'Set this endpoint'}</strong>
             <code>{selected.endpoint}</code>
-            <button type="button" onclick={() => copy(selected.endpoint!, 'address')}>{copiedField === 'address' ? 'Copied' : 'Copy address'}</button>
+            <button type="button" onclick={() => copy(selected.endpoint!, 'address')}>{copiedField === 'address' ? 'Copied' : 'Copy URL'}</button>
           </div>
         {/if}
         {#if selected.snippet}
           <div class="connect-copy">
-            <strong>Configuration example</strong>
+            <strong>{settingsLabel(selected)}</strong>
             <pre>{selected.snippet}</pre>
-            <button type="button" onclick={() => copy(selected.snippet!, 'example')}>{copiedField === 'example' ? 'Copied' : 'Copy example'}</button>
+            <button type="button" onclick={() => copy(selected.snippet!, 'settings')}>{copiedField === 'settings' ? 'Copied' : 'Copy settings'}</button>
           </div>
         {/if}
-
-        <a class="connect-guide" href={selected.guide} target="_blank" rel="noopener noreferrer">Read the full setup guide ↗</a>
       {:else}
         <p>Loading integrations…</p>
       {/if}
@@ -279,7 +296,7 @@
   .connect-heading { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; margin-bottom: 18px; }
   .connect-badge { color: var(--accent-primary); font-size: 11px; border: 1px solid currentColor; padding: 4px 7px; white-space: nowrap; }
   .connect-badge.pending { color: var(--text-tertiary); }
-  .connect-facts { display: grid; gap: 12px; margin-bottom: 18px; }
+  .connect-facts { display: grid; gap: 8px; margin-bottom: 14px; }
   .connect-facts div { display: grid; grid-template-columns: 145px 1fr; gap: 10px; }
   .connect-facts strong { color: var(--text-tertiary); font-size: 12px; }
   .connect-facts span { color: var(--text-primary); font-size: 13px; }
@@ -299,7 +316,11 @@
   .connect-setup pre { overflow-x: auto; background: var(--bg-primary); padding: 10px; color: var(--accent-primary); font-size: 12px; }
   .connect-copy button { align-self: flex-start; padding: 6px 10px; background: var(--bg-tertiary); border: 1px solid var(--border-primary); color: var(--text-primary); cursor: pointer; }
   .connect-copy button:hover { border-color: var(--accent-primary); }
-  .connect-steps { color: var(--text-primary); line-height: 1.7; padding-left: 22px; margin: 0 0 16px; }
-  .connect-guide { color: var(--accent-primary); }
+  .connect-notice { border-left: 3px solid var(--accent-primary); background: var(--bg-tertiary); padding: 10px 12px; margin-bottom: 14px; }
+  .connect-wizard { display: grid; gap: 8px; padding: 0; margin: 0 0 16px; list-style: none; counter-reset: setup-step; }
+  .connect-wizard li { counter-increment: setup-step; position: relative; padding: 10px 12px 10px 43px; border: 1px solid var(--border-primary); color: var(--text-primary); min-height: 37px; }
+  .connect-wizard li::before { content: counter(setup-step); position: absolute; top: 9px; left: 11px; display: grid; place-items: center; width: 22px; height: 22px; color: var(--bg-primary); background: var(--accent-primary); font-size: 12px; font-weight: 700; }
+  .connect-wizard strong { font-size: 13px; font-weight: 600; }
+  .connect-wizard p { font-size: 12px; margin-top: 3px; }
   @media (max-width: 760px) { .connect-columns { grid-template-columns: 1fr; } .connect-list { max-height: 260px; } .connect-facts div { grid-template-columns: 1fr; gap: 2px; } }
 </style>
