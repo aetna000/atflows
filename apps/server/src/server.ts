@@ -290,7 +290,7 @@ function startDashboardServer() {
 
             // WebSocket upgrade
             if (pathname === '/ws') {
-                if (!localAuth.authenticated(req)) return new Response('Not authorized', { status: 401 })
+                if (!localAuth.ready(req)) return new Response('Not authorized', { status: 401 })
                 if (server.upgrade(req)) return new Response(null)
                 return new Response('WebSocket upgrade failed', { status: 400 })
             }
@@ -306,7 +306,7 @@ function startDashboardServer() {
                     }
                     return authResponse
                 }
-                if (pathname !== '/api/health' && pathname !== '/api/spans' && !localAuth.authenticated(req)) {
+                if (pathname !== '/api/health' && pathname !== '/api/spans' && !localAuth.ready(req)) {
                     return Response.json({ error: 'Sign in required' }, { status: 401 })
                 }
                 if (req.method !== 'GET' && pathname !== '/api/spans' && !localAuth.sameOrigin(req)) {

@@ -14,24 +14,36 @@ function passwordDigest(password: string, salt: string) {
 export function createLocalAuth(dataDir: string) {
     const target = path.join(dataDir, 'admin-auth.json')
     fs.mkdirSync(dataDir, { recursive: true, mode: 0o700 })
-    let record: { salt: string; digest: string }
+    let record: { salt: string; digest: string; temporary?: boolean }
     if (fs.existsSync(target)) {
         record = JSON.parse(fs.readFileSync(target, 'utf8'))
         if (process.env.ATFLOWS_ADMIN_PASSWORD) {
             const replacement = passwordDigest(process.env.ATFLOWS_ADMIN_PASSWORD, record.salt)
             if (replacement !== record.digest) {
                 record.digest = replacement
+                record.temporary = false
                 fs.writeFileSync(target, JSON.stringify(record), { mode: 0o600 })
                 sessions.clear()
             }
         }
     } else {
         const password = process.env.ATFLOWS_ADMIN_PASSWORD || crypto.randomBytes(18).toString('base64url')
-        record = { salt: crypto.randomBytes(16).toString('hex'), digest: '' }
+        record = { salt: crypto.randomBytes(16).toString('hex'), digest: '', temporary: !process.env.ATFLOWS_ADMIN_PASSWORD }
         record.digest = passwordDigest(password, record.salt)
         fs.writeFileSync(target, JSON.stringify(record), { flag: 'wx', mode: 0o600 })
         if (!process.env.ATFLOWS_ADMIN_PASSWORD) {
             process.stdout.write(`[atflows] Local Administrator password (shown once): ${password}\n`)
+        }
+    }
+    let recordIdentity = `${fs.statSync(target).ino}:${fs.statSync(target).mtimeMs}`
+
+    function refreshRecord() {
+        const stat = fs.statSync(target)
+        const identity = `${stat.ino}:${stat.mtimeMs}`
+        if (identity !== recordIdentity) {
+            record = JSON.parse(fs.readFileSync(target, 'utf8'))
+            recordIdentity = identity
+            sessions.clear()
         }
     }
 
@@ -41,12 +53,15 @@ export function createLocalAuth(dataDir: string) {
     }
 
     function authenticated(req: Request) {
+        refreshRecord()
         const value = token(req)
         const expires = sessions.get(value)
         if (!value || !expires) return false
         if (expires <= Date.now()) { sessions.delete(value); return false }
         return true
     }
+
+    function ready(req: Request) { return authenticated(req) && !record.temporary }
 
     function sameOrigin(req: Request) {
         return req.headers.get('origin') === new URL(req.url).origin
@@ -59,9 +74,11 @@ export function createLocalAuth(dataDir: string) {
     async function route(req: Request, peerAddress: string): Promise<Response | null> {
         const pathname = new URL(req.url).pathname
         if (pathname === '/api/auth/status' && req.method === 'GET') {
-            return Response.json({ authenticated: authenticated(req), account: authenticated(req) ? { display_name: 'Local Administrator', role: 'Administrator' } : null })
+            const signedIn = authenticated(req)
+            return Response.json({ authenticated: signedIn, password_change_required: signedIn && !!record.temporary, account: signedIn ? { display_name: 'Local Administrator', role: 'Administrator' } : null })
         }
         if (pathname === '/api/auth/login' && req.method === 'POST') {
+            refreshRecord()
             if (!sameOrigin(req)) return Response.json({ error: 'Origin check failed' }, { status: 403 })
             const limit = attempts.get(peerAddress)
             if (limit && limit.count >= 5 && limit.until > Date.now()) return Response.json({ error: 'Try again in a minute' }, { status: 429 })
@@ -75,7 +92,20 @@ export function createLocalAuth(dataDir: string) {
             attempts.delete(peerAddress)
             const session = crypto.randomBytes(32).toString('base64url')
             sessions.set(session, Date.now() + SESSION_MS)
-            return Response.json({ authenticated: true, account: { display_name: 'Local Administrator', role: 'Administrator' } }, { headers: { 'Set-Cookie': cookie(session, req, SESSION_MS / 1000) } })
+            return Response.json({ authenticated: true, password_change_required: !!record.temporary, account: { display_name: 'Local Administrator', role: 'Administrator' } }, { headers: { 'Set-Cookie': cookie(session, req, SESSION_MS / 1000) } })
+        }
+        if (pathname === '/api/auth/change-password' && req.method === 'POST') {
+            if (!sameOrigin(req) || !authenticated(req)) return Response.json({ error: 'Not authorized' }, { status: 401 })
+            const body = await req.json().catch(() => ({})) as { new_password?: string }
+            if (typeof body.new_password !== 'string' || body.new_password.length < 12) return Response.json({ error: 'Use at least 12 characters' }, { status: 400 })
+            record = { salt: crypto.randomBytes(16).toString('hex'), digest: '', temporary: false }
+            record.digest = passwordDigest(body.new_password, record.salt)
+            const temporary = path.join(dataDir, `.admin-auth-${crypto.randomUUID()}.json`)
+            fs.writeFileSync(temporary, JSON.stringify(record), { flag: 'wx', mode: 0o600 })
+            fs.renameSync(temporary, target)
+            const stat = fs.statSync(target)
+            recordIdentity = `${stat.ino}:${stat.mtimeMs}`
+            return Response.json({ authenticated: true, password_change_required: false })
         }
         if (pathname === '/api/auth/logout' && req.method === 'POST') {
             if (!sameOrigin(req) || !authenticated(req)) return Response.json({ error: 'Not authorized' }, { status: 401 })
@@ -85,5 +115,5 @@ export function createLocalAuth(dataDir: string) {
         return null
     }
 
-    return { authenticated, sameOrigin, route }
+    return { authenticated, ready, sameOrigin, route }
 }

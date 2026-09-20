@@ -1,6 +1,6 @@
 # AtFlows architecture pathway
 
-This is a requirements pathway, not a claim that the features below already ship. Release `0.1b3` has Python and npm launch commands, a Bun and SQLite runtime, proxy, OTLP ingest, and Svelte dashboard. It has no AtFlows MCP server or AtMem, AtBot, or Jev integration.
+This is a requirements pathway, not a claim that the features below already ship. Release `0.1b4` has Python and npm launch commands, a Bun and SQLite runtime, proxy, OTLP ingest, and Svelte dashboard. It has no AtFlows MCP server or AtMem, AtBot, or Jev integration.
 
 ## Delivery order
 
@@ -25,4 +25,4 @@ The tracks can be developed separately after shared contracts are fixed. Direct 
 
 ## Release gates
 
-Each phase needs local and hosted contract tests, clean installation from a built wheel, upgrade tests from `0.1b3`, security and tenant-scope tests where relevant, documentation, and versioned release notes. Do not change the published `0.1b3` description retroactively.
+Each phase needs local and hosted contract tests, clean installation from a built wheel, upgrade tests from `0.1b3`, security and tenant-scope tests where relevant, documentation, and versioned release notes. Do not change published release descriptions retroactively.

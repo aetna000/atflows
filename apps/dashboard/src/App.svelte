@@ -16,7 +16,7 @@
   import { initWebSocket, closeWebSocket } from '$lib/stores/websocket.svelte'
   import { loadStats, initStatsSync } from '$lib/stores/stats.svelte'
 
-  let authState = $state<'loading' | 'signed-out' | 'authenticated'>('loading')
+  let authState = $state<'loading' | 'signed-out' | 'change-password' | 'authenticated'>('loading')
   let stopDashboard: (() => void) | undefined
 
   function startDashboard() {
@@ -133,18 +133,18 @@
   }
 
   onMount(() => {
-    api.get<{ authenticated: boolean }>('/api/auth/status')
+    api.get<{ authenticated: boolean; password_change_required: boolean }>('/api/auth/status')
       .then((status) => {
-        authState = status.authenticated ? 'authenticated' : 'signed-out'
-        if (status.authenticated) startDashboard()
+        authState = status.authenticated ? status.password_change_required ? 'change-password' : 'authenticated' : 'signed-out'
+        if (authState === 'authenticated') startDashboard()
       })
       .catch(() => { authState = 'signed-out' })
     return () => { stopDashboard?.(); closeWebSocket() }
   })
 
-  function signedIn() {
-    authState = 'authenticated'
-    startDashboard()
+  function signedIn(changeRequired: boolean) {
+    authState = changeRequired ? 'change-password' : 'authenticated'
+    if (!changeRequired) startDashboard()
   }
 
   async function signOut() {
@@ -220,7 +220,7 @@
       <AnalyticsTab />
     </div>
     </main>
-  {:else if authState === 'signed-out'}
-    <Login onsignedin={signedIn} />
+  {:else if authState === 'signed-out' || authState === 'change-password'}
+    <Login onsignedin={signedIn} mustChange={authState === 'change-password'} />
   {/if}
 </div>

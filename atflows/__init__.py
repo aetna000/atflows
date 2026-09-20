@@ -1,3 +1,3 @@
 """AtFlows local LLM observability launcher."""
 
-__version__ = "0.1b3"
+__version__ = "0.1b4"
