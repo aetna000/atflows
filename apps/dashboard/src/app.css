@@ -167,7 +167,7 @@ h1.logo {
   text-decoration: underline;
 }
 
-.clear-demo-button {
+.clear-data-button {
   padding: 5px 9px;
   border: 1px solid var(--border-primary);
   background: var(--bg-secondary);
@@ -176,17 +176,17 @@ h1.logo {
   cursor: pointer;
 }
 
-.clear-demo-button:hover:not(:disabled) {
+.clear-data-button:hover:not(:disabled) {
   border-color: var(--error);
   color: var(--error);
 }
 
-.clear-demo-button:disabled {
+.clear-data-button:disabled {
   opacity: 0.45;
   cursor: default;
 }
 
-.demo-error {
+.data-error {
   color: var(--error);
   font-size: 12px;
 }

@@ -622,18 +622,17 @@ export function getTraceCount() {
     return result.cnt
 }
 
-export function getDemoTraceCount() {
-    const result = db
-        .query("SELECT COUNT(*) AS cnt FROM traces WHERE service_name = 'demo'")
-        .get() as { cnt: number }
-    return result.cnt
+export function getDataCounts() {
+    const count = (table: 'traces' | 'logs' | 'metrics') =>
+        (db.query(`SELECT COUNT(*) AS cnt FROM ${table}`).get() as { cnt: number }).cnt
+    return { traces: count('traces'), logs: count('logs'), metrics: count('metrics') }
 }
 
-export function clearDemoTraces() {
-    const count = getDemoTraceCount()
-    db.query("DELETE FROM traces WHERE service_name = 'demo'").run()
-    return count
-}
+export const clearAllData = db.transaction(() => {
+    const counts = getDataCounts()
+    db.exec('DELETE FROM traces; DELETE FROM logs; DELETE FROM metrics; DELETE FROM stats_cache;')
+    return counts
+})
 
 export function getDistinctModels() {
     return (

@@ -489,18 +489,18 @@ async function handleApiRoute(req: Request, url: URL): Promise<Response> {
             return await handleProviderHealthCheck()
         }
 
-        if (pathname === '/api/demo-data' && method === 'GET') {
-            return Response.json({ traces: db.getDemoTraceCount() })
+        if (pathname === '/api/data' && method === 'GET') {
+            return Response.json(db.getDataCounts())
         }
 
-        if (pathname === '/api/demo-data' && method === 'DELETE') {
+        if (pathname === '/api/data' && method === 'DELETE') {
             if (
                 req.headers.get('origin') !== url.origin ||
-                req.headers.get('x-atflows-action') !== 'clear-demo-data'
+                req.headers.get('x-atflows-action') !== 'clear-all-data'
             ) {
                 return Response.json({ error: 'Forbidden' }, { status: 403 })
             }
-            return Response.json({ deleted_traces: db.clearDemoTraces() })
+            return Response.json(db.clearAllData())
         }
 
         // Stats

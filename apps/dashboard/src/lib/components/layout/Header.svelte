@@ -6,33 +6,33 @@
   import { toggleTheme } from '$lib/stores/theme.svelte'
   import { formatNumber, formatCost, formatLatency } from '$lib/utils/format'
 
-  let demoCount = $state(0)
-  let clearingDemo = $state(false)
-  let demoError = $state('')
+  let dataCounts = $state({ traces: 0, logs: 0, metrics: 0 })
+  let clearingData = $state(false)
+  let dataError = $state('')
+  let totalRecords = $derived(dataCounts.traces + dataCounts.logs + dataCounts.metrics)
 
   onMount(async () => {
     try {
-      const result = await api.get<{ traces: number }>('/api/demo-data')
-      demoCount = result.traces
+      dataCounts = await api.get<typeof dataCounts>('/api/data')
     } catch {
-      demoError = 'Could not check demo data'
+      dataError = 'Could not check saved data'
     }
   })
 
-  async function eraseDemoData() {
-    if (!demoCount || clearingDemo) return
+  async function eraseAllData() {
+    if (!totalRecords || clearingData) return
     const confirmed = window.confirm(
-      `Erase ${demoCount} demo trace${demoCount === 1 ? '' : 's'}? Your Codex and other activity will remain.`,
+      `Permanently erase all saved telemetry (${dataCounts.traces} traces, ${dataCounts.logs} logs, ${dataCounts.metrics} metrics), including Codex activity? This resets the dashboard, model cards, and statistics.`,
     )
     if (!confirmed) return
-    clearingDemo = true
-    demoError = ''
+    clearingData = true
+    dataError = ''
     try {
-      await api.delete<{ deleted_traces: number }>('/api/demo-data')
+      await api.delete<typeof dataCounts>('/api/data')
       window.location.reload()
     } catch {
-      demoError = 'Could not erase demo data'
-      clearingDemo = false
+      dataError = 'Could not erase saved data'
+      clearingData = false
     }
   }
 </script>
@@ -74,13 +74,13 @@
         title="Install AtFlows from PyPI"
       >pip install atflows</a>
       <button
-        class="clear-demo-button"
-        data-testid="clear-demo-data"
-        onclick={eraseDemoData}
-        disabled={demoCount === 0 || clearingDemo}
-        title={demoCount ? `Erase ${demoCount} demo traces` : 'No demo traces to erase'}
-      >{clearingDemo ? 'Erasing…' : 'Erase demo data'}</button>
-      {#if demoError}<span class="demo-error" role="alert">{demoError}</span>{/if}
+        class="clear-data-button"
+        data-testid="clear-all-data"
+        onclick={eraseAllData}
+        disabled={totalRecords === 0 || clearingData}
+        title={totalRecords ? `Erase all ${totalRecords} saved records` : 'No saved data to erase'}
+      >{clearingData ? 'Erasing…' : 'Erase all data'}</button>
+      {#if dataError}<span class="data-error" role="alert">{dataError}</span>{/if}
       <button
         class="theme-toggle"
         data-testid="theme-toggle"
