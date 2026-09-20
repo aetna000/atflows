@@ -1,30 +1,5 @@
 # Gemini CLI Configuration
 
-Configure Google Gemini CLI to send telemetry to AtFlows.
+Integration setup and compatibility notes are maintained in the [AtFlows integration guide](../../docs/integrations/gemini-cli.md).
 
-## Configuration
-
-Create or edit `~/.gemini/settings.json`:
-
-```json
-{
-  "telemetry": {
-    "enabled": true,
-    "endpoint": "http://localhost:3000/v1/logs"
-  }
-}
-```
-
-## Environment Variables
-
-```bash
-export GEMINI_TELEMETRY_ENDPOINT="http://localhost:3000/v1/logs"
-```
-
-## Usage
-
-```bash
-gemini "write a hello world function"
-```
-
-Check the AtFlows dashboard at `http://localhost:3000` for logs.
+The example source files remain in this directory.
