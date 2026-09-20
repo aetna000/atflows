@@ -1,6 +1,6 @@
 {
   "name": "atflows",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "See what your LLM calls cost. One command. No signup.",
   "private": false,
   "type": "module",

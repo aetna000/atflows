@@ -6,7 +6,7 @@
   import { formatNumber, formatCost, formatLatency } from '$lib/utils/format'
   import { setTab } from '$lib/stores/tabs.svelte'
   import Tabs from './Tabs.svelte'
-  import { authAccount } from '$lib/stores/auth.svelte'
+  import { authAccount, authMode } from '$lib/stores/auth.svelte'
 
   let { onsignout }: { onsignout: () => Promise<void> } = $props()
 
@@ -16,6 +16,18 @@
   let dataError = $state('')
   let totalRecords = $derived(dataCounts.traces + dataCounts.logs + dataCounts.metrics)
   let demoRecords = $derived(demoCounts.traces + demoCounts.logs + demoCounts.metrics)
+
+  function safeAtMemDashboardUrl(raw: string): string {
+    try {
+      const url = new URL(raw)
+      return url.protocol === 'http:' && ['127.0.0.1', '[::1]'].includes(url.hostname) && !!url.port &&
+        !url.username && !url.password && url.pathname === '/' && !url.search && !url.hash ? url.href : ''
+    } catch {
+      return ''
+    }
+  }
+
+  let atmemDashboardUrl = $derived(authMode.value === 'atmem' ? safeAtMemDashboardUrl(authMode.signInUrl) : '')
 
   onMount(async () => {
     if (authAccount.value?.role !== 'administrator') return
@@ -74,6 +86,9 @@
     </div>
     <div class="header-actions">
       <div class="identity-chip"><strong>{authAccount.value?.display_name || 'Account'}</strong><small>{authAccount.value?.role.replace('_', ' ').toUpperCase() || ''}</small></div>
+      {#if atmemDashboardUrl}
+        <a class="atmem-dashboard-link" href={atmemDashboardUrl} target="_blank" rel="noopener noreferrer" aria-label="Open AtMem dashboard in a new tab">AtMem dashboard ↗</a>
+      {/if}
       <button class="signout-button" onclick={onsignout}>Sign out</button>
       <span class="server-chip" class:online={authAccount.value?.role === 'viewer' || connectionStatus.value === 'connected'}>AtFlows {authAccount.value?.role === 'viewer' || connectionStatus.value === 'connected' ? 'active' : 'connecting'}</span>
     </div>

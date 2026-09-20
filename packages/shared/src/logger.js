@@ -18,7 +18,13 @@ const c = {
 }
 
 function timestamp() {
-    return new Date().toISOString()
+    const date = new Date()
+    const two = (value) => String(value).padStart(2, '0')
+    const three = (value) => String(value).padStart(3, '0')
+    const minutes = -date.getTimezoneOffset()
+    const sign = minutes >= 0 ? '+' : '-'
+    const offset = `${sign}${two(Math.floor(Math.abs(minutes) / 60))}:${two(Math.abs(minutes) % 60)}`
+    return `${date.getFullYear()}-${two(date.getMonth() + 1)}-${two(date.getDate())}T${two(date.getHours())}:${two(date.getMinutes())}:${two(date.getSeconds())}.${three(date.getMilliseconds())}${offset}`
 }
 
 function formatDuration(ms) {
