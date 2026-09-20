@@ -1,5 +1,9 @@
 # AGENTS.md
 
+## Spec Kit
+
+Material changes to storage, public CLI/MCP contracts, provider integration, or package boundaries use the repository's `.specify/` constitution and a bounded feature under `specs/`. See `docs/spec-kit.md` and `docs/architecture-roadmap.md`. These specs describe future behavior; current build commands below remain authoritative until implementation ships.
+
 ## Build & Test
 
 - Runtime: **Bun** (required). Workspaces are wired via `apps/*` + `packages/*`.

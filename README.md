@@ -190,6 +190,8 @@ The bin entry `bin/atflows.js` (for the npm workspace) spawns
 For advanced usage, see the [docs/](docs/) folder:
 
 - [Observability Backends](docs/guides/observability-backends.md) - Export to Jaeger, Langfuse, Phoenix
+- [Architecture pathway](docs/architecture-roadmap.md) - Production storage, CLI/MCP, AtMem/AtBot, and Jev requirements
+- [Spec Kit workflow](docs/spec-kit.md) - Constitution and feature specifications
 
 ---
 
