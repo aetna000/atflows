@@ -1,7 +1,7 @@
 /**
- * RAG Pipeline + AtFlow SDK Example
+ * RAG Pipeline + AtFlows SDK Example
  *
- * This example demonstrates proper span hierarchy using the AtFlow SDK.
+ * This example demonstrates proper span hierarchy using the AtFlows SDK.
  * It simulates a RAG (Retrieval-Augmented Generation) pipeline with:
  *
  * - Parent trace encompassing the entire workflow
@@ -18,7 +18,7 @@
  *   └── generate_answer (llm) ← linked via x-trace-id header
  *
  * Prerequisites:
- *   1. Start AtFlow: cd ../.. && npm start
+ *   1. Start AtFlows: cd ../.. && npm start
  *   2. Set your OpenAI API key in .env at project root
  *   3. Run: node index.js (from this directory)
  */
@@ -36,7 +36,7 @@ if (!process.env.OPENAI_API_KEY) {
     process.exit(1)
 }
 
-// Create OpenAI client routed through AtFlow proxy
+// Create OpenAI client routed through AtFlows proxy
 // Using wrapOpenAI to auto-inject trace headers
 const openai = wrapOpenAI(
     new OpenAI({
@@ -47,21 +47,21 @@ const openai = wrapOpenAI(
 
 // Simulated knowledge base
 const KNOWLEDGE_BASE = [
-    { id: 1, text: 'AtFlow is an open-source LLM observability platform.', topic: 'overview' },
+    { id: 1, text: 'AtFlows is an open-source LLM observability platform.', topic: 'overview' },
     {
         id: 2,
-        text: 'AtFlow captures traces via an OpenAI-compatible proxy on port 8080.',
+        text: 'AtFlows captures traces via an OpenAI-compatible proxy on port 8080.',
         topic: 'proxy',
     },
     {
         id: 3,
-        text: 'The AtFlow dashboard runs on port 3000 and displays traces in real-time.',
+        text: 'The AtFlows dashboard runs on port 3000 and displays traces in real-time.',
         topic: 'dashboard',
     },
-    { id: 4, text: 'AtFlow supports OTLP/HTTP for OpenTelemetry integration.', topic: 'otlp' },
+    { id: 4, text: 'AtFlows supports OTLP/HTTP for OpenTelemetry integration.', topic: 'otlp' },
     {
         id: 5,
-        text: 'The AtFlow SDK enables hierarchical span tracking for complex pipelines.',
+        text: 'The AtFlows SDK enables hierarchical span tracking for complex pipelines.',
         topic: 'sdk',
     },
     {
@@ -71,7 +71,7 @@ const KNOWLEDGE_BASE = [
     },
     {
         id: 7,
-        text: 'AtFlow calculates token usage and estimated costs automatically.',
+        text: 'AtFlows calculates token usage and estimated costs automatically.',
         topic: 'costs',
     },
     {
@@ -327,21 +327,21 @@ Otherwise, provide a direct answer.`,
 
 async function main() {
     console.log('===========================================')
-    console.log('  RAG Pipeline + AtFlow SDK Example')
+    console.log('  RAG Pipeline + AtFlows SDK Example')
     console.log('===========================================')
     console.log(`\nSending spans to: ${ATFLOW_URL}`)
     console.log(`LLM calls via proxy: ${ATFLOW_PROXY}\n`)
 
     // Example 1: Simple RAG query
     console.log('--- Example 1: RAG Query ---')
-    const ragResult = await ragQuery('How does AtFlow capture traces?')
+    const ragResult = await ragQuery('How does AtFlows capture traces?')
     console.log('Answer:', ragResult.answer)
     console.log('Sources:', ragResult.sources)
     console.log('')
 
     // Example 2: Another RAG query
     console.log('--- Example 2: RAG Query (costs) ---')
-    const ragResult2 = await ragQuery('Does AtFlow calculate costs?')
+    const ragResult2 = await ragQuery('Does AtFlows calculate costs?')
     console.log('Answer:', ragResult2.answer)
     console.log('')
 

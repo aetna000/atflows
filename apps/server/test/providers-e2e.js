@@ -475,12 +475,12 @@ async function main() {
     console.log(`\n${c.cyan}Header Override${c.reset}\n`)
 
     if (process.env.GROQ_API_KEY && shouldTest('groq')) {
-        await testProvider('X-AtFlow-Provider header override', {
+        await testProvider('X-AtFlows-Provider header override', {
             path: '/v1/chat/completions', // Default path, but override to Groq
             headers: {
                 'Content-Type': 'application/json',
                 Authorization: `Bearer ${process.env.GROQ_API_KEY}`,
-                'X-AtFlow-Provider': 'groq',
+                'X-AtFlows-Provider': 'groq',
             },
             body: {
                 model: 'llama-3.1-8b-instant',

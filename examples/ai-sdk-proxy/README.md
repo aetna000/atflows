@@ -1,10 +1,10 @@
-# Vercel AI SDK + AtFlow Proxy Example
+# Vercel AI SDK + AtFlows Proxy Example
 
-This example shows how to trace Vercel AI SDK applications by routing API calls through the AtFlow proxy.
+This example shows how to trace Vercel AI SDK applications by routing API calls through the AtFlows proxy.
 
 ## How it works
 
-Instead of calling OpenAI directly, we configure the AI SDK to route requests through the AtFlow proxy at `http://localhost:8080/v1`. The proxy:
+Instead of calling OpenAI directly, we configure the AI SDK to route requests through the AtFlows proxy at `http://localhost:8080/v1`. The proxy:
 
 1. Logs the request
 2. Forwards it to OpenAI
@@ -13,7 +13,7 @@ Instead of calling OpenAI directly, we configure the AI SDK to route requests th
 
 ## Setup
 
-1. Start AtFlow from the project root:
+1. Start AtFlows from the project root:
 
    ```bash
    npm start
@@ -39,7 +39,7 @@ Instead of calling OpenAI directly, we configure the AI SDK to route requests th
 import { createOpenAI } from '@ai-sdk/openai'
 import { generateText } from 'ai'
 
-// Create OpenAI client that routes through AtFlow proxy
+// Create OpenAI client that routes through AtFlows proxy
 const openai = createOpenAI({
   baseURL: 'http://localhost:8080/v1',
   apiKey: process.env.OPENAI_API_KEY,

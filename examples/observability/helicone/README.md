@@ -4,17 +4,17 @@
 
 ## Integration Method
 
-Helicone works as a **proxy gateway**, not OTLP export. AtFlow routes requests through Helicone to OpenAI.
+Helicone works as a **proxy gateway**, not OTLP export. AtFlows routes requests through Helicone to OpenAI.
 
 ```
-Your App → AtFlow Proxy → Helicone Gateway → OpenAI
+Your App → AtFlows Proxy → Helicone Gateway → OpenAI
 ```
 
 ## Quick Start with Helicone Cloud
 
 1. Create account at https://helicone.ai and get API key
 
-2. Configure AtFlow to use Helicone passthrough:
+2. Configure AtFlows to use Helicone passthrough:
 
    **Option A: Via environment variables**
 
@@ -42,17 +42,17 @@ Your App → AtFlow Proxy → Helicone Gateway → OpenAI
    })
    ```
 
-3. Make LLM requests - they'll be logged in both AtFlow and Helicone
+3. Make LLM requests - they'll be logged in both AtFlows and Helicone
 
 4. View analytics:
    - **Helicone Dashboard**: https://helicone.ai/dashboard
-   - **AtFlow Dashboard**: http://localhost:3000
+   - **AtFlows Dashboard**: http://localhost:3000
 
 ## Self-Hosted Helicone
 
 1. Start Helicone locally (see [Helicone docs](https://docs.helicone.ai/getting-started/self-host/docker))
 
-2. Configure AtFlow:
+2. Configure AtFlows:
    ```bash
    # .env
    HELICONE_HOST=localhost
@@ -95,9 +95,9 @@ const response = await client.chat.completions.create(
 
 ## Benefits of Dual Logging
 
-Using AtFlow + Helicone together:
+Using AtFlows + Helicone together:
 
-| AtFlow                | Helicone              |
+| AtFlows                | Helicone              |
 | ---------------------- | --------------------- |
 | Local SQLite storage   | Cloud storage         |
 | Real-time WebSocket    | Cost analytics        |
@@ -124,5 +124,5 @@ const response = await client.chat.completions.create({
 })
 
 console.log(response.choices[0].message.content)
-// Logged in both AtFlow (localhost:3000) and Helicone (helicone.ai)
+// Logged in both AtFlows (localhost:3000) and Helicone (helicone.ai)
 ```

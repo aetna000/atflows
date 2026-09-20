@@ -1,6 +1,6 @@
-# RAG Pipeline + AtFlow SDK Example
+# RAG Pipeline + AtFlows SDK Example
 
-This example demonstrates **hierarchical span tracking** using the AtFlow SDK. It shows how to create parent-child span relationships for complex LLM workflows.
+This example demonstrates **hierarchical span tracking** using the AtFlows SDK. It shows how to create parent-child span relationships for complex LLM workflows.
 
 ## What This Example Shows
 
@@ -27,14 +27,14 @@ agent-task (trace)
 
 ## How It Works
 
-1. **AtFlow SDK** (`trace()`, `span()`) creates the span hierarchy
+1. **AtFlows SDK** (`trace()`, `span()`) creates the span hierarchy
 2. **Proxy integration** captures LLM calls with full request/response data
 3. **Trace propagation** via `x-trace-id` and `x-parent-id` headers links LLM calls to parent spans
 4. The dashboard shows the complete trace tree with timing, tokens, and costs
 
 ## Setup
 
-1. Start AtFlow from the project root:
+1. Start AtFlows from the project root:
 
    ```bash
    npm start

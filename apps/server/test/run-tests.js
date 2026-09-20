@@ -3,7 +3,7 @@
 /**
  * Test Runner
  *
- * Starts the AtFlow server, runs tests, then shuts down.
+ * Starts the AtFlows server, runs tests, then shuts down.
  * Usage: node test/run-tests.js [test-file]
  *
  * Examples:
@@ -181,7 +181,7 @@ async function main() {
         process.exit(0)
     }
 
-    console.log(`${c.cyan}AtFlow Test Runner${c.reset}`)
+    console.log(`${c.cyan}AtFlows Test Runner${c.reset}`)
     console.log(`${c.dim}Tests: ${testFiles.join(', ')}${c.reset}\n`)
 
     let exitCode = 0

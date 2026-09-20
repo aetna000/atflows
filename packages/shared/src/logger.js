@@ -1,5 +1,5 @@
 /**
- * Colored console logger for AtFlow
+ * Colored console logger for AtFlows
  * Clean, compact output with optional verbose mode
  */
 

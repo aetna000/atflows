@@ -1,7 +1,7 @@
-# AtFlow SDK
+# AtFlows SDK
 
 Minimal tracing SDK for LLM applications. Create hierarchical spans to trace
-your AI pipelines and send them to a running AtFlow instance.
+your AI pipelines and send them to a running AtFlows instance.
 
 ## Installation
 
@@ -27,7 +27,7 @@ The SDK is published from `packages/sdk/` in this monorepo.
 import { trace, span, currentTraceHeaders } from 'atflows-sdk'
 import OpenAI from 'openai'
 
-// Use the AtFlow proxy for automatic LLM call tracing
+// Use the AtFlows proxy for automatic LLM call tracing
 const openai = new OpenAI({ baseURL: 'http://localhost:8080/v1' })
 
 await trace('my-workflow', async () => {
@@ -191,7 +191,7 @@ Use these standard types for consistent visualization:
 
 | Variable        | Default                 | Description           |
 | --------------- | ----------------------- | --------------------- |
-| `ATFLOW_URL`   | `http://localhost:3000` | AtFlow dashboard URL |
+| `ATFLOW_URL`   | `http://localhost:3000` | AtFlows dashboard URL |
 | `ATFLOW_DEBUG` | (unset)                 | Enable debug logging  |
 
 ## Examples
@@ -288,7 +288,7 @@ The SDK uses Node.js `AsyncLocalStorage` to propagate trace context through asyn
 
 1. Creates a new span ID and associates it with the current trace
 2. Runs your function within an async context that holds the span info
-3. On completion/error, sends the span data to AtFlow via `POST /api/spans`
+3. On completion/error, sends the span data to AtFlows via `POST /api/spans`
 4. Returns the result of your function
 
 LLM calls made through the proxy with `x-trace-id` and `x-parent-id` headers are automatically linked to the span tree.

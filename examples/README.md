@@ -1,15 +1,15 @@
-# AtFlow Integration Examples
+# AtFlows Integration Examples
 
-This folder contains working examples of AtFlow integrations with popular LLM frameworks.
+This folder contains working examples of AtFlows integrations with popular LLM frameworks.
 
 ## Examples
 
 | Example                          | Description                      | Features                                                                 |
 | -------------------------------- | -------------------------------- | ------------------------------------------------------------------------ |
-| [langchain](./langchain)         | LangChain.js via AtFlow proxy   | Basic tracing                                                            |
-| [ai-sdk-proxy](./ai-sdk-proxy)   | Vercel AI SDK via AtFlow proxy  | Basic tracing                                                            |
+| [langchain](./langchain)         | LangChain.js via AtFlows proxy   | Basic tracing                                                            |
+| [ai-sdk-proxy](./ai-sdk-proxy)   | Vercel AI SDK via AtFlows proxy  | Basic tracing                                                            |
 | [vercel-ai-sdk](./vercel-ai-sdk) | Vercel AI SDK via proxy          | Basic tracing                                                            |
-| [rag-pipeline](./rag-pipeline)   | RAG pipeline with AtFlow SDK    | **Hierarchical spans**, parent-child relationships, input/output capture |
+| [rag-pipeline](./rag-pipeline)   | RAG pipeline with AtFlows SDK    | **Hierarchical spans**, parent-child relationships, input/output capture |
 
 ## Quick Start
 
@@ -20,7 +20,7 @@ This folder contains working examples of AtFlow integrations with popular LLM fr
    # Edit .env and add your OPENAI_API_KEY
    ```
 
-2. **Start AtFlow**:
+2. **Start AtFlows**:
 
    ```bash
    npm install
@@ -41,7 +41,7 @@ This folder contains working examples of AtFlow integrations with popular LLM fr
 
 ### Method 1: OpenAI Proxy (Recommended)
 
-Point your LLM SDK at the AtFlow proxy to automatically capture all LLM calls:
+Point your LLM SDK at the AtFlows proxy to automatically capture all LLM calls:
 
 ```javascript
 import OpenAI from 'openai'
@@ -75,9 +75,9 @@ const openai = createOpenAI({
 })
 ```
 
-### Method 2: AtFlow SDK (Manual Spans)
+### Method 2: AtFlows SDK (Manual Spans)
 
-For custom workflows, use the AtFlow SDK directly:
+For custom workflows, use the AtFlows SDK directly:
 
 ```javascript
 import { trace, span, currentTraceHeaders } from 'atflows-sdk'
@@ -118,8 +118,8 @@ All examples use the `.env` file from the project root. See `.env.example` for a
 | Variable         | Required | Description                                              |
 | ---------------- | -------- | -------------------------------------------------------- |
 | `OPENAI_API_KEY` | Yes      | Your OpenAI API key                                      |
-| `ATFLOW_URL`    | No       | AtFlow dashboard URL (default: `http://localhost:3000`) |
-| `ATFLOW_PROXY`  | No       | AtFlow proxy URL (default: `http://localhost:8080/v1`)  |
+| `ATFLOW_URL`    | No       | AtFlows dashboard URL (default: `http://localhost:3000`) |
+| `ATFLOW_PROXY`  | No       | AtFlows proxy URL (default: `http://localhost:8080/v1`)  |
 
 ## Adding New Examples
 

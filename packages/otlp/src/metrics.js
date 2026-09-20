@@ -1,5 +1,5 @@
 /**
- * OTLP Metrics Endpoint for AtFlow
+ * OTLP Metrics Endpoint for AtFlows
  *
  * Accepts OTLP/HTTP JSON metrics and stores them for AI CLI tool observability.
  * Supports metrics from AI coding tools, Gemini CLI, etc.

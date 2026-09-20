@@ -1,5 +1,5 @@
 #!/bin/bash
-# Run all AtFlow examples
+# Run all AtFlows examples
 # Usage: ./examples/run-all.sh
 
 set -e
@@ -12,7 +12,7 @@ YELLOW='\033[1;33m'
 NC='\033[0m'
 
 echo "=========================================="
-echo "  AtFlow Examples Runner"
+echo "  AtFlows Examples Runner"
 echo "=========================================="
 echo ""
 
@@ -28,14 +28,14 @@ else
 fi
 echo ""
 
-# Check if AtFlow is running
+# Check if AtFlows is running
 if ! curl -s http://localhost:3000/api/health > /dev/null 2>&1; then
-    echo -e "${RED}Error: AtFlow is not running${NC}"
+    echo -e "${RED}Error: AtFlows is not running${NC}"
     echo "Start it with: npm start"
     exit 1
 fi
 
-echo -e "${GREEN}✓ AtFlow is running${NC}"
+echo -e "${GREEN}✓ AtFlows is running${NC}"
 echo ""
 
 # Check for OPENAI_API_KEY
@@ -100,6 +100,6 @@ echo ""
 
 # Check traces were logged
 TRACE_COUNT=$(curl -s http://localhost:3000/api/stats | grep -o '"total_requests":[0-9]*' | cut -d: -f2)
-echo "Total traces in AtFlow: $TRACE_COUNT"
+echo "Total traces in AtFlows: $TRACE_COUNT"
 
 exit $FAILED

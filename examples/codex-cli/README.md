@@ -1,6 +1,6 @@
 # Codex CLI Configuration
 
-Configure OpenAI Codex CLI to send telemetry to AtFlow.
+Configure OpenAI Codex CLI to send telemetry to AtFlows.
 
 ## Configuration
 
@@ -27,7 +27,7 @@ export CODEX_TELEMETRY_ENABLED=true
 
 ## Verify
 
-Run any Codex command and check AtFlow dashboard for incoming logs:
+Run any Codex command and check AtFlows dashboard for incoming logs:
 
 ```bash
 codex "explain this code"

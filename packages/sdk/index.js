@@ -1,5 +1,5 @@
 /**
- * AtFlow SDK
+ * AtFlows SDK
  *
  * Minimal tracing SDK for LLM applications.
  *
@@ -52,7 +52,7 @@ function currentTraceHeaders() {
 }
 
 /**
- * Send span to AtFlow server
+ * Send span to AtFlows server
  */
 async function sendSpan(spanData) {
     try {

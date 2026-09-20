@@ -1,5 +1,5 @@
 /**
- * OTLP Export Module for AtFlow
+ * OTLP Export Module for AtFlows
  *
  * Exports traces, logs, and metrics to external observability backends
  * via OpenTelemetry Protocol (OTLP/HTTP JSON).
@@ -50,7 +50,7 @@ function parseHeaders(headerStr) {
 }
 
 /**
- * Convert AtFlow trace to OTLP span format
+ * Convert AtFlows trace to OTLP span format
  */
 function traceToOtlpSpan(trace) {
     const startTimeNano = BigInt(trace.timestamp) * BigInt(1000000)
@@ -120,7 +120,7 @@ function normalizeSpanId(id) {
 }
 
 /**
- * Convert AtFlow log to OTLP log record format
+ * Convert AtFlows log to OTLP log record format
  */
 function logToOtlpRecord(logEntry) {
     const timeNano = BigInt(logEntry.timestamp) * BigInt(1000000)
@@ -157,7 +157,7 @@ function logToOtlpRecord(logEntry) {
 }
 
 /**
- * Convert AtFlow metric to OTLP metric format
+ * Convert AtFlows metric to OTLP metric format
  */
 function metricToOtlpMetric(metric) {
     const timeNano = BigInt(metric.timestamp) * BigInt(1000000)

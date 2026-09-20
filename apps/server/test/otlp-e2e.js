@@ -10,7 +10,7 @@
  * 4. Verify dashboard API returns correct data
  *
  * Run: node test/otlp-e2e.js
- * Requires: AtFlow server running on localhost:3000
+ * Requires: AtFlows server running on localhost:3000
  */
 
 const http = require('http')

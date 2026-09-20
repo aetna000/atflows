@@ -1,10 +1,10 @@
-# LangChain + AtFlow Proxy Example
+# LangChain + AtFlows Proxy Example
 
-This example demonstrates how to trace LangChain.js applications with AtFlow by routing API calls through the proxy.
+This example demonstrates how to trace LangChain.js applications with AtFlows by routing API calls through the proxy.
 
 ## How It Works
 
-LangChain is configured to send OpenAI API calls through the AtFlow proxy at `http://localhost:8080/v1`. The proxy:
+LangChain is configured to send OpenAI API calls through the AtFlows proxy at `http://localhost:8080/v1`. The proxy:
 
 1. Logs the request
 2. Forwards it to OpenAI
@@ -13,7 +13,7 @@ LangChain is configured to send OpenAI API calls through the AtFlow proxy at `ht
 
 ## Setup
 
-1. Start AtFlow from the project root:
+1. Start AtFlows from the project root:
 
    ```bash
    npm install
@@ -45,7 +45,7 @@ LangChain is configured to send OpenAI API calls through the AtFlow proxy at `ht
 ```javascript
 import { ChatOpenAI } from '@langchain/openai'
 
-// Configure LangChain to use AtFlow proxy
+// Configure LangChain to use AtFlows proxy
 const model = new ChatOpenAI({
   modelName: 'gpt-4o-mini',
   temperature: 0.7,
@@ -57,7 +57,7 @@ const model = new ChatOpenAI({
 
 ## What Gets Traced
 
-AtFlow automatically captures:
+AtFlows automatically captures:
 
 - **Model**: The LLM model used (e.g., `gpt-4o-mini`)
 - **Tokens**: Input and output token counts
@@ -70,6 +70,6 @@ AtFlow automatically captures:
 
 | Variable            | Default                    | Description                      |
 | ------------------- | -------------------------- | -------------------------------- |
-| `ATFLOW_PROXY`     | `http://localhost:8080/v1` | AtFlow proxy URL                |
+| `ATFLOW_PROXY`     | `http://localhost:8080/v1` | AtFlows proxy URL                |
 | `ATFLOW_DASHBOARD` | `http://localhost:3000`    | Dashboard URL for viewing traces |
 | `OPENAI_API_KEY`    | (required)                 | Your OpenAI API key              |

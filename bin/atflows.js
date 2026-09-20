@@ -1,7 +1,7 @@
 #!/usr/bin/env bun
 
 /**
- * AtFlow CLI
+ * AtFlows CLI
  *
  * Usage:
  *   npx atflows          # Start the server
@@ -19,7 +19,7 @@ const args = process.argv.slice(2)
 // Help text
 if (args.includes('--help') || args.includes('-h')) {
     console.log(`
-AtFlow - Local LLM Observability
+AtFlows - Local LLM Observability
 
 Usage:
   atflows [options]

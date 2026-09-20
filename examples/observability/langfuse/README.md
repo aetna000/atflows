@@ -17,7 +17,7 @@
    - Go to Settings → API Keys
    - Copy the Public Key and Secret Key
 
-3. Configure AtFlow (add to `.env` in project root):
+3. Configure AtFlows (add to `.env` in project root):
 
    ```bash
    # Base64 encode your keys: echo -n "pk_xxx:sk_xxx" | base64
@@ -25,7 +25,7 @@
    OTLP_EXPORT_HEADERS=Authorization=Basic YOUR_BASE64_ENCODED_KEYS
    ```
 
-4. Restart AtFlow:
+4. Restart AtFlows:
 
    ```bash
    npm start
@@ -35,7 +35,7 @@
 
 6. View traces:
    - **Langfuse UI**: http://localhost:3001
-   - **AtFlow Dashboard**: http://localhost:3000
+   - **AtFlows Dashboard**: http://localhost:3000
 
 ## Langfuse Cloud
 

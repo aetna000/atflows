@@ -1,6 +1,6 @@
 # Observability Backend Examples
 
-This folder contains example configurations for integrating AtFlow with popular observability platforms.
+This folder contains example configurations for integrating AtFlows with popular observability platforms.
 
 ## Quick Reference
 
@@ -14,7 +14,7 @@ This folder contains example configurations for integrating AtFlow with popular 
 
 ## Setup
 
-1. Start AtFlow:
+1. Start AtFlows:
 
    ```bash
    cd ../..
@@ -28,7 +28,7 @@ This folder contains example configurations for integrating AtFlow with popular 
    docker compose up -d
    ```
 
-3. Configure AtFlow to export traces:
+3. Configure AtFlows to export traces:
 
    ```bash
    # Add to .env
@@ -45,7 +45,7 @@ This folder contains example configurations for integrating AtFlow with popular 
    - Jaeger: http://localhost:16686
    - Phoenix: http://localhost:6006
    - Langfuse: http://localhost:3000
-   - AtFlow: http://localhost:3000
+   - AtFlows: http://localhost:3000
 
 ## Architecture
 
@@ -54,13 +54,13 @@ This folder contains example configurations for integrating AtFlow with popular 
 │                     Your Application                        │
 │                                                             │
 │   const client = new OpenAI({                               │
-│       baseURL: 'http://localhost:8080/v1'  // AtFlow      │
+│       baseURL: 'http://localhost:8080/v1'  // AtFlows      │
 │   });                                                       │
 └──────────────────────────┬──────────────────────────────────┘
                            │
                            ▼
 ┌──────────────────────────────────────────────────────────────┐
-│                       AtFlow                                │
+│                       AtFlows                                │
 │  ┌─────────────┐    ┌─────────────┐    ┌─────────────┐     │
 │  │   Proxy     │───▶│  Dashboard  │───▶│ OTLP Export │     │
 │  │   :8080     │    │   :3000     │    │  (batched)  │     │

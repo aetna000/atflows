@@ -1,11 +1,11 @@
 /**
- * LangChain.js + AtFlow Integration Example
+ * LangChain.js + AtFlows Integration Example
  *
  * This example shows how to trace LangChain applications by routing
- * API calls through the AtFlow proxy.
+ * API calls through the AtFlows proxy.
  *
  * Prerequisites:
- *   1. Start AtFlow: cd ../.. && npm start
+ *   1. Start AtFlows: cd ../.. && npm start
  *   2. Set your OpenAI API key in .env at project root
  *   3. Run: make examples (from project root)
  */
@@ -25,10 +25,10 @@ if (!process.env.OPENAI_API_KEY) {
     process.exit(1)
 }
 
-console.log(`LangChain routing through AtFlow proxy at ${ATFLOW_PROXY}`)
+console.log(`LangChain routing through AtFlows proxy at ${ATFLOW_PROXY}`)
 
 async function runExample() {
-    // Configure LangChain to use AtFlow proxy
+    // Configure LangChain to use AtFlows proxy
     const model = new ChatOpenAI({
         modelName: 'gpt-4o-mini',
         temperature: 0.7,

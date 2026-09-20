@@ -2,7 +2,7 @@
   "name": "atflows-rag-pipeline-example",
   "version": "1.0.0",
   "type": "module",
-  "description": "RAG pipeline with AtFlow SDK for hierarchical span tracking",
+  "description": "RAG pipeline with AtFlows SDK for hierarchical span tracking",
   "main": "index.js",
   "scripts": {
     "start": "node index.js"

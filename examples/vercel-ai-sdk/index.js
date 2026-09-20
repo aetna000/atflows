@@ -1,15 +1,15 @@
 /**
- * Vercel AI SDK + AtFlow Integration Example (OTLP)
+ * Vercel AI SDK + AtFlows Integration Example (OTLP)
  *
  * This example shows how to use Vercel AI SDK with OpenTelemetry
- * telemetry, sending traces to AtFlow via the OTLP endpoint.
+ * telemetry, sending traces to AtFlows via the OTLP endpoint.
  *
  * Note: For simpler tracing, use the proxy approach (see ai-sdk-proxy example).
  * This example demonstrates OTLP telemetry for when you need OpenTelemetry
  * integration in addition to LLM call tracing.
  *
  * Prerequisites:
- *   1. Start AtFlow: cd ../.. && npm start
+ *   1. Start AtFlows: cd ../.. && npm start
  *   2. Set your OpenAI API key in .env at project root
  *   3. Run: make examples (from project root)
  */
@@ -28,9 +28,9 @@ if (!process.env.OPENAI_API_KEY) {
     process.exit(1)
 }
 
-console.log(`Vercel AI SDK routing through AtFlow proxy at ${ATFLOW_PROXY}`)
+console.log(`Vercel AI SDK routing through AtFlows proxy at ${ATFLOW_PROXY}`)
 
-// Create OpenAI client that routes through AtFlow proxy
+// Create OpenAI client that routes through AtFlows proxy
 const openai = createOpenAI({
     baseURL: ATFLOW_PROXY,
     apiKey: process.env.OPENAI_API_KEY,

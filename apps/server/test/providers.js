@@ -101,7 +101,7 @@ test('resolves Groq for /groq/* paths', () => {
     assertEqual(cleanPath, '/v1/chat/completions')
 })
 
-test('resolves provider from X-AtFlow-Provider header', () => {
+test('resolves provider from X-AtFlows-Provider header', () => {
     const { provider, cleanPath } = registry.resolve({
         path: '/v1/chat/completions',
         headers: { 'x-atflows-provider': 'anthropic' },

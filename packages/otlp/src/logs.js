@@ -1,5 +1,5 @@
 /**
- * OTLP Logs Endpoint for AtFlow
+ * OTLP Logs Endpoint for AtFlows
  *
  * Accepts OTLP/HTTP JSON logs and stores them for AI CLI tool observability.
  * Supports log events from AI coding tools, Codex CLI, Gemini CLI, etc.

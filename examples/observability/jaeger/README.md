@@ -10,13 +10,13 @@
    docker compose up -d
    ```
 
-2. Configure AtFlow (add to `.env` in project root):
+2. Configure AtFlows (add to `.env` in project root):
 
    ```bash
    OTLP_EXPORT_ENDPOINT=http://localhost:4318/v1/traces
    ```
 
-3. Restart AtFlow:
+3. Restart AtFlows:
 
    ```bash
    npm start
@@ -26,7 +26,7 @@
 
 5. View traces:
    - **Jaeger UI**: http://localhost:16686
-   - **AtFlow Dashboard**: http://localhost:3000
+   - **AtFlows Dashboard**: http://localhost:3000
 
 ## Configuration
 
@@ -42,7 +42,7 @@
 
 ## Trace Attributes
 
-AtFlow exports these OpenTelemetry attributes:
+AtFlows exports these OpenTelemetry attributes:
 
 - `gen_ai.system` - Provider (openai, anthropic, etc.)
 - `gen_ai.request.model` - Model name

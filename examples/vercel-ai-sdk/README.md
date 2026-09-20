@@ -1,10 +1,10 @@
-# Vercel AI SDK + AtFlow Proxy Example
+# Vercel AI SDK + AtFlows Proxy Example
 
-This example demonstrates how to trace Vercel AI SDK applications with AtFlow by routing API calls through the proxy.
+This example demonstrates how to trace Vercel AI SDK applications with AtFlows by routing API calls through the proxy.
 
 ## How It Works
 
-The Vercel AI SDK is configured to send OpenAI API calls through the AtFlow proxy at `http://localhost:8080/v1`. The proxy:
+The Vercel AI SDK is configured to send OpenAI API calls through the AtFlows proxy at `http://localhost:8080/v1`. The proxy:
 
 1. Logs the request
 2. Forwards it to OpenAI
@@ -13,7 +13,7 @@ The Vercel AI SDK is configured to send OpenAI API calls through the AtFlow prox
 
 ## Setup
 
-1. Start AtFlow from the project root:
+1. Start AtFlows from the project root:
 
    ```bash
    npm install
@@ -46,7 +46,7 @@ The Vercel AI SDK is configured to send OpenAI API calls through the AtFlow prox
 import { createOpenAI } from '@ai-sdk/openai'
 import { generateText } from 'ai'
 
-// Create OpenAI client that routes through AtFlow proxy
+// Create OpenAI client that routes through AtFlows proxy
 const openai = createOpenAI({
   baseURL: 'http://localhost:8080/v1',
   apiKey: process.env.OPENAI_API_KEY,
@@ -61,7 +61,7 @@ const { text } = await generateText({
 
 ## What Gets Traced
 
-AtFlow automatically captures:
+AtFlows automatically captures:
 
 | Attribute | Description                         |
 | --------- | ----------------------------------- |
@@ -76,6 +76,6 @@ AtFlow automatically captures:
 
 | Variable            | Default                    | Description                      |
 | ------------------- | -------------------------- | -------------------------------- |
-| `ATFLOW_PROXY`     | `http://localhost:8080/v1` | AtFlow proxy URL                |
+| `ATFLOW_PROXY`     | `http://localhost:8080/v1` | AtFlows proxy URL                |
 | `ATFLOW_DASHBOARD` | `http://localhost:3000`    | Dashboard URL for viewing traces |
 | `OPENAI_API_KEY`    | (required)                 | Your OpenAI API key              |

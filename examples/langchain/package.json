@@ -2,7 +2,7 @@
   "name": "atflows-langchain-example",
   "version": "1.0.0",
   "type": "module",
-  "description": "LangChain.js integration with AtFlow tracing via proxy",
+  "description": "LangChain.js integration with AtFlows tracing via proxy",
   "main": "index.js",
   "scripts": {
     "start": "node index.js"

@@ -10,13 +10,13 @@
    docker compose up -d
    ```
 
-2. Configure AtFlow (add to `.env` in project root):
+2. Configure AtFlows (add to `.env` in project root):
 
    ```bash
    OTLP_EXPORT_ENDPOINT=http://localhost:6006/v1/traces
    ```
 
-3. Restart AtFlow:
+3. Restart AtFlows:
 
    ```bash
    npm start
@@ -26,7 +26,7 @@
 
 5. View traces:
    - **Phoenix UI**: http://localhost:6006
-   - **AtFlow Dashboard**: http://localhost:3000
+   - **AtFlows Dashboard**: http://localhost:3000
 
 ## Arize Cloud
 
@@ -50,7 +50,7 @@ Phoenix provides:
 
 ## Trace Attributes
 
-AtFlow exports OpenInference-compatible attributes:
+AtFlows exports OpenInference-compatible attributes:
 
 - `gen_ai.system` - Provider
 - `gen_ai.request.model` - Model name

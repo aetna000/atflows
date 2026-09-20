@@ -1,4 +1,4 @@
-# AtFlow Issues Tracker
+# AtFlows Issues Tracker
 
 ## Resolved in v0.3.2
 

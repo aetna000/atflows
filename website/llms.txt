@@ -1,6 +1,6 @@
-# AtFlow
+# AtFlows
 
-AtFlow is a local LLM observability proxy and OTLP receiver. The Python distribution and CLI are named `atflows`.
+AtFlows is a local LLM observability proxy and OTLP receiver. The Python distribution and CLI are named `atflows`.
 
 Install: `python -m pip install atflows`
 Run: `atflows` (requires Bun >=1.1.0)
@@ -8,9 +8,9 @@ Dashboard: http://localhost:3000
 Proxy: http://localhost:8080/v1
 OTLP traces: http://localhost:3000/v1/traces
 
-AtFlow tracks requests, traces, tokens, costs, logs, metrics, models and sessions locally in SQLite. It supports OpenAI, Anthropic, Gemini, Ollama and other providers.
+AtFlows tracks requests, traces, tokens, costs, logs, metrics, models and sessions locally in SQLite. It supports OpenAI, Anthropic, Gemini, Ollama and other providers.
 
-Source: https://github.com/aetna000/atflow
+Source: https://github.com/aetna000/atflows
 Upstream credit: https://github.com/HelgeSverre/llmflow
 License: MIT; original Helge Sverre notice retained in LICENSE.
 Maintainer: Javad Taghia, https://github.com/javadtaghia

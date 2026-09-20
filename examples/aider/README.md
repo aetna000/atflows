@@ -1,10 +1,10 @@
 # Aider Configuration
 
-Configure Aider to route requests through AtFlow proxy.
+Configure Aider to route requests through AtFlows proxy.
 
 ## Proxy Mode
 
-Point Aider to AtFlow's OpenAI-compatible proxy:
+Point Aider to AtFlows's OpenAI-compatible proxy:
 
 ```bash
 aider --openai-api-base http://localhost:3000/proxy/openai/v1
@@ -34,4 +34,4 @@ Add to `~/.aider.conf.yml`:
 openai-api-base: http://localhost:3000/proxy/openai/v1
 ```
 
-All requests will be logged and visible in the AtFlow dashboard.
+All requests will be logged and visible in the AtFlows dashboard.

@@ -9,7 +9,7 @@
  * 3. Verify /api/sessions/:id returns the three traces
  *
  * Run: node test/run-tests.js sessions-e2e.js
- * Requires: AtFlow server running on localhost:3000
+ * Requires: AtFlows server running on localhost:3000
  */
 
 const assert = require('node:assert')

@@ -11,7 +11,7 @@
  * 5. Receiving stats_update after insertion
  *
  * Run: node test/websocket-e2e.js
- * Requires: AtFlow server running on localhost:3000
+ * Requires: AtFlows server running on localhost:3000
  */
 
 const WebSocket = require('ws')

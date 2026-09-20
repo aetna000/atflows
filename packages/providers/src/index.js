@@ -59,7 +59,7 @@ class ProviderRegistry {
      * @returns {{ provider: BaseProvider, cleanPath: string }}
      */
     resolve(req) {
-        // Check for X-AtFlow-Provider header override
+        // Check for X-AtFlows-Provider header override
         const headerProvider = req.headers['x-atflows-provider']
         if (headerProvider && this.providers.has(headerProvider.toLowerCase())) {
             return {

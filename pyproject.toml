@@ -4,8 +4,8 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "atflows"
-version = "0.1b1"
-description = "AtFlow: local LLM observability, tracing and cost tracking"
+version = "0.1b2"
+description = "AtFlows: local LLM observability, tracing and cost tracking"
 readme = "README.md"
 requires-python = ">=3.10"
 license = "MIT"
@@ -17,8 +17,8 @@ keywords = ["llm", "observability", "tracing", "opentelemetry", "cost-tracking"]
 atflows = "atflows.cli:main"
 
 [project.urls]
-Homepage = "https://github.com/aetna000/atflow"
-Repository = "https://github.com/aetna000/atflow"
+Homepage = "https://github.com/aetna000/atflows"
+Repository = "https://github.com/aetna000/atflows"
 Upstream = "https://github.com/HelgeSverre/llmflow"
 
 [tool.setuptools]

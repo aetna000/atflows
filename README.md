@@ -1,15 +1,15 @@
-# AtFlow
+# AtFlows
 
 **See what your LLM calls cost. One command. No signup.**
 
-AtFlow is a local observability tool for LLM applications. Point your SDK at it, see your costs, tokens, and latency in real-time.
+AtFlows is a local observability tool for LLM applications. Point your SDK at it, see your costs, tokens, and latency in real-time.
 
 ```bash
-python -m pip install atflows==0.1b1
+python -m pip install atflows==0.1b2
 atflows
 ```
 
-AtFlow `0.1b1` is a beta release. AtFlow uses Bun (>=1.1.0) to run its local server. Install Bun before starting the command. The first launch prepares the bundled runtime in `~/.cache/atflows` and needs package network access.
+AtFlows `0.1b2` is a beta release. AtFlows uses Bun (>=1.1.0) to run its local server. Install Bun before starting the command. The first launch prepares the bundled runtime in `~/.cache/atflows` and needs package network access.
 
 Dashboard: [localhost:3000](http://localhost:3000) · Proxy: [localhost:8080](http://localhost:8080)
 
@@ -17,12 +17,12 @@ Dashboard: [localhost:3000](http://localhost:3000) · Proxy: [localhost:8080](ht
 
 ## Quick Start
 
-### 1. Start AtFlow
+### 1. Start AtFlows
 
-The PyPI package and CLI are named `atflows`; the product is AtFlow.
+The package, CLI and GitHub repository are named `atflows`.
 
 ```bash
-python -m pip install atflows==0.1b1
+python -m pip install atflows==0.1b2
 atflows
 ```
 
@@ -30,8 +30,8 @@ atflows
 For development from source:
 
 ```bash
-git clone https://github.com/aetna000/atflow.git
-cd atflow
+git clone https://github.com/aetna000/atflows.git
+cd atflows
 bun install
 bun run build
 bun run dev
@@ -86,7 +86,7 @@ Open [localhost:3000](http://localhost:3000) to see your traces, costs, and toke
 
 ## Supported Providers
 
-Use path prefixes or the `X-AtFlow-Provider` header:
+Use path prefixes or the `X-AtFlows-Provider` header:
 
 | Provider     | URL                                   |
 | ------------ | ------------------------------------- |
@@ -109,7 +109,7 @@ Use path prefixes or the `X-AtFlow-Provider` header:
 If you're using LangChain, LlamaIndex, or other instrumented frameworks:
 
 ```python
-# Python - point OTLP exporter to AtFlow
+# Python - point OTLP exporter to AtFlows
 from opentelemetry.exporter.otlp.proto.http.trace_exporter import OTLPSpanExporter
 
 exporter = OTLPSpanExporter(endpoint="http://localhost:3000/v1/traces")
@@ -124,7 +124,7 @@ new OTLPTraceExporter({ url: 'http://localhost:3000/v1/traces' })
 
 ### Session correlation
 
-If your spans carry one of these attributes, AtFlow groups multiple traces into
+If your spans carry one of these attributes, AtFlows groups multiple traces into
 a single session and exposes them in the **Sessions** tab:
 
 | Convention                      | Attribute                                     |
@@ -156,13 +156,13 @@ Set provider API keys as environment variables (`OPENAI_API_KEY`, `ANTHROPIC_API
 
 ## Development
 
-AtFlow is a Bun workspaces monorepo (`apps/server`, `apps/dashboard`, plus
+AtFlows is a Bun workspaces monorepo (`apps/server`, `apps/dashboard`, plus
 six packages under `packages/`). Bun is required.
 
 ```bash
 # Clone and install (one workspace install at root covers every package)
-git clone https://github.com/aetna000/atflow.git
-cd atflow && bun install
+git clone https://github.com/aetna000/atflows.git
+cd atflows && bun install
 
 # Server (dashboard on :3000, proxy on :8080)
 bun run dev
@@ -199,4 +199,4 @@ MIT © [Helge Sverre](https://github.com/HelgeSverre) and [Javad Taghia](https:/
 
 ## Credits
 
-AtFlow is a rebrand and continuation of [LLMFlow by Helge Sverre](https://github.com/HelgeSverre/llmflow). Original code remains under the MIT license in [LICENSE](LICENSE). Rebrand, packaging and dashboard work by [Javad Taghia](https://github.com/javadtaghia).
+AtFlows is a rebrand and continuation of [LLMFlow by Helge Sverre](https://github.com/HelgeSverre/llmflow). Original code remains under the MIT license in [LICENSE](LICENSE). Rebrand, packaging and dashboard work by [Javad Taghia](https://github.com/javadtaghia).

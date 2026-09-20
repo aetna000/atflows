@@ -10,7 +10,7 @@
  * 4. Test aggregation and filtering
  *
  * Run: node test/otlp-metrics-e2e.js
- * Requires: AtFlow server running on localhost:3000
+ * Requires: AtFlows server running on localhost:3000
  */
 
 const http = require('http')

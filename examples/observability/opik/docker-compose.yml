@@ -5,7 +5,7 @@ services:
     image: comet-ml/opik:latest
     ports:
       - '5173:5173' # Opik UI
-      - '8081:8080' # Opik API (use 8081 to avoid conflict with AtFlow proxy)
+      - '8081:8080' # Opik API (use 8081 to avoid conflict with AtFlows proxy)
     environment:
       - OPIK_URL_OVERRIDE=http://localhost:5173
     volumes:

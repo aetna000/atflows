@@ -171,6 +171,6 @@ test.describe('Navigation & URL Hash Persistence', () => {
 
         const logo = page.locator('[data-testid="logo"]')
         await expect(logo).toBeVisible()
-        await expect(logo).toContainText('AtFlow')
+        await expect(logo).toContainText('AtFlows')
     })
 })

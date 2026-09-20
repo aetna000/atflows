@@ -20,7 +20,7 @@
           <path d="M2 17l10 5 10-5" />
           <path d="M2 12l10 5 10-5" />
         </svg>
-        AtFlow
+        AtFlows
         <span
           id="connectionStatus"
           class="status-dot"
@@ -34,6 +34,13 @@
               : 'Connecting...'}
         ></span>
       </h1>
+      <a
+        class="package-link"
+        href="https://pypi.org/project/atflows/"
+        target="_blank"
+        rel="noopener noreferrer"
+        title="Install AtFlows from PyPI"
+      >pip install atflows</a>
       <button
         class="theme-toggle"
         data-testid="theme-toggle"

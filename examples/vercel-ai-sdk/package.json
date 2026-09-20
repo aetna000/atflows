@@ -2,7 +2,7 @@
   "name": "atflows-vercel-ai-example",
   "version": "1.0.0",
   "type": "module",
-  "description": "Vercel AI SDK integration with AtFlow tracing via proxy",
+  "description": "Vercel AI SDK integration with AtFlows tracing via proxy",
   "main": "index.js",
   "scripts": {
     "start": "node index.js"

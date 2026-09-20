@@ -1,11 +1,11 @@
 /**
- * Vercel AI SDK + AtFlow Proxy Integration Example
+ * Vercel AI SDK + AtFlows Proxy Integration Example
  *
  * This example shows how to trace Vercel AI SDK applications
- * by routing API calls through the AtFlow proxy.
+ * by routing API calls through the AtFlows proxy.
  *
  * Prerequisites:
- *   1. Start AtFlow: cd ../.. && npm start
+ *   1. Start AtFlows: cd ../.. && npm start
  *   2. Set your OpenAI API key in .env at project root
  *   3. Run: make examples (from project root)
  */
@@ -24,9 +24,9 @@ if (!process.env.OPENAI_API_KEY) {
     process.exit(1)
 }
 
-console.log(`Vercel AI SDK routing through AtFlow proxy at ${ATFLOW_PROXY}`)
+console.log(`Vercel AI SDK routing through AtFlows proxy at ${ATFLOW_PROXY}`)
 
-// Create OpenAI client that routes through AtFlow proxy
+// Create OpenAI client that routes through AtFlows proxy
 const openai = createOpenAI({
     baseURL: ATFLOW_PROXY,
     apiKey: process.env.OPENAI_API_KEY,

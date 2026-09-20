@@ -1,8 +1,8 @@
 # Observability Backends Integration Guide
 
-AtFlow can integrate with popular LLM observability platforms, either by:
+AtFlows can integrate with popular LLM observability platforms, either by:
 
-1. **Exporting data TO backends** - Configure AtFlow to forward traces/logs/metrics
+1. **Exporting data TO backends** - Configure AtFlows to forward traces/logs/metrics
 2. **Receiving data FROM tools** - Accept OTLP telemetry from instrumented applications
 3. **Acting as a proxy** - Forward LLM requests while capturing telemetry
 
@@ -18,7 +18,7 @@ AtFlow can integrate with popular LLM observability platforms, either by:
 | **Zipkin**          | Zipkin Format      | 9411      | `http://localhost:9411/api/v2/spans`                  |
 | **Grafana Tempo**   | OTLP Export        | 4318      | `http://localhost:4318/v1/traces`                     |
 
-> **Sessions work across all OTLP backends.** When AtFlow ingests spans that
+> **Sessions work across all OTLP backends.** When AtFlows ingests spans that
 > carry `session.id` (OpenInference) — or any of `langsmith.trace.session_id`,
 > `traceloop.association.properties.session_id`, `ai.telemetry.metadata.sessionId`,
 > or the `service.instance.id` resource attribute — they show up in the
@@ -41,7 +41,7 @@ AtFlow can integrate with popular LLM observability platforms, either by:
 │                           │                                             │
 │                           ▼                                             │
 │                    ┌──────────────┐                                     │
-│                    │   AtFlow    │──────────────────────────────┐      │
+│                    │   AtFlows    │──────────────────────────────┐      │
 │                    │   Proxy      │                              │      │
 │                    │  :8080       │                              │      │
 │                    └──────┬───────┘                              │      │
@@ -56,7 +56,7 @@ AtFlow can integrate with popular LLM observability platforms, either by:
                                                                   │
                                                                   ▼
                                                      ┌──────────────────┐
-                                                     │   AtFlow        │
+                                                     │   AtFlows        │
                                                      │   Dashboard      │
                                                      │   :1337          │
                                                      └────────┬─────────┘
@@ -88,7 +88,7 @@ docker run -d --name jaeger \
 
 ### Configuration
 
-**Option A: Export from AtFlow to Jaeger**
+**Option A: Export from AtFlows to Jaeger**
 
 Set environment variables to forward traces:
 
@@ -97,23 +97,23 @@ export OTLP_EXPORT_ENDPOINT=http://localhost:4318/v1/traces
 export OTLP_EXPORT_ENABLED=true
 ```
 
-**Option B: Send OTLP traces through AtFlow**
+**Option B: Send OTLP traces through AtFlows**
 
-AtFlow accepts OTLP at `/v1/traces`. Configure your app to send to AtFlow, then set up forwarding:
+AtFlows accepts OTLP at `/v1/traces`. Configure your app to send to AtFlows, then set up forwarding:
 
 ```javascript
 // Example: Configure OpenTelemetry SDK
 const { OTLPTraceExporter } = require('@opentelemetry/exporter-trace-otlp-http')
 
 const exporter = new OTLPTraceExporter({
-  url: 'http://localhost:1337/v1/traces', // AtFlow dashboard
+  url: 'http://localhost:1337/v1/traces', // AtFlows dashboard
 })
 ```
 
 ### View Traces
 
 - **Jaeger UI**: http://localhost:16686
-- **AtFlow Dashboard**: http://localhost:1337
+- **AtFlows Dashboard**: http://localhost:1337
 
 ---
 
@@ -143,7 +143,7 @@ export PHOENIX_COLLECTOR_ENDPOINT=http://localhost:6006
 export OTEL_EXPORTER_OTLP_ENDPOINT=http://localhost:6006
 ```
 
-**Using with AtFlow Proxy**
+**Using with AtFlows Proxy**
 
 ```javascript
 // Configure OpenTelemetry to send to Phoenix
@@ -154,7 +154,7 @@ const phoenixExporter = new OTLPTraceExporter({
   url: 'http://localhost:6006/v1/traces',
 })
 
-// Or send to AtFlow (which stores locally)
+// Or send to AtFlows (which stores locally)
 const atflowsExporter = new OTLPTraceExporter({
   url: 'http://localhost:1337/v1/traces',
 })
@@ -218,16 +218,16 @@ const langfuse = new Langfuse({
 })
 ```
 
-### Using AtFlow with Langfuse
+### Using AtFlows with Langfuse
 
-You can use both AtFlow and Langfuse together:
+You can use both AtFlows and Langfuse together:
 
-1. **AtFlow as primary observability** - Local dashboard + SQLite storage
+1. **AtFlows as primary observability** - Local dashboard + SQLite storage
 2. **Forward to Langfuse** - For prompt management and team collaboration
 
 ```bash
-# Your app → AtFlow Proxy → OpenAI
-# AtFlow → Langfuse (via OTLP export)
+# Your app → AtFlows Proxy → OpenAI
+# AtFlows → Langfuse (via OTLP export)
 ```
 
 ---
@@ -238,10 +238,10 @@ You can use both AtFlow and Langfuse together:
 
 ### Integration Method: Proxy Chain
 
-Helicone works as a proxy, so you chain AtFlow → Helicone → Provider:
+Helicone works as a proxy, so you chain AtFlows → Helicone → Provider:
 
 ```
-Your App → AtFlow Proxy → Helicone Gateway → OpenAI
+Your App → AtFlows Proxy → Helicone Gateway → OpenAI
 ```
 
 ### Configuration
@@ -264,23 +264,23 @@ docker compose up -d
 export OPENAI_BASE_URL=http://localhost:8585/v1/gateway/oai/v1
 ```
 
-### Using with AtFlow
+### Using with AtFlows
 
 ```javascript
-// Chain: App → AtFlow → Helicone → OpenAI
+// Chain: App → AtFlows → Helicone → OpenAI
 const client = new OpenAI({
-  baseURL: 'http://localhost:8080/v1', // AtFlow proxy
+  baseURL: 'http://localhost:8080/v1', // AtFlows proxy
   defaultHeaders: {
-    'X-AtFlow-Forward-URL': 'https://oai.helicone.ai/v1',
+    'X-AtFlows-Forward-URL': 'https://oai.helicone.ai/v1',
     'Helicone-Auth': `Bearer ${process.env.HELICONE_API_KEY}`,
   },
 })
 ```
 
-Or configure AtFlow to use Helicone as the upstream provider:
+Or configure AtFlows to use Helicone as the upstream provider:
 
 ```bash
-# In AtFlow .env
+# In AtFlows .env
 OPENAI_BASE_URL=https://oai.helicone.ai/v1
 OPENAI_DEFAULT_HEADERS='{"Helicone-Auth": "Bearer sk-helicone-xxx"}'
 ```
@@ -315,16 +315,16 @@ export OTEL_EXPORTER_OTLP_ENDPOINT=https://www.comet.com/opik/api/v1/private/ote
 export OTEL_EXPORTER_OTLP_HEADERS="Authorization=your-api-key,projectName=your-project,Comet-Workspace=your-workspace"
 ```
 
-### Using with AtFlow
+### Using with AtFlows
 
 ```python
 # Python example with Opik decorator
 import opik
 from openai import OpenAI
 
-# Configure to use AtFlow proxy
+# Configure to use AtFlows proxy
 client = OpenAI(
-    base_url='http://localhost:8080/v1'  # AtFlow proxy
+    base_url='http://localhost:8080/v1'  # AtFlows proxy
 )
 
 @opik.track
@@ -429,12 +429,12 @@ service:
       exporters: [otlp/jaeger, otlp/phoenix, otlphttp/langfuse]
 ```
 
-### Using AtFlow as Hub
+### Using AtFlows as Hub
 
 ```
                      ┌─────────────┐
-                     │   AtFlow   │
-App → AtFlow Proxy →│  Dashboard  │→ SQLite (local)
+                     │   AtFlows   │
+App → AtFlows Proxy →│  Dashboard  │→ SQLite (local)
                      │   :1337     │
                      └──────┬──────┘
                             │
@@ -445,7 +445,7 @@ App → AtFlow Proxy →│  Dashboard  │→ SQLite (local)
          └────────┘   └──────────┘  └──────────┘
 ```
 
-Configure export destinations in AtFlow (future feature).
+Configure export destinations in AtFlows (future feature).
 
 ---
 
@@ -488,7 +488,7 @@ Helicone-Auth: Bearer sk-helicone-xxx
 
 ### Debug Mode
 
-Enable verbose logging in AtFlow:
+Enable verbose logging in AtFlows:
 
 ```bash
 VERBOSE=1 npm start

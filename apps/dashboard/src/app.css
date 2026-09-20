@@ -154,6 +154,19 @@ h1.logo {
   color: var(--accent-primary);
 }
 
+.package-link {
+  color: var(--accent-primary);
+  font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
+  font-size: 11px;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.package-link:hover,
+.package-link:focus-visible {
+  text-decoration: underline;
+}
+
 /* Theme toggle */
 .theme-toggle {
   background: none;

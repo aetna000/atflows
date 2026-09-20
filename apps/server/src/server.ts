@@ -1555,7 +1555,7 @@ function startProxyServer() {
                     usage: {
                         default: 'Use /v1/* for OpenAI (default provider)',
                         custom: 'Use /{provider}/v1/* for other providers (e.g., /ollama/v1/chat/completions)',
-                        header: 'Or set X-AtFlow-Provider header to override',
+                        header: 'Or set X-AtFlows-Provider header to override',
                         passthrough:
                             'Use /passthrough/{provider}/* for native API formats (e.g., /passthrough/anthropic/v1/messages)',
                     },

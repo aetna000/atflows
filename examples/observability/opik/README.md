@@ -17,14 +17,14 @@
    - Create a project
    - Get your API key from settings
 
-3. Configure AtFlow (add to `.env` in project root):
+3. Configure AtFlows (add to `.env` in project root):
 
    ```bash
    OTLP_EXPORT_ENDPOINT=http://localhost:8081/api/v1/private/otel/v1/traces
    # OTLP_EXPORT_HEADERS=Authorization=your-api-key,projectName=your-project
    ```
 
-4. Restart AtFlow:
+4. Restart AtFlows:
 
    ```bash
    npm start
@@ -34,7 +34,7 @@
 
 6. View traces:
    - **Opik UI**: http://localhost:5173
-   - **AtFlow Dashboard**: http://localhost:3000
+   - **AtFlows Dashboard**: http://localhost:3000
 
 ## Comet Cloud
 
@@ -59,7 +59,7 @@ Opik provides:
 
 ## Trace Attributes
 
-AtFlow exports these attributes:
+AtFlows exports these attributes:
 
 - `gen_ai.system` - Provider
 - `gen_ai.request.model` - Model name

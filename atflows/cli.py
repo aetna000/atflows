@@ -1,4 +1,4 @@
-"""Launch the bundled AtFlow Bun server from a writable user cache."""
+"""Launch the bundled AtFlows Bun server from a writable user cache."""
 
 import os
 from pathlib import Path
@@ -15,15 +15,15 @@ def main() -> int:
         print(f"atflows {__version__}")
         return 0
     if any(arg in ("-h", "--help") for arg in args):
-        print("AtFlow local LLM observability\n\nUsage: atflows [--help] [--version]\nDashboard: http://localhost:3000\nProxy: http://localhost:8080\nRequires Bun >=1.1.0.")
+        print("AtFlows local LLM observability\n\nUsage: atflows [--help] [--version]\nDashboard: http://localhost:3000\nProxy: http://localhost:8080\nRequires Bun >=1.1.0.")
         return 0
     bun = shutil.which("bun")
     if bun is None:
-        print("AtFlow requires Bun >=1.1.0. Install it from https://bun.sh", file=sys.stderr)
+        print("AtFlows requires Bun >=1.1.0. Install it from https://bun.sh", file=sys.stderr)
         return 1
     source = Path(__file__).resolve().parent / "_runtime"
     if not (source / "apps/server/src/server.ts").is_file():
-        print("AtFlow runtime is missing from this installation.", file=sys.stderr)
+        print("AtFlows runtime is missing from this installation.", file=sys.stderr)
         return 1
     cache = Path(os.environ.get("ATFLOW_RUNTIME_DIR", Path.home() / ".cache" / "atflows")) / __version__
     ready = cache / ".ready"
@@ -32,7 +32,7 @@ def main() -> int:
         if cache.exists():
             shutil.rmtree(cache)
         shutil.copytree(source, cache)
-        print("Preparing AtFlow runtime...", flush=True)
+        print("Preparing AtFlows runtime...", flush=True)
         result = subprocess.run([bun, "install", "--production", "--frozen-lockfile"], cwd=cache, check=False)
         if result.returncode:
             shutil.rmtree(cache, ignore_errors=True)

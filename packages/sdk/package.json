@@ -30,12 +30,12 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/aetna000/atflow.git",
+    "url": "git+https://github.com/aetna000/atflows.git",
     "directory": "packages/sdk"
   },
-  "homepage": "https://github.com/aetna000/atflow#readme",
+  "homepage": "https://github.com/aetna000/atflows#readme",
   "bugs": {
-    "url": "https://github.com/aetna000/atflow/issues"
+    "url": "https://github.com/aetna000/atflows/issues"
   },
   "engines": {
     "node": ">=18"

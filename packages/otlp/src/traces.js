@@ -1,9 +1,9 @@
 /**
- * OTLP (OpenTelemetry Protocol) HTTP endpoint for AtFlow
+ * OTLP (OpenTelemetry Protocol) HTTP endpoint for AtFlows
  *
- * Accepts OTLP/HTTP JSON traces and transforms them to AtFlow span format.
+ * Accepts OTLP/HTTP JSON traces and transforms them to AtFlows span format.
  * This allows users with existing OpenTelemetry/OpenLLMetry instrumentation
- * to export traces directly to AtFlow.
+ * to export traces directly to AtFlows.
  *
  * Supports:
  * - OTLP/HTTP JSON format (Content-Type: application/json)
@@ -32,7 +32,7 @@ const PROVIDER_TO_SPAN_TYPE = {
 }
 
 /**
- * Map traceloop.span.kind to AtFlow span types
+ * Map traceloop.span.kind to AtFlows span types
  */
 const TRACELOOP_KIND_TO_SPAN_TYPE = {
     workflow: 'trace',
@@ -252,7 +252,7 @@ function nanoToMs(nanoStr) {
 }
 
 /**
- * Transform a single OTLP span to AtFlow format
+ * Transform a single OTLP span to AtFlows format
  */
 function transformSpan(span, resourceAttrs, scopeAttrs) {
     const attrs = {

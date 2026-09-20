@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 /**
- * AtFlow Demo Script
+ * AtFlows Demo Script
  *
  * Generates traced LLM-like traffic to test the dashboard.
  * Shows hierarchical spans: trace -> agent -> retrieval + llm
@@ -208,7 +208,7 @@ async function runScenario(scenario, index) {
 }
 
 async function runDemo() {
-    console.log(`${c.cyan}AtFlow Demo${c.reset}`)
+    console.log(`${c.cyan}AtFlows Demo${c.reset}`)
     console.log(`${c.dim}Server: ${ATFLOW_URL}${c.reset}`)
     console.log(`${c.dim}Traces: ${TRACE_COUNT}${c.reset}\n`)
 
