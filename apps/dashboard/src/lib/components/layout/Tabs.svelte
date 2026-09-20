@@ -2,7 +2,7 @@
   import { onMount } from 'svelte'
   import { tabState, setTab, type Tab } from '$lib/stores/tabs.svelte'
   import { toggleTheme } from '$lib/stores/theme.svelte'
-  import { authAccount } from '$lib/stores/auth.svelte'
+  import { authAccount, authMode } from '$lib/stores/auth.svelte'
 
   const activityTabs = [
     ['timeline', 'Timeline'],
@@ -60,7 +60,7 @@
       {#if authAccount.value?.role === 'administrator'}
         <button class:active={tabState.current === 'connect'} data-testid="tab-connect" onclick={() => choose('connect')}>Connect</button>
         <button class:active={tabState.current === 'database'} data-testid="tab-database" onclick={() => choose('database')}>Database</button>
-        <button class:active={tabState.current === 'users'} data-testid="tab-users" onclick={() => choose('users')}>Users &amp; access</button>
+        {#if authMode.value !== 'atmem'}<button class:active={tabState.current === 'users'} data-testid="tab-users" onclick={() => choose('users')}>Users &amp; access</button>{/if}
       {/if}
       <button data-testid="theme-toggle" onclick={() => { toggleTheme(); if (settingsMenu) settingsMenu.open = false }}>Toggle theme</button>
     </div>

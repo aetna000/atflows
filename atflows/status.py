@@ -50,7 +50,7 @@ def print_status() -> int:
         return 0
     print(f"AtFlows servers running: {len(servers)}")
     for item in servers:
-        dashboard = f"http://localhost:{item['dashboard_port']}" if item["dashboard_online"] else "unavailable"
-        proxy = f"http://localhost:{item['proxy_port']}" if item["proxy_online"] else "unavailable"
+        dashboard = f"http://127.0.0.1:{item['dashboard_port']}" if item["dashboard_online"] else "unavailable"
+        proxy = f"http://127.0.0.1:{item['proxy_port']}" if item["proxy_online"] else "unavailable"
         print(f"PID {item['pid']}  Dashboard: {dashboard}  Proxy: {proxy}")
     return 0

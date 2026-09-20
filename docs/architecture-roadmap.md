@@ -1,6 +1,6 @@
 # AtFlows architecture pathway
 
-This table distinguishes shipped work from requirements still on the roadmap. Release `0.1.0` has a Python CLI, a Bun and SQLite runtime, proxy, OTLP/HTTP JSON and protobuf ingest, a Svelte dashboard, and local dashboard user roles. It has no AtFlows MCP server or AtMem, AtBot, or Jev package integration.
+This table distinguishes shipped work from requirements still on the roadmap. Release `0.1.1` has a Python CLI, a Bun and SQLite runtime, proxy, OTLP/HTTP JSON and protobuf ingest, a Svelte dashboard, local dashboard user roles, and optional AtMem-delegated dashboard login. It has no AtFlows MCP server, automatic AtMem trace ingestion, AtFlows AtBot, or Jev decision integration.
 
 ## Delivery order
 

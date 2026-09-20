@@ -17,7 +17,7 @@
   import { initWebSocket, closeWebSocket } from '$lib/stores/websocket.svelte'
   import { loadStats, initStatsSync } from '$lib/stores/stats.svelte'
   import atflowsPackage from '../../../package.json'
-  import { authAccount, type Account } from '$lib/stores/auth.svelte'
+  import { authAccount, authMode, type Account } from '$lib/stores/auth.svelte'
   import UsersTab from '$lib/components/settings/UsersTab.svelte'
   import AccountTab from '$lib/components/settings/AccountTab.svelte'
 
@@ -28,7 +28,7 @@
     if (authState !== 'authenticated') return
     const role = authAccount.value?.role
     if (role === 'viewer' && tabState.current !== 'models' && tabState.current !== 'analytics' && tabState.current !== 'account') setTab('models')
-    else if (role !== 'administrator' && ['connect', 'database', 'users'].includes(tabState.current)) setTab('timeline')
+    else if ((role !== 'administrator' && ['connect', 'database', 'users'].includes(tabState.current)) || (authMode.value === 'atmem' && tabState.current === 'users')) setTab('timeline')
   })
 
   function startDashboard() {
@@ -146,8 +146,10 @@
   }
 
   onMount(() => {
-    api.get<{ authenticated: boolean; password_change_required: boolean; account: Account | null }>('/api/auth/status')
+    api.get<{ authenticated: boolean; password_change_required: boolean; account: Account | null; mode?: 'atmem'; sign_in_url?: string }>('/api/auth/status')
       .then((status) => {
+        authMode.value = status.mode === 'atmem' ? 'atmem' : 'local'
+        authMode.signInUrl = status.sign_in_url || ''
         authAccount.value = status.account
         authState = status.authenticated ? status.password_change_required ? 'change-password' : 'authenticated' : 'signed-out'
         if (authState === 'authenticated') startDashboard()

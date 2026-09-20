@@ -9,6 +9,7 @@ import getPort from 'get-port'
 import { getIntegrationCatalog } from '@atflows/integrations'
 import { previewCodexSetup, applyCodexSetup, undoCodexSetup, codexSetupStatus, getLatestCodexChangeId } from '@atflows/integrations/local-config'
 import { createLocalAuth, requiredDashboardRole, allowsRole } from './auth'
+import { createAtMemAuth } from './atmem-auth'
 
 // CommonJS workspace packages
 const { calculateCost } = require('@atflows/pricing')
@@ -93,7 +94,9 @@ const PROXY_PORT = await getPort({ port: Number(process.env.PROXY_PORT || 8080) 
 const DASHBOARD_PORT = await getPort({ port: Number(process.env.DASHBOARD_PORT || 1337) })
 const DASHBOARD_HOST = process.env.DASHBOARD_HOST || '127.0.0.1'
 const PROXY_HOST = process.env.PROXY_HOST || '127.0.0.1'
-const localAuth = createLocalAuth(db.DATA_DIR)
+const localAuth = process.env.ATFLOWS_ATMEM_AUTH_URL
+    ? createAtMemAuth(process.env.ATFLOWS_ATMEM_AUTH_URL, DASHBOARD_HOST)
+    : createLocalAuth(db.DATA_DIR)
 let boundDashboardPort = DASHBOARD_PORT
 let boundProxyPort = PROXY_PORT
 const instanceId = crypto.randomUUID()
@@ -186,10 +189,10 @@ function logInteraction(
 type DashboardSocket = Bun.ServerWebSocket<{ cookie: string }>
 const wsClients = new Set<DashboardSocket>()
 
-function pruneDashboardSockets() {
+async function pruneDashboardSockets() {
     for (const client of wsClients) {
         const request = new Request('http://localhost/api/stats', { headers: { Cookie: client.data.cookie } })
-        const account = localAuth.account(request)
+        const account = await localAuth.account(request)
         if (!account || account.password_change_required || account.role === 'viewer') {
             client.close()
             wsClients.delete(client)
@@ -197,9 +200,9 @@ function pruneDashboardSockets() {
     }
 }
 
-function broadcast(data: unknown) {
+async function broadcast(data: unknown) {
     const message = JSON.stringify(data)
-    pruneDashboardSockets()
+    await pruneDashboardSockets()
     for (const client of wsClients) {
         try {
             client.send(message)
@@ -312,7 +315,8 @@ function startDashboardServer() {
             if (pathname === '/ws') {
                 const origin = req.headers.get('origin')
                 if (origin && origin !== url.origin) return new Response('Origin check failed', { status: 403 })
-                if (!localAuth.ready(req) || localAuth.role(req) === 'viewer') return new Response('Not authorized', { status: 401 })
+                const account = await localAuth.account(req)
+                if (!account || account.password_change_required || account.role === 'viewer') return new Response('Not authorized', { status: 401 })
                 if (server.upgrade(req, { data: { cookie: req.headers.get('cookie') || '' } })) return new Response(null)
                 return new Response('WebSocket upgrade failed', { status: 400 })
             }
@@ -330,17 +334,17 @@ function startDashboardServer() {
                         pathname === '/api/auth/logout' || pathname === '/api/auth/change-password' ||
                         pathname === '/api/users/update' || pathname === '/api/users/reset-password'
                     )) {
-                        pruneDashboardSockets()
+                        await pruneDashboardSockets()
                     }
                     return authResponse
                 }
-                if (pathname !== '/api/health' && pathname !== '/api/spans' && !localAuth.ready(req)) {
+                const account = pathname === '/api/health' || pathname === '/api/spans' ? null : await localAuth.account(req)
+                if (pathname !== '/api/health' && pathname !== '/api/spans' && (!account || account.password_change_required)) {
                     return Response.json({ error: 'Sign in required' }, { status: 401 })
                 }
                 if (pathname !== '/api/health' && pathname !== '/api/spans') {
-                    const role = localAuth.role(req)
                     const required = requiredDashboardRole(pathname, req.method)
-                    if (!allowsRole(role, required)) {
+                    if (!allowsRole(account?.role || null, required)) {
                         return Response.json({ error: `${required === 'administrator' ? 'Administrator' : 'Investigator'} access required` }, { status: 403 })
                     }
                 }
@@ -1887,8 +1891,8 @@ function main() {
         try { fs.unlinkSync(stateFile) } catch { /* status ignores stale records */ }
     })
 
-    console.log(`[atflows] Dashboard: http://localhost:${boundDashboardPort}`)
-    console.log(`[atflows] Proxy:     http://localhost:${boundProxyPort}`)
+    console.log(`[atflows] Dashboard: http://127.0.0.1:${boundDashboardPort}`)
+    console.log(`[atflows] Proxy:     http://127.0.0.1:${boundProxyPort}`)
 }
 
 if (import.meta.main) {

@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { authAccount } from '$lib/stores/auth.svelte'
+  import { authAccount, authMode } from '$lib/stores/auth.svelte'
 
   let currentPassword = $state('')
   let newPassword = $state('')
@@ -34,7 +34,10 @@
   <div class="account-heading"><span>Configuration</span><h2>My account</h2><p>Manage your local sign-in</p></div>
   <div class="account-card">
     <div class="account-summary"><strong>{authAccount.value?.display_name}</strong><span>{authAccount.value?.username} · {authAccount.value?.role.replace('_', ' ')}</span></div>
-    <form onsubmit={changePassword}>
+    {#if authMode.value === 'atmem'}
+      <p>AtMem manages this account, password, and user access for both dashboards.</p>
+      <p><a href={authMode.signInUrl} target="_blank" rel="noopener noreferrer">Open AtMem account settings</a></p>
+    {:else}<form onsubmit={changePassword}>
       <h3>Change password</h3>
       <label>Current password<input required type={showPasswords ? 'text' : 'password'} autocomplete="current-password" bind:value={currentPassword} /></label>
       <label>New password<input required type={showPasswords ? 'text' : 'password'} autocomplete="new-password" bind:value={newPassword} /></label>
@@ -43,7 +46,7 @@
       <button type="submit" disabled={busy}>{busy ? 'Saving…' : 'Change password'}</button>
       {#if error}<p class="error" role="alert">{error}</p>{/if}
       {#if message}<p class="success" role="status">{message}</p>{/if}
-    </form>
+    </form>{/if}
   </div>
 </section>
 
