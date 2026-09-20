@@ -17,7 +17,7 @@ Run `atflow` or `atflow status` to list live dashboard and proxy addresses. `atf
 
 Dashboard: [localhost:1337](http://localhost:1337) by default · Proxy: [localhost:8080](http://localhost:8080)
 
-Both listeners bind to `127.0.0.1` by default. `DASHBOARD_HOST` and `PROXY_HOST` can change their bind addresses for a trusted deployment; OTLP ingestion has no built-in authentication. To use one AtMem account for both dashboards, start the AtMem dashboard and run `ATFLOWS_ATMEM_AUTH_URL=http://127.0.0.1:ATMEM_PORT atflows init` with its actual port. Open both dashboards using `127.0.0.1`. AtMem then owns users, roles and passwords; AtFlows' local accounts are inactive until you restart without this setting. See [users and access](docs/users-and-access.md).
+Both listeners bind to `127.0.0.1` by default. `DASHBOARD_HOST` and `PROXY_HOST` can change their bind addresses for a trusted deployment; OTLP ingestion has no built-in authentication. To use one AtMem account for both dashboards, start the AtMem dashboard, set `ATFLOWS_ATMEM_AUTH_URL` to its numeric loopback URL, and run `atflows init`. Keep the setting for every AtFlows start; the mode is read at startup. Open both dashboards using `127.0.0.1`. AtMem then owns users, roles and passwords. AtFlows' local accounts are inactive until you restart without the setting. See [users and access](docs/users-and-access.md).
 
 ---
 

@@ -6,10 +6,11 @@ To use AtMem as the **only account authority**, start an AtMem dashboard on
 `127.0.0.1` and then start AtFlows with its exact dashboard origin:
 
 ```bash
-ATFLOWS_ATMEM_AUTH_URL=http://127.0.0.1:ATMEM_PORT atflows init
+export ATFLOWS_ATMEM_AUTH_URL=http://127.0.0.1:ATMEM_PORT
+atflows init
 ```
 
-Replace `ATMEM_PORT` with the port shown by `atmem status`. Open both dashboards
+Replace `ATMEM_PORT` with the port shown by `atmem status`. Keep the variable set for every AtFlows start; the mode is read at startup, not stored by `init`. Open both dashboards
 using `127.0.0.1`, not different hostnames. Sign in once at the AtMem dashboard;
 AtFlows reads that live AtMem session and applies its current role. Creating,
 disabling or changing a user in AtMem takes effect on the next AtFlows request.
