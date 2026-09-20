@@ -1,5 +1,13 @@
 # AGENTS.md
 
+## Coordinated releases
+
+When AtFlows ships with AtMem, follow `docs/releasing.md` and the AtMem
+repository's `docs/release-coordination.md`. Release and verify AtFlows on
+GitHub and PyPI before merging an AtMem commit that pins the new version.
+The release lead must also check the AtMem.ai documentation and website
+handoff; only the website owner merges its private `main` PR.
+
 ## Spec Kit
 
 Material changes to storage, public CLI/MCP contracts, provider integration, or package boundaries use the repository's `.specify/` constitution and a bounded feature under `specs/`. See `docs/spec-kit.md` and `docs/architecture-roadmap.md`. These specs describe future behavior; current build commands below remain authoritative until implementation ships.
