@@ -1,0 +1,10 @@
+{
+  "name": "@atflows/pricing",
+  "version": "0.0.0",
+  "private": true,
+  "main": "./src/index.js",
+  "exports": {
+    ".": "./src/index.js",
+    "./fallback": "./pricing.fallback.json"
+  }
+}

@@ -1,0 +1,19 @@
+services:
+  atflows:
+    build: .
+    container_name: atflows
+    ports:
+      - '${PROXY_PORT:-8080}:8080'
+      - '${DASHBOARD_PORT:-3000}:3000'
+    volumes:
+      - atflows-data:/root/.atflows
+    environment:
+      - PROXY_PORT=8080
+      - DASHBOARD_PORT=3000
+      - DATA_DIR=/root/.atflows
+      - MAX_TRACES=${MAX_TRACES:-10000}
+    restart: unless-stopped
+
+volumes:
+  atflows-data:
+    driver: local

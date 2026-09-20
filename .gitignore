@@ -1,0 +1,21 @@
+**/node_modules/
+npm-debug.log
+.DS_Store
+*.db
+*.sqlite
+.env
+.idea/
+**/.vscode/
+*.log
+test-results/
+test-data/
+playwright-report/
+
+# Workspace per-package build artifacts that should be regenerated locally
+apps/*/dist/
+packages/*/dist/
+
+__pycache__/
+build/
+dist/
+*.egg-info/

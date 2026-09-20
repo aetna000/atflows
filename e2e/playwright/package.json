@@ -1,0 +1,10 @@
+{
+  "name": "@atflows/e2e",
+  "version": "0.0.0",
+  "private": true,
+  "type": "commonjs",
+  "dependencies": {
+    "@atflows/db": "workspace:*",
+    "@atflows/server": "workspace:*"
+  }
+}

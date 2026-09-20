@@ -1,0 +1,6 @@
+include README.md LICENSE package.json bun.lock
+recursive-include apps *
+recursive-include packages *
+recursive-include public *
+prune node_modules
+recursive-exclude * node_modules

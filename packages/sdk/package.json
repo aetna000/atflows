@@ -1,0 +1,45 @@
+{
+  "name": "atflows-sdk",
+  "version": "0.2.2",
+  "description": "Minimal tracing SDK for LLM applications",
+  "type": "module",
+  "main": "index.js",
+  "module": "index.js",
+  "types": "index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./index.js",
+      "types": "./index.d.ts"
+    }
+  },
+  "files": [
+    "index.js",
+    "index.d.ts"
+  ],
+  "keywords": [
+    "llm",
+    "tracing",
+    "observability",
+    "openai",
+    "langchain",
+    "opentelemetry",
+    "spans",
+    "agents"
+  ],
+  "author": "Javad Taghia <taghia.javad@gmail.com>",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/aetna000/atflow.git",
+    "directory": "packages/sdk"
+  },
+  "homepage": "https://github.com/aetna000/atflow#readme",
+  "bugs": {
+    "url": "https://github.com/aetna000/atflow/issues"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "peerDependencies": {},
+  "devDependencies": {}
+}
