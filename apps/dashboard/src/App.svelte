@@ -1,7 +1,6 @@
 <script lang="ts">
   import { onMount } from 'svelte'
   import Header from '$lib/components/layout/Header.svelte'
-  import Tabs from '$lib/components/layout/Tabs.svelte'
   import TimelineTab from '$lib/components/timeline/TimelineTab.svelte'
   import TracesTab from '$lib/components/traces/TracesTab.svelte'
   import LogsTab from '$lib/components/logs/LogsTab.svelte'
@@ -10,12 +9,18 @@
   import AnalyticsTab from '$lib/components/analytics/AnalyticsTab.svelte'
   import SessionsTab from '$lib/components/sessions/SessionsTab.svelte'
   import ConnectTab from '$lib/components/connect/ConnectTab.svelte'
+  import Login from '$lib/components/layout/Login.svelte'
+  import { api } from '$lib/api/client'
   import { tabState, initTabHashSync, setTab, validTabs } from '$lib/stores/tabs.svelte'
   import { initTheme, toggleTheme } from '$lib/stores/theme.svelte'
-  import { initWebSocket } from '$lib/stores/websocket.svelte'
+  import { initWebSocket, closeWebSocket } from '$lib/stores/websocket.svelte'
   import { loadStats, initStatsSync } from '$lib/stores/stats.svelte'
 
-  onMount(() => {
+  let authState = $state<'loading' | 'signed-out' | 'authenticated'>('loading')
+  let stopDashboard: (() => void) | undefined
+
+  function startDashboard() {
+    if (stopDashboard) return
     initTheme()
     initTabHashSync()
     initWebSocket()
@@ -121,18 +126,41 @@
 
     window.addEventListener('keydown', handleKeydown)
 
-    return () => {
+    stopDashboard = () => {
       clearInterval(statsInterval)
       window.removeEventListener('keydown', handleKeydown)
     }
+  }
+
+  onMount(() => {
+    api.get<{ authenticated: boolean }>('/api/auth/status')
+      .then((status) => {
+        authState = status.authenticated ? 'authenticated' : 'signed-out'
+        if (status.authenticated) startDashboard()
+      })
+      .catch(() => { authState = 'signed-out' })
+    return () => { stopDashboard?.(); closeWebSocket() }
   })
+
+  function signedIn() {
+    authState = 'authenticated'
+    startDashboard()
+  }
+
+  async function signOut() {
+    await fetch('/api/auth/logout', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: '{}' })
+    stopDashboard?.()
+    stopDashboard = undefined
+    closeWebSocket()
+    authState = 'signed-out'
+  }
 </script>
 
 <div class="container">
-  <Header />
+  {#if authState === 'authenticated'}
+    <Header onsignout={signOut} />
 
-  <main>
-    <Tabs />
+    <main>
 
     <div
       id="connectTab"
@@ -191,5 +219,8 @@
     >
       <AnalyticsTab />
     </div>
-  </main>
+    </main>
+  {:else if authState === 'signed-out'}
+    <Login onsignedin={signedIn} />
+  {/if}
 </div>

@@ -14,6 +14,8 @@ python -m pip install atflows==0.1b3
 atflows
 ```
 
+Open the dashboard URL printed at startup and sign in as `administrator`. On first start, AtFlows prints the initial Local Administrator password in the terminal once. To replace it, set `ATFLOWS_ADMIN_PASSWORD` in the server environment and restart AtFlows. This account protects dashboard data; model proxy and OTLP ingestion remain available to configured clients.
+
 
 For development from source:
 

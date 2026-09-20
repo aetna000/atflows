@@ -4,6 +4,8 @@ export const connectionStatus = $state<{ value: ConnectionStatus }>({ value: 'co
 
 let ws: WebSocket | null = null
 let retryDelay = 1000
+let shouldConnect = false
+let retryTimer: ReturnType<typeof setTimeout> | null = null
 const WS_MAX_RETRY = 30000
 
 type MessageHandler = (msg: { type: string; payload: unknown }) => void
@@ -19,6 +21,8 @@ export function onMessage(handler: MessageHandler) {
 
 export function initWebSocket() {
   if (typeof window === 'undefined') return
+  shouldConnect = true
+  if (ws && (ws.readyState === WebSocket.OPEN || ws.readyState === WebSocket.CONNECTING)) return
 
   const protocol = location.protocol === 'https:' ? 'wss:' : 'ws:'
   ws = new WebSocket(`${protocol}//${location.host}/ws`)
@@ -30,7 +34,8 @@ export function initWebSocket() {
 
   ws.onclose = () => {
     connectionStatus.value = 'disconnected'
-    setTimeout(initWebSocket, Math.min((retryDelay *= 1.5), WS_MAX_RETRY))
+    ws = null
+    if (shouldConnect) retryTimer = setTimeout(initWebSocket, Math.min((retryDelay *= 1.5), WS_MAX_RETRY))
   }
 
   ws.onerror = () => {
@@ -45,4 +50,13 @@ export function initWebSocket() {
       console.error('WebSocket message parse error:', e)
     }
   }
+}
+
+export function closeWebSocket() {
+  shouldConnect = false
+  if (retryTimer) clearTimeout(retryTimer)
+  retryTimer = null
+  ws?.close()
+  ws = null
+  connectionStatus.value = 'disconnected'
 }

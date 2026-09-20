@@ -6,6 +6,7 @@ import os from 'os'
 import getPort from 'get-port'
 import { getIntegrationCatalog } from '@atflows/integrations'
 import { previewCodexSetup, applyCodexSetup, undoCodexSetup, codexSetupStatus, getLatestCodexChangeId } from '@atflows/integrations/local-config'
+import { createLocalAuth } from './auth'
 
 // CommonJS workspace packages
 const { calculateCost } = require('@atflows/pricing')
@@ -87,6 +88,7 @@ interface TokenUsage {
 
 const PROXY_PORT = await getPort({ port: Number(process.env.PROXY_PORT || 8080) })
 const DASHBOARD_PORT = await getPort({ port: Number(process.env.DASHBOARD_PORT || 1337) })
+const localAuth = createLocalAuth(db.DATA_DIR)
 let boundDashboardPort = DASHBOARD_PORT
 let boundProxyPort = PROXY_PORT
 
@@ -175,7 +177,7 @@ function logInteraction(
 }
 
 // WebSocket clients for real-time updates
-const wsClients = new Set<{ send: (data: string) => void }>()
+const wsClients = new Set<{ send: (data: string) => void; close: () => void }>()
 
 function broadcast(data: unknown) {
     const message = JSON.stringify(data)
@@ -288,13 +290,29 @@ function startDashboardServer() {
 
             // WebSocket upgrade
             if (pathname === '/ws') {
+                if (!localAuth.authenticated(req)) return new Response('Not authorized', { status: 401 })
                 if (server.upgrade(req)) return new Response(null)
                 return new Response('WebSocket upgrade failed', { status: 400 })
             }
 
             // API routes
             if (pathname.startsWith('/api/')) {
-                return handleApiRoute(req, url, server.requestIP(req)?.address || '')
+                const peer = server.requestIP(req)?.address || ''
+                const authResponse = await localAuth.route(req, peer)
+                if (authResponse) {
+                    if (pathname === '/api/auth/logout' && authResponse.ok) {
+                        for (const client of wsClients) client.close()
+                        wsClients.clear()
+                    }
+                    return authResponse
+                }
+                if (pathname !== '/api/health' && pathname !== '/api/spans' && !localAuth.authenticated(req)) {
+                    return Response.json({ error: 'Sign in required' }, { status: 401 })
+                }
+                if (req.method !== 'GET' && pathname !== '/api/spans' && !localAuth.sameOrigin(req)) {
+                    return Response.json({ error: 'Origin check failed' }, { status: 403 })
+                }
+                return handleApiRoute(req, url, peer)
             }
 
             // OTLP routes

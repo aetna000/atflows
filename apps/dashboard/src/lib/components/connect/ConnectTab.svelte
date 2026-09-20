@@ -1,6 +1,8 @@
 <script lang="ts">
   import { onMount } from 'svelte'
   import { api } from '$lib/api/client'
+  import { marked } from 'marked'
+  import DOMPurify from 'dompurify'
 
   interface Integration {
     id: string
@@ -11,6 +13,7 @@
     summary: string
     captures: string
     prerequisite: string
+    guide: string
     endpoint?: string
     steps: string[]
     snippet?: string
@@ -29,6 +32,10 @@
   let changeId = $state('')
   let setupBusy = $state(false)
   let setupMessage = $state('')
+  let guideHtml = $state('')
+  let guideError = $state('')
+  let dashboardUrl = $state('')
+  let proxyUrl = $state('')
 
   let filtered = $derived(integrations.filter((item) =>
     `${item.name} ${item.category} ${item.mode}`.toLowerCase().includes(query.toLowerCase()),
@@ -37,8 +44,10 @@
 
   onMount(async () => {
     try {
-      const response = await api.get<{ integrations: Integration[] }>('/api/integrations')
+      const response = await api.get<{ integrations: Integration[]; dashboard_url: string; proxy_url: string }>('/api/integrations')
       integrations = response.integrations
+      dashboardUrl = response.dashboard_url
+      proxyUrl = response.proxy_url
       try {
         const status = await api.get<NonNullable<typeof codexStatus>>('/api/integrations/codex-cli/status')
         codexStatus = status
@@ -50,6 +59,33 @@
     } catch {
       error = 'Could not load integration guidance. Check that AtFlows is running.'
     }
+  })
+
+  $effect(() => {
+    const url = selected?.guide
+    const dashboard = dashboardUrl
+    const proxy = proxyUrl
+    if (!url) return
+    let current = true
+    guideHtml = ''
+    guideError = ''
+    fetch(url).then(async (response) => {
+      if (!response.ok) throw new Error('Setup details are unavailable')
+      let markdown = await response.text()
+      markdown = markdown.replaceAll('http://localhost:1337', dashboard).replaceAll('http://127.0.0.1:1337', dashboard)
+        .replaceAll('http://localhost:8080', proxy).replaceAll('http://127.0.0.1:8080', proxy)
+      const html = await marked.parse(markdown)
+      const clean = DOMPurify.sanitize(html)
+      const document = new DOMParser().parseFromString(clean, 'text/html')
+      document.querySelectorAll('a[href]').forEach((link) => {
+        const href = link.getAttribute('href') || ''
+        if (!href.startsWith('./') || !href.endsWith('.md')) return
+        const resolved = new URL(href, `${window.location.origin}${url}.md`)
+        link.setAttribute('href', resolved.pathname.replace(/\.md$/, ''))
+      })
+      if (current) guideHtml = document.body.innerHTML
+    }).catch(() => { if (current) guideError = 'Could not load these instructions.' })
+    return () => { current = false }
   })
 
   async function copy(value: string, field: string) {
@@ -270,6 +306,11 @@
             <button type="button" onclick={() => copy(selected.snippet!, 'settings')}>{copiedField === 'settings' ? 'Copied' : 'Copy settings'}</button>
           </div>
         {/if}
+        <details class="connect-document">
+          <summary>Detailed instructions for {selected.name}</summary>
+          {#if guideError}<p role="alert">{guideError}</p>{/if}
+          {#if guideHtml}<div class="guide-body">{@html guideHtml}</div>{:else if !guideError}<p>Loading instructions…</p>{/if}
+        </details>
       {:else}
         <p>Loading integrations…</p>
       {/if}
@@ -322,5 +363,14 @@
   .connect-wizard li::before { content: counter(setup-step); position: absolute; top: 9px; left: 11px; display: grid; place-items: center; width: 22px; height: 22px; color: var(--bg-primary); background: var(--accent-primary); font-size: 12px; font-weight: 700; }
   .connect-wizard strong { font-size: 13px; font-weight: 600; }
   .connect-wizard p { font-size: 12px; margin-top: 3px; }
+  .connect-document { margin-top: 18px; border: 1px solid var(--border-primary); color: var(--text-primary); }
+  .connect-document summary { cursor: pointer; padding: 12px; color: var(--accent-primary); font-weight: 700; }
+  .guide-body { border-top: 1px solid var(--border-primary); padding: 14px; line-height: 1.55; overflow-wrap: anywhere; }
+  .guide-body :global(h1), .guide-body :global(h2), .guide-body :global(h3) { margin: 16px 0 8px; }
+  .guide-body :global(p), .guide-body :global(ul), .guide-body :global(ol), .guide-body :global(table) { margin: 8px 0 12px; }
+  .guide-body :global(pre) { overflow-x: auto; padding: 12px; background: var(--bg-primary); color: var(--accent-primary); }
+  .guide-body :global(code) { color: var(--accent-primary); }
+  .guide-body :global(a) { color: var(--accent-primary); }
+  .guide-body :global(th), .guide-body :global(td) { border: 1px solid var(--border-primary); padding: 6px; }
   @media (max-width: 760px) { .connect-columns { grid-template-columns: 1fr; } .connect-list { max-height: 260px; } .connect-facts div { grid-template-columns: 1fr; gap: 2px; } }
 </style>
