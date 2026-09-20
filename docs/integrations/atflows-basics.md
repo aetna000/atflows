@@ -10,11 +10,13 @@ The current server defaults to dashboard port 1337 unless `DASHBOARD_PORT` is se
 The package, CLI and GitHub repository are named `atflows`.
 
 ```bash
-python -m pip install atflows==0.1b4
+python -m pip install atflows==0.1b5
 atflows init
 ```
 
 `atflows init` prints a temporary Administrator password and opens the sign-in page with it filled in. Choose a permanent password to finish setup. If access is lost, run `atflows users recover-administrator` in the local terminal; it creates a new temporary password. The account protects dashboard data; model proxy and OTLP ingestion remain available to configured clients.
+
+Run `atflow` or `atflow status` to see the actual ports of all running AtFlows servers. `atflows status` also works. `atflows` starts a server, and `atflow start` starts one explicitly.
 
 
 For development from source:

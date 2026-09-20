@@ -2,7 +2,7 @@
 
 AtFlows currently accepts OTLP/HTTP JSON. Configure Codex's user-level OpenTelemetry log exporter to send JSON to the local AtFlows logs endpoint. Codex telemetry is opt in; running AtFlows alone does not capture Codex sessions.
 
-Start AtFlows first (`atflows`, with Bun installed for release `0.1b4`). Use the dashboard URL printed at startup. The configuration file is **user-level**:
+Start AtFlows first (`atflows`, with Bun installed for release `0.1b5`). Use the dashboard URL printed at startup. The configuration file is **user-level**:
 
 | Environment | Configuration file |
 | --- | --- |

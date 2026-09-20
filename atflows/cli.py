@@ -3,6 +3,7 @@
 import os
 from pathlib import Path
 import shutil
+import signal
 import subprocess
 import sys
 from urllib.parse import urlencode
@@ -10,10 +11,16 @@ import webbrowser
 
 from . import __version__
 from .admin import set_temporary_password
+from .status import print_status
 
 
 def main() -> int:
     args = sys.argv[1:]
+    invoked_as = Path(sys.argv[0]).stem
+    if args == ["status"] or (not args and invoked_as == "atflow"):
+        return print_status()
+    if args == ["start"]:
+        args = []
     if args[:2] == ["users", "recover-administrator"]:
         password = set_temporary_password(create_only=False)
         print(f"New temporary Administrator password: {password}")
@@ -32,7 +39,7 @@ def main() -> int:
         print(f"atflows {__version__}")
         return 0
     if any(arg in ("-h", "--help") for arg in args):
-        print("AtFlows local LLM observability\n\nUsage: atflows [init|users recover-administrator|--help|--version]\nDashboard: http://localhost:1337 by default (check the startup URL)\nProxy: http://localhost:8080 by default\nRequires Bun >=1.1.0.")
+        print("AtFlows local LLM observability\n\nUsage: atflow [status|start|init|users recover-administrator]\n       atflows [status|start|init|users recover-administrator|--help|--version]\n\natflow and atflow status show running servers. atflows starts a server.\nDashboard: http://localhost:1337 by default (check the startup URL)\nProxy: http://localhost:8080 by default\nRequires Bun >=1.1.0 to start.")
         return 0
     bun = shutil.which("bun")
     if bun is None:
@@ -62,6 +69,7 @@ def main() -> int:
             process = subprocess.Popen([bun, "run", "apps/server/src/server.ts"], cwd=cache,
                                        env=setup_environment, stdout=subprocess.PIPE,
                                        stderr=subprocess.STDOUT, text=True, bufsize=1)
+            previous_term = signal.signal(signal.SIGTERM, lambda _signal, _frame: process.terminate())
             try:
                 for line in process.stdout:
                     print(line, end="", flush=True)
@@ -74,6 +82,17 @@ def main() -> int:
                 process.terminate()
                 process.wait()
                 return 130
-        return subprocess.call([bun, "run", "apps/server/src/server.ts", *args], cwd=cache)
+            finally:
+                signal.signal(signal.SIGTERM, previous_term)
+        process = subprocess.Popen([bun, "run", "apps/server/src/server.ts", *args], cwd=cache)
+        previous_term = signal.signal(signal.SIGTERM, lambda _signal, _frame: process.terminate())
+        try:
+            return process.wait()
+        except KeyboardInterrupt:
+            process.terminate()
+            process.wait()
+            return 130
+        finally:
+            signal.signal(signal.SIGTERM, previous_term)
     except KeyboardInterrupt:
         return 130

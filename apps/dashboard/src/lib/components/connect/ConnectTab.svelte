@@ -34,6 +34,7 @@
   let setupMessage = $state('')
   let guideHtml = $state('')
   let guideError = $state('')
+  let guideOverride = $state('')
   let dashboardUrl = $state('')
   let proxyUrl = $state('')
 
@@ -46,6 +47,11 @@
     try {
       const response = await api.get<{ integrations: Integration[]; dashboard_url: string; proxy_url: string }>('/api/integrations')
       integrations = response.integrations
+      const requestedGuide = new URLSearchParams(window.location.search).get('guide') || ''
+      if (/^[A-Za-z0-9/-]+$/.test(requestedGuide)) {
+        guideOverride = requestedGuide
+        selectedId = integrations.find((item) => item.guide === `/guides/${requestedGuide}`)?.id || selectedId
+      }
       dashboardUrl = response.dashboard_url
       proxyUrl = response.proxy_url
       try {
@@ -62,16 +68,15 @@
   })
 
   $effect(() => {
-    const url = selected?.guide
+    const url = guideOverride ? `/guides/${guideOverride}` : selected?.guide
     const dashboard = dashboardUrl
     const proxy = proxyUrl
     if (!url) return
     let current = true
     guideHtml = ''
     guideError = ''
-    fetch(url).then(async (response) => {
-      if (!response.ok) throw new Error('Setup details are unavailable')
-      let markdown = await response.text()
+    api.get<{ markdown: string }>(`/api/integrations/guides/${url.slice('/guides/'.length)}`).then(async (response) => {
+      let markdown = response.markdown
       markdown = markdown.replaceAll('http://localhost:1337', dashboard).replaceAll('http://127.0.0.1:1337', dashboard)
         .replaceAll('http://localhost:8080', proxy).replaceAll('http://127.0.0.1:8080', proxy)
       const html = await marked.parse(markdown)
@@ -79,14 +84,29 @@
       const document = new DOMParser().parseFromString(clean, 'text/html')
       document.querySelectorAll('a[href]').forEach((link) => {
         const href = link.getAttribute('href') || ''
-        if (!href.startsWith('./') || !href.endsWith('.md')) return
-        const resolved = new URL(href, `${window.location.origin}${url}.md`)
-        link.setAttribute('href', resolved.pathname.replace(/\.md$/, ''))
+        if (!href.startsWith('./') && !href.startsWith('../')) return
+        const resolved = new URL(href, `${window.location.origin}/docs/integrations/${url.slice('/guides/'.length)}.md`)
+        if (resolved.pathname.startsWith('/docs/integrations/') && resolved.pathname.endsWith('.md')) {
+          link.setAttribute('href', `/guides/${resolved.pathname.slice('/docs/integrations/'.length).replace(/\.md$/, '')}`)
+        } else if (resolved.pathname.startsWith('/docs/') || resolved.pathname.startsWith('/specs/') || resolved.pathname.startsWith('/examples/')) {
+          const kind = resolved.pathname.endsWith('.md') ? 'blob' : 'tree'
+          link.setAttribute('href', `https://github.com/aetna000/atflows/${kind}/main${resolved.pathname}`)
+          link.setAttribute('target', '_blank')
+          link.setAttribute('rel', 'noopener noreferrer')
+        }
       })
       if (current) guideHtml = document.body.innerHTML
     }).catch(() => { if (current) guideError = 'Could not load these instructions.' })
     return () => { current = false }
   })
+
+  function chooseIntegration(id: string) {
+    selectedId = id
+    guideOverride = ''
+    const url = new URL(window.location.href)
+    url.searchParams.delete('guide')
+    history.replaceState(null, '', `${url.pathname}${url.search}${url.hash}`)
+  }
 
   async function copy(value: string, field: string) {
     try {
@@ -203,7 +223,7 @@
       <label for="connect-search">Find a tool or provider</label>
       <input id="connect-search" type="search" placeholder="Codex, OpenClaw, OpenAI…" bind:value={query} />
       {#each filtered as item (item.id)}
-        <button type="button" class:selected={selectedId === item.id} onclick={() => (selectedId = item.id)}>
+        <button type="button" class:selected={selectedId === item.id} onclick={() => chooseIntegration(item.id)}>
           <span>{item.name}</span>
           <small>{item.category} · {statusLabel(item.status)}</small>
         </button>
@@ -306,8 +326,8 @@
             <button type="button" onclick={() => copy(selected.snippet!, 'settings')}>{copiedField === 'settings' ? 'Copied' : 'Copy settings'}</button>
           </div>
         {/if}
-        <details class="connect-document">
-          <summary>Detailed instructions for {selected.name}</summary>
+        <details class="connect-document" open={!!guideOverride}>
+          <summary>Detailed instructions for {guideOverride ? guideOverride.replaceAll('/', ' / ').replaceAll('-', ' ') : selected.name}</summary>
           {#if guideError}<p role="alert">{guideError}</p>{/if}
           {#if guideHtml}<div class="guide-body">{@html guideHtml}</div>{:else if !guideError}<p>Loading instructions…</p>{/if}
         </details>

@@ -5,13 +5,15 @@
 AtFlows is a local observability tool for LLM applications. Point your SDK at it, see your costs, tokens, and latency in real-time.
 
 ```bash
-python -m pip install atflows==0.1b4
+python -m pip install atflows==0.1b5
 atflows init
 ```
 
-AtFlows `0.1b4` is a beta release. AtFlows uses Bun (>=1.1.0) to run its local server. Install Bun before starting the command. The first launch prepares the bundled runtime in `~/.cache/atflows` and needs package network access.
+AtFlows `0.1b5` is a beta release. AtFlows uses Bun (>=1.1.0) to run its local server. Install Bun before starting the command. The first launch prepares the bundled runtime in `~/.cache/atflows` and needs package network access.
 
 `atflows init` creates a temporary Local Administrator password, starts the server, and opens the sign-in page with it filled in. Choose a permanent password to finish setup. If access is lost, run `atflows users recover-administrator`; it issues a new temporary password. OTLP ingestion and the model proxy remain available to configured clients.
+
+Run `atflow` or `atflow status` to list live dashboard and proxy addresses. `atflows status` does the same; `atflows` starts a server as before. Use `atflow start` to start one through the short command.
 
 Dashboard: [localhost:1337](http://localhost:1337) by default · Proxy: [localhost:8080](http://localhost:8080)
 
@@ -20,7 +22,7 @@ Dashboard: [localhost:1337](http://localhost:1337) by default · Proxy: [localho
 ## Get started
 
 See the [setup and connection guide](docs/integrations/atflows-basics.md) and the [integration catalog](docs/integrations/README.md) for provider routes, telemetry, and tool-specific instructions.
-See the [0.1b4 release notes](docs/releases/v0.1b4.md) for this beta's changes and current limitations.
+See the [0.1b5 release notes](docs/releases/v0.1b5.md) for this beta's changes and current limitations.
 
 ---
 

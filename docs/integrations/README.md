@@ -26,6 +26,6 @@ Start with [AtFlows setup and connection basics](./atflows-basics.md). The [exam
 
 See [observability integrations](./observability.md): [Jaeger](./observability/jaeger.md), [Phoenix](./observability/phoenix.md), [Langfuse](./observability/langfuse.md), [Helicone](./observability/helicone.md), and [Opik](./observability/opik.md).
 
-The dashboard now has an initial **Connect** tab with a searchable catalog, actual running endpoints, and a local Codex preview/apply flow. Other automatic setup paths and optional AtFlows AtBot help remain on the [feature 006 implementation pathway](../../specs/006-guided-integrations/spec.md). Guides moved from examples retain their historical commands and must pass installed-artifact validation before one-click setup is offered.
+The dashboard has a **Connect** tab with a searchable catalog, actual running endpoints, guides rendered inside the dashboard, and a local Codex preview/apply flow. Other automatic setup paths and optional AtFlows AtBot help remain on the [feature 006 implementation pathway](../../specs/006-guided-integrations/spec.md). Guides moved from examples retain their historical commands and must pass installed-artifact validation before one-click setup is offered.
 
 For Codex, the local flow is **Choose tool → Review exact file and endpoint → Apply → Run Codex once**. You can name the local Codex connection; the observed model remains separate. Optional AtFlows AtBot help will explain configuration problems using the selected guide and redacted status once that separate package is available.

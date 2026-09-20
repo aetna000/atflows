@@ -3,6 +3,7 @@ import { safeJson } from '@atflows/db'
 import path from 'path'
 import fs from 'fs'
 import os from 'os'
+import crypto from 'crypto'
 import getPort from 'get-port'
 import { getIntegrationCatalog } from '@atflows/integrations'
 import { previewCodexSetup, applyCodexSetup, undoCodexSetup, codexSetupStatus, getLatestCodexChangeId } from '@atflows/integrations/local-config'
@@ -91,6 +92,7 @@ const DASHBOARD_PORT = await getPort({ port: Number(process.env.DASHBOARD_PORT |
 const localAuth = createLocalAuth(db.DATA_DIR)
 let boundDashboardPort = DASHBOARD_PORT
 let boundProxyPort = PROXY_PORT
+const instanceId = crypto.randomUUID()
 
 // Types
 interface TraceData {
@@ -327,17 +329,12 @@ function startDashboardServer() {
             // Static files
             if (pathname.startsWith('/guides/')) {
                 const slug = pathname.slice('/guides/'.length)
-                if (!/^[a-z0-9/-]+$/.test(slug)) return new Response('Not Found', { status: 404 })
+                if (!/^[A-Za-z0-9/-]+$/.test(slug)) return new Response('Not Found', { status: 404 })
                 const file = path.resolve(guidesDir, `${slug}.md`)
                 if (!file.startsWith(guidesDir + path.sep) || !fs.existsSync(file)) {
                     return new Response('Not Found', { status: 404 })
                 }
-                return new Response(Bun.file(file), {
-                    headers: {
-                        'Content-Type': 'text/markdown; charset=utf-8',
-                        'Content-Security-Policy': "default-src 'none'",
-                    },
-                })
+                return Response.redirect(new URL(`/?guide=${encodeURIComponent(slug)}#connect`, req.url).toString(), 302)
             }
 
             if (pathname === '/' || pathname === '/index.html') {
@@ -524,7 +521,7 @@ async function handleApiRoute(req: Request, url: URL, peerAddress: string): Prom
     try {
         // Health check
         if (pathname === '/api/health' && method === 'GET') {
-            return Response.json({ status: 'ok', timestamp: Date.now() })
+            return Response.json({ status: 'ok', timestamp: Date.now(), instance_id: instanceId })
         }
 
         if (pathname === '/api/integrations' && method === 'GET') {
@@ -536,6 +533,16 @@ async function handleApiRoute(req: Request, url: URL, peerAddress: string): Prom
                 dashboard_url: dashboardUrl,
                 proxy_url: proxyUrl,
             })
+        }
+
+        if (pathname.startsWith('/api/integrations/guides/') && method === 'GET') {
+            const slug = pathname.slice('/api/integrations/guides/'.length)
+            if (!/^[A-Za-z0-9/-]+$/.test(slug)) return Response.json({ error: 'Guide not found' }, { status: 404 })
+            const file = path.resolve(guidesDir, `${slug}.md`)
+            if (!file.startsWith(guidesDir + path.sep) || !fs.existsSync(file)) {
+                return Response.json({ error: 'Guide not found' }, { status: 404 })
+            }
+            return Response.json({ markdown: fs.readFileSync(file, 'utf8') })
         }
 
         if (pathname === '/api/integrations/codex-cli/status' && method === 'GET') {
@@ -1684,8 +1691,9 @@ function startProxyServer() {
             if (url.pathname === '/health') {
                 return Response.json({
                     status: 'ok',
+                    instance_id: instanceId,
                     service: 'proxy',
-                    port: PROXY_PORT,
+                    port: boundProxyPort,
                     traces: db.getTraceCount(),
                     uptime: process.uptime(),
                     providers: registry.list().map((p: { name: string }) => p.name),
@@ -1787,6 +1795,20 @@ function main() {
 
     boundDashboardPort = startDashboardServer().port || DASHBOARD_PORT
     boundProxyPort = startProxyServer().port || PROXY_PORT
+
+    const stateDir = process.env.ATFLOWS_STATE_DIR || path.join(os.homedir(), '.cache', 'atflows', 'instances')
+    fs.mkdirSync(stateDir, { recursive: true, mode: 0o700 })
+    const stateFile = path.join(stateDir, `${process.pid}-${instanceId}.json`)
+    fs.writeFileSync(stateFile, JSON.stringify({
+        instance_id: instanceId,
+        pid: process.pid,
+        dashboard_port: boundDashboardPort,
+        proxy_port: boundProxyPort,
+        started_at: Date.now(),
+    }), { flag: 'wx', mode: 0o600 })
+    process.on('exit', () => {
+        try { fs.unlinkSync(stateFile) } catch { /* status ignores stale records */ }
+    })
 
     console.log(`[atflows] Dashboard: http://localhost:${boundDashboardPort}`)
     console.log(`[atflows] Proxy:     http://localhost:${boundProxyPort}`)
