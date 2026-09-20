@@ -493,6 +493,20 @@ async function handleApiRoute(req: Request, url: URL): Promise<Response> {
             return Response.json(db.getDataCounts())
         }
 
+        if (pathname === '/api/demo-data' && method === 'GET') {
+            return Response.json(db.getDemoDataCounts())
+        }
+
+        if (pathname === '/api/demo-data' && method === 'DELETE') {
+            if (
+                req.headers.get('origin') !== url.origin ||
+                req.headers.get('x-atflows-action') !== 'clear-demo-data'
+            ) {
+                return Response.json({ error: 'Forbidden' }, { status: 403 })
+            }
+            return Response.json(db.clearDemoData())
+        }
+
         if (pathname === '/api/data' && method === 'DELETE') {
             if (
                 req.headers.get('origin') !== url.origin ||
@@ -501,6 +515,21 @@ async function handleApiRoute(req: Request, url: URL): Promise<Response> {
                 return Response.json({ error: 'Forbidden' }, { status: 403 })
             }
             return Response.json(db.clearAllData())
+        }
+
+        if (pathname === '/api/model-data' && method === 'DELETE') {
+            if (
+                req.headers.get('origin') !== url.origin ||
+                req.headers.get('x-atflows-action') !== 'clear-model-data'
+            ) {
+                return Response.json({ error: 'Forbidden' }, { status: 403 })
+            }
+            const isNull = url.searchParams.get('null') === '1'
+            const model = url.searchParams.get('model')
+            if (!isNull && (!model || model.length > 500)) {
+                return Response.json({ error: 'Invalid model' }, { status: 400 })
+            }
+            return Response.json({ deleted_traces: db.clearModelData(isNull ? null : model) })
         }
 
         // Stats

@@ -7,28 +7,41 @@
   import { formatNumber, formatCost, formatLatency } from '$lib/utils/format'
 
   let dataCounts = $state({ traces: 0, logs: 0, metrics: 0 })
+  let demoCounts = $state({ traces: 0, logs: 0, metrics: 0 })
   let clearingData = $state(false)
   let dataError = $state('')
   let totalRecords = $derived(dataCounts.traces + dataCounts.logs + dataCounts.metrics)
+  let demoRecords = $derived(demoCounts.traces + demoCounts.logs + demoCounts.metrics)
 
   onMount(async () => {
     try {
-      dataCounts = await api.get<typeof dataCounts>('/api/data')
+      ;[dataCounts, demoCounts] = await Promise.all([
+        api.get<typeof dataCounts>('/api/data'),
+        api.get<typeof demoCounts>('/api/demo-data'),
+      ])
     } catch {
       dataError = 'Could not check saved data'
     }
   })
 
-  async function eraseAllData() {
+  async function eraseData() {
     if (!totalRecords || clearingData) return
-    const confirmed = window.confirm(
-      `Permanently erase all saved telemetry (${dataCounts.traces} traces, ${dataCounts.logs} logs, ${dataCounts.metrics} metrics), including Codex activity? This resets the dashboard, model cards, and statistics.`,
-    )
+    const confirmed = demoRecords
+      ? window.confirm(
+          `Erase demo data (${demoCounts.traces} traces, ${demoCounts.logs} logs, ${demoCounts.metrics} metrics)? Other activity will remain.`,
+        )
+      : window.confirm(
+          `Permanently erase all saved telemetry (${dataCounts.traces} traces, ${dataCounts.logs} logs, ${dataCounts.metrics} metrics), including Codex activity? This resets the dashboard, model cards, and statistics.`,
+        )
     if (!confirmed) return
     clearingData = true
     dataError = ''
     try {
-      await api.delete<typeof dataCounts>('/api/data')
+      if (demoRecords) {
+        await api.delete<typeof demoCounts>('/api/demo-data', 'clear-demo-data')
+      } else {
+        await api.delete<typeof dataCounts>('/api/data', 'clear-all-data')
+      }
       window.location.reload()
     } catch {
       dataError = 'Could not erase saved data'
@@ -76,10 +89,10 @@
       <button
         class="clear-data-button"
         data-testid="clear-all-data"
-        onclick={eraseAllData}
+        onclick={eraseData}
         disabled={totalRecords === 0 || clearingData}
-        title={totalRecords ? `Erase all ${totalRecords} saved records` : 'No saved data to erase'}
-      >{clearingData ? 'Erasing…' : 'Erase all data'}</button>
+        title={demoRecords ? `Erase ${demoRecords} demo records` : totalRecords ? `Erase all ${totalRecords} saved records` : 'No saved data to erase'}
+      >{clearingData ? 'Erasing…' : demoRecords ? 'Clear demo data' : 'Clear data'}</button>
       {#if dataError}<span class="data-error" role="alert">{dataError}</span>{/if}
       <button
         class="theme-toggle"

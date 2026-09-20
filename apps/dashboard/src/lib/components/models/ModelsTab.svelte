@@ -1,9 +1,28 @@
 <script lang="ts">
   import { onMount } from 'svelte'
   import { modelStats, loadModels } from '$lib/stores/models.svelte'
+  import { api } from '$lib/api/client'
   import { formatNumber, formatCost, formatLatency } from '$lib/utils/format'
   import { tabState } from '$lib/stores/tabs.svelte'
   import EmptyState from '$lib/components/shared/EmptyState.svelte'
+
+  let clearingModel = $state<string | null | undefined>(undefined)
+  let clearError = $state('')
+
+  async function clearModel(model: string | null, count: number) {
+    if (clearingModel !== undefined) return
+    if (!window.confirm(`Erase ${count} saved trace${count === 1 ? '' : 's'} for ${model ?? 'unassigned model'}? Other models will remain.`)) return
+    clearingModel = model
+    clearError = ''
+    try {
+      const query = model === null ? 'null=1' : `model=${encodeURIComponent(model)}`
+      await api.delete(`/api/model-data?${query}`, 'clear-model-data')
+      window.location.reload()
+    } catch {
+      clearError = `Could not clear ${model ?? 'unassigned model'}`
+      clearingModel = undefined
+    }
+  }
 
   onMount(() => {
     if (tabState.current === 'models') {
@@ -19,6 +38,7 @@
 </script>
 
 <div class="model-grid" data-testid="model-stats">
+  {#if clearError}<div class="model-clear-error" role="alert">{clearError}</div>{/if}
   {#if modelStats.length === 0}
     <EmptyState
       message="No model data yet. Send requests through the proxy to see model statistics."
@@ -27,7 +47,14 @@
     {#each modelStats as model (model.model)}
       <div class="model-card">
         <div class="model-card-header">
-          <h3 class="model-card-name">{model.model}</h3>
+          <h3 class="model-card-name">{model.model ?? 'Unassigned model'}</h3>
+          <button
+            class="model-clear-button"
+            type="button"
+            onclick={() => clearModel(model.model, model.request_count)}
+            disabled={clearingModel !== undefined}
+            title={`Clear traces for ${model.model ?? 'unassigned model'}`}
+          >{clearingModel === model.model ? 'Clearing…' : 'Clear'}</button>
         </div>
         <div class="model-card-stats">
           <div class="model-stat">
@@ -83,7 +110,30 @@
 
   .model-card-header {
     margin-bottom: 12px;
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 8px;
   }
+
+  .model-clear-button {
+    padding: 3px 8px;
+    border: 1px solid var(--border-primary);
+    background: var(--bg-secondary);
+    color: var(--text-secondary);
+    font: inherit;
+    font-size: 11px;
+    cursor: pointer;
+  }
+
+  .model-clear-button:hover:not(:disabled) {
+    color: var(--error);
+    border-color: var(--error);
+  }
+
+  .model-clear-button:disabled { opacity: 0.5; cursor: default; }
+
+  .model-clear-error { color: var(--error); grid-column: 1 / -1; }
 
   .model-card-name {
     font-size: 14px;

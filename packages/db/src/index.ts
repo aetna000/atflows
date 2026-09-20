@@ -628,10 +628,38 @@ export function getDataCounts() {
     return { traces: count('traces'), logs: count('logs'), metrics: count('metrics') }
 }
 
+export function getDemoDataCounts() {
+    const count = (table: 'traces' | 'logs' | 'metrics') =>
+        (db.query(`SELECT COUNT(*) AS cnt FROM ${table} WHERE service_name = 'demo'`).get() as {
+            cnt: number
+        }).cnt
+    return { traces: count('traces'), logs: count('logs'), metrics: count('metrics') }
+}
+
+export const clearDemoData = db.transaction(() => {
+    const counts = getDemoDataCounts()
+    db.exec("DELETE FROM traces WHERE service_name = 'demo'; DELETE FROM logs WHERE service_name = 'demo'; DELETE FROM metrics WHERE service_name = 'demo';")
+    db.exec('DELETE FROM stats_cache')
+    return counts
+})
+
 export const clearAllData = db.transaction(() => {
     const counts = getDataCounts()
     db.exec('DELETE FROM traces; DELETE FROM logs; DELETE FROM metrics; DELETE FROM stats_cache;')
     return counts
+})
+
+export const clearModelData = db.transaction((model: string | null) => {
+    const count = model === null
+        ? (db.query('SELECT COUNT(*) AS cnt FROM traces WHERE model IS NULL').get() as { cnt: number }).cnt
+        : (db.query('SELECT COUNT(*) AS cnt FROM traces WHERE model = $model').get({ $model: model }) as { cnt: number }).cnt
+    if (model === null) {
+        db.query('DELETE FROM traces WHERE model IS NULL').run()
+    } else {
+        db.query('DELETE FROM traces WHERE model = $model').run({ $model: model })
+    }
+    db.exec('DELETE FROM stats_cache')
+    return count
 })
 
 export function getDistinctModels() {

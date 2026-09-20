@@ -1,7 +1,7 @@
 import { api } from '$lib/api/client'
 
 export interface ModelStats {
-  model: string
+  model: string | null
   request_count: number
   total_tokens: number
   prompt_tokens: number

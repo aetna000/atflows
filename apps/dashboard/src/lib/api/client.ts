@@ -15,10 +15,10 @@ export const api = {
     return res.json()
   },
 
-  async delete<T>(url: string): Promise<T> {
+  async delete<T>(url: string, action: 'clear-demo-data' | 'clear-all-data' | 'clear-model-data'): Promise<T> {
     const res = await fetch(url, {
       method: 'DELETE',
-      headers: { 'X-AtFlows-Action': 'clear-all-data' },
+      headers: { 'X-AtFlows-Action': action },
     })
     if (!res.ok) throw new Error(`API error: ${res.status}`)
     return res.json()
