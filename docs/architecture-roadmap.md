@@ -17,6 +17,14 @@ The tracks can be developed separately after shared contracts are fixed. Direct 
 
 ## Package boundaries
 
+### Benchmark-first continuity track (planned)
+
+[Spec 010](../specs/010-continuity-observability/spec.md) first measures current
+workflow identity, retry/recovery accounting and evidence coverage alongside
+AtMem's Agent Continuity Benchmark. Product changes follow baseline evidence and
+separate approval. AtFlows remains observational; no restart-safety or cost
+improvement is claimed merely by adding this roadmap entry.
+
 - Keep `atflows` as the install and CLI package. Add integration packages under the monorepo after their public contracts are written.
 - AtMem already contains its own `packages/atbot/` companion, distributed as `atmem-atbot`. Keep it in AtMem and out of the AtFlows AtBot runtime.
 - Create a distinct `packages/atflows-atbot/` project for AtFlows-specific trace intelligence. Use unique distribution/import/command names so installing AtMem and AtFlows together cannot collide. Proposed names are `atflows-atbot`, `atflows_atbot`, and `atflows bot`; validate availability and packaging contracts before release.

@@ -1,0 +1,39 @@
+{
+  "resourceSpans": [
+    {
+      "resource": {
+        "attributes": [{ "key": "service.name", "value": { "stringValue": "continuity-fixture" } }]
+      },
+      "scopeSpans": [
+        {
+          "scope": { "name": "atmem.continuity", "version": "1" },
+          "spans": [
+            {
+              "traceId": "11111111111111111111111111111111",
+              "spanId": "2222222222222222",
+              "name": "continuity.tool.attempt",
+              "startTimeUnixNano": "1700000000000000000",
+              "endTimeUnixNano": "1700000000100000000",
+              "status": { "code": 1 },
+              "attributes": [
+                { "key": "session.id", "value": { "stringValue": "workflow-1" } },
+                { "key": "continuity.schema_version", "value": { "intValue": "1" } },
+                { "key": "continuity.scope_id", "value": { "stringValue": "scope-a" } },
+                { "key": "continuity.task_id", "value": { "stringValue": "task-1" } },
+                {
+                  "key": "continuity.logical_operation_id",
+                  "value": { "stringValue": "operation-1" }
+                },
+                { "key": "continuity.run_id", "value": { "stringValue": "run-2" } },
+                { "key": "continuity.attempt_id", "value": { "stringValue": "attempt-2" } },
+                { "key": "continuity.charge_id", "value": { "stringValue": "charge-2" } },
+                { "key": "continuity.retry", "value": { "boolValue": true } },
+                { "key": "continuity.recovery", "value": { "boolValue": true } }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
