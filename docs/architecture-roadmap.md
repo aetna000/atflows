@@ -4,6 +4,14 @@ This table distinguishes shipped work from requirements still on the roadmap. Re
 
 ## Delivery order
 
+**Priority correction, 2026-09-25:** Spec 010 product continuity observation is
+the immediate priority. Implement shipped identity, retry/recovery accounting,
+unknown-cost handling and user views first; then measure them using an inert
+benchmark. The benchmark must not supply missing features. Preserve old fixture
+evidence and standalone use. Require installed acceptance without benchmark code,
+read-only Claude review per milestone, compatibility gates and paired reruns.
+No version bump or release is authorized.
+
 | Phase | Spec | Status and outcome |
 | --- | --- | --- |
 | 1 | [Configurable storage](../specs/001-production-storage/spec.md) | Planned: opt-in PostgreSQL with migrations, tenant scope, and operational checks |
@@ -16,6 +24,13 @@ This table distinguishes shipped work from requirements still on the roadmap. Re
 The tracks can be developed separately after shared contracts are fixed. Direct OTLP/protobuf works locally without hosted storage; exposing it in a hosted service depends on authentication and tenant gates from phase 1. AtMem/AtBot and Jev can also be tested against SQLite before hosted storage is complete.
 
 ## Package boundaries
+
+### Product-first continuity track (in progress; immediate priority)
+
+[Spec 010](../specs/010-continuity-observability/spec.md) delivers workflow identity,
+retry/recovery accounting and evidence coverage through shipped interfaces.
+AtMem's benchmark tests these features without implementing them. AtFlows remains
+observational; this roadmap entry does not establish a measured improvement.
 
 - Keep `atflows` as the install and CLI package. Add integration packages under the monorepo after their public contracts are written.
 - AtMem already contains its own `packages/atbot/` companion, distributed as `atmem-atbot`. Keep it in AtMem and out of the AtFlows AtBot runtime.

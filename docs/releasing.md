@@ -1,5 +1,11 @@
 # AtFlows release checklist
 
+**Next-work priority (2026-09-25):** [Spec 010 continuity qualification](../specs/010-continuity-observability/spec.md)
+precedes new feature tracks, as recorded in the [architecture roadmap](architecture-roadmap.md).
+The approved coordinated release targets AtFlows 0.1.3 with AtMem 2.3.7.
+Preserve the original 0.1.2 benchmark artifacts. Product acceptance and repeated
+held-out qualification are separate gates; publishing does not complete the latter.
+
 AtFlows is published to PyPI as `atflows`. The publisher credential is stored locally as `PYPI_TOKEN` in the repository-root, Git-ignored `.env`. This file is also present in the adjacent AtMem workspace as `.env.atmem-c709e`. Do not commit, print, paste, or copy the token into release notes or workflow logs. Check that the variable is present before publishing; do not assume it has been exported into the current shell.
 
 1. Set the same version in `pyproject.toml`, `package.json`, and `atflows/__init__.py`; add `docs/releases/v<VERSION>.md`.

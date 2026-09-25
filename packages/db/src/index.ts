@@ -2,6 +2,8 @@ import { Database } from 'bun:sqlite'
 import path from 'path'
 import fs from 'fs'
 import os from 'os'
+import { continuityStore } from './continuity'
+export { validateContinuity, ContinuityConflict } from './continuity'
 
 const DATA_DIR = process.env.DATA_DIR || path.join(os.homedir(), '.atflows')
 const DB_PATH = process.env.DB_PATH || path.join(DATA_DIR, 'data.db')
@@ -19,9 +21,10 @@ const db = new Database(DB_PATH, { create: true })
 // (dashboard polling, WebSocket fanout) don't serialize through a single
 // rollback journal. busy_timeout gives statements a grace period before
 // surfacing SQLITE_BUSY to the caller.
-db.exec('PRAGMA journal_mode=WAL')
 db.exec('PRAGMA busy_timeout=5000')
+db.exec('PRAGMA journal_mode=WAL')
 db.exec('PRAGMA synchronous=NORMAL')
+export const continuity = continuityStore(db)
 
 // Parse a JSON column that may be NULL, empty, or malformed (e.g. a
 // passthrough body that wasn't actually JSON). Never throws.
@@ -678,9 +681,9 @@ export function setCodexConnectionNickname(nickname: string) {
 }
 
 export function getDataCounts() {
-    const count = (table: 'traces' | 'logs' | 'metrics') =>
+    const count = (table: 'traces' | 'logs' | 'metrics' | 'continuity_events') =>
         (db.query(`SELECT COUNT(*) AS cnt FROM ${table}`).get() as { cnt: number }).cnt
-    return { traces: count('traces'), logs: count('logs'), metrics: count('metrics') }
+    return { traces: count('traces'), logs: count('logs'), metrics: count('metrics'), continuity_events: count('continuity_events') }
 }
 
 export function getDemoDataCounts() {
@@ -700,7 +703,7 @@ export const clearDemoData = db.transaction(() => {
 
 export const clearAllData = db.transaction(() => {
     const counts = getDataCounts()
-    db.exec('DELETE FROM traces; DELETE FROM logs; DELETE FROM metrics; DELETE FROM stats_cache;')
+    db.exec('DELETE FROM traces; DELETE FROM logs; DELETE FROM metrics; DELETE FROM stats_cache; DELETE FROM continuity_events;')
     return counts
 })
 

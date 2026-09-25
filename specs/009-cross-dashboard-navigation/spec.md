@@ -22,6 +22,7 @@ AtFlows stays an independent local telemetry product. When AtMem launches it wit
 - **FR-005:** Missing/invalid delegation URL or network failure MUST leave standalone AtFlows usable, without an unsafe navigation target or auth disclosure.
 - **FR-006:** Existing CLI, proxy, dashboard, OTLP, and SQLite compatibility MUST be tested before package release.
 - **FR-007:** The dashboard browser title MUST be `AtMem.ai | AtFlow` and its favicon MUST use the website memory-mark geometry and teal. The published package remains named `atflows`.
+- **FR-008:** AtFlows MUST follow AtMem dashboard typography, not define an independent font identity: body `Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif` at 15 px/1.5; headings, wordmark and main navigation `ui-monospace, "SFMono-Regular", Consolas, monospace`. The wordmark is 16 px, weight 600, zero letter spacing. Forms inherit the body family, while code and identifiers use the monospace token. Compact table labels may retain their explicit smaller sizes. Use identical stacks in both themes without requiring a remote font download.
 
 ## Success criteria
 

@@ -142,7 +142,7 @@
 
 <style>
   .login-shell { flex: 1; display: grid; grid-template-rows: auto 1fr; }
-  .login-brand { display: flex; align-items: center; gap: 9px; height: 64px; padding: 0 28px; border-bottom: 1px solid var(--border-primary); font-size: 16px; font-weight: 600; letter-spacing: -.01em; }
+  .login-brand { display: flex; align-items: center; gap: 9px; height: 64px; padding: 0 28px; border-bottom: 1px solid var(--border-primary); font-family: var(--font-mono); font-size: 16px; font-weight: 600; letter-spacing: 0; }
   .brand-mark { width: 20px; height: 20px; color: var(--accent-primary); flex: none; }
   .brand-separator { color: var(--text-secondary); padding: 0 4px; }
   .login-card { width: min(100% - 32px, 430px); align-self: center; justify-self: center; display: grid; gap: 10px; padding: 32px; border: 1px solid var(--border-secondary); background: var(--bg-secondary); }

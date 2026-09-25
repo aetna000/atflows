@@ -8,6 +8,7 @@
     ['timeline', 'Timeline'],
     ['traces', 'Traces'],
     ['sessions', 'Sessions'],
+    ['continuity', 'Resume work'],
     ['logs', 'Logs'],
     ['metrics', 'Metrics'],
   ] as const

@@ -1,0 +1,24 @@
+name: Continuity observation fixtures
+on:
+  pull_request:
+    paths:
+      - 'tests/continuity/**'
+      - 'apps/server/**'
+      - 'packages/**'
+      - 'bun.lock'
+      - '.github/workflows/continuity-smoke.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  current-product:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: '1.4.2'
+      - run: bun install --frozen-lockfile
+      - run: bun --no-env-file test tests/continuity/current-product.test.ts tests/continuity/http-probe.test.ts
+      - run: bunx tsc --noEmit -p apps/server/tsconfig.json

@@ -8,6 +8,7 @@
   import ModelsTab from '$lib/components/models/ModelsTab.svelte'
   import AnalyticsTab from '$lib/components/analytics/AnalyticsTab.svelte'
   import SessionsTab from '$lib/components/sessions/SessionsTab.svelte'
+  import ContinuityTab from '$lib/components/continuity/ContinuityTab.svelte'
   import ConnectTab from '$lib/components/connect/ConnectTab.svelte'
   import DatabaseTab from '$lib/components/settings/DatabaseTab.svelte'
   import Login from '$lib/components/layout/Login.svelte'
@@ -197,6 +198,7 @@
     </div>
     {/if}
 
+    {#if authAccount.value?.role !== 'viewer'}<div class="tab-content {tabState.current === 'continuity' ? 'active' : ''}" data-testid="continuity-tab"><ContinuityTab /></div>{/if}
     <div
       id="timelineTab"
       class="tab-content {tabState.current === 'timeline' ? 'active' : ''}"

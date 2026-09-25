@@ -2,6 +2,11 @@
   import { onMount } from 'svelte'
   import TimelineList from './TimelineList.svelte'
   import TimelineDetail from './TimelineDetail.svelte'
+  import EventGroups from './EventGroups.svelte'
+  import { eventGroup, type EventGrouping } from '$lib/utils/event-groups'
+  let groupBy = $state<EventGrouping>('tool')
+  let selectedGroup = $state('')
+  let groupedItems = $derived(selectedGroup ? timelineItems.filter(item => eventGroup(item, groupBy) === selectedGroup) : timelineItems)
   import {
     timelineFilters,
     timelineItems,
@@ -116,9 +121,11 @@
   {#if authAccount.value?.role === 'evidence_collector' || authAccount.value?.role === 'administrator'}<button type="button" class="btn-secondary" onclick={() => downloadJson('timeline', { filters: timelineFilters, records: timelineItems })} disabled={timelineItems.length === 0}>Export JSON</button>{/if}
 </div>
 
+<EventGroups items={timelineItems} bind:by={groupBy} bind:selected={selectedGroup} />
+
 <div class="split-layout">
   <div class="panel-left">
-    <TimelineList />
+    <TimelineList items={groupedItems} />
   </div>
   <TimelineDetail />
 </div>

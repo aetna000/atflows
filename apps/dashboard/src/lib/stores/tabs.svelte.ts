@@ -3,6 +3,7 @@ export const validTabs = [
   'timeline',
   'traces',
   'sessions',
+  'continuity',
   'logs',
   'metrics',
   'models',
