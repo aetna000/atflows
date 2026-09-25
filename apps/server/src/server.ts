@@ -355,6 +355,41 @@ function startDashboardServer() {
             }
 
             // OTLP routes
+            if (pathname === '/v1/continuity/events') {
+                const secret = process.env.ATFLOWS_CONTINUITY_TOKEN || ''
+                const scope = process.env.ATFLOWS_CONTINUITY_SCOPE || 'local'
+                const supplied = req.headers.get('authorization') || ''
+                const expected = `Bearer ${secret}`
+                if (!secret || Buffer.byteLength(supplied) !== Buffer.byteLength(expected) || !require('node:crypto').timingSafeEqual(Buffer.from(supplied), Buffer.from(expected))) return Response.json({ error: 'Continuity producer credential required' }, { status: 401 })
+                if (req.method !== 'POST') return new Response('Method not allowed', { status: 405 })
+                if (Number(req.headers.get('content-length')) > 8192) return new Response('Event too large', { status: 413 })
+                let event
+                try {
+                    const reader = req.body?.getReader()
+                    const chunks: Uint8Array[] = []
+                    let bytes = 0
+                    if (reader) {
+                        while (true) {
+                            const chunk = await reader.read()
+                            if (chunk.done) break
+                            bytes += chunk.value.byteLength
+                            if (bytes > 8192) { await reader.cancel(); return new Response('Event too large', { status: 413 }) }
+                            chunks.push(chunk.value)
+                        }
+                    }
+                    const body = new TextDecoder('utf-8', { fatal: true }).decode(Buffer.concat(chunks))
+                    event = db.validateContinuity(JSON.parse(body))
+                } catch {
+                    return Response.json({ error: 'Invalid continuity event' }, { status: 400 })
+                }
+                try {
+                    return Response.json(db.continuity.ingest(scope, event))
+                } catch (error) {
+                    if (error instanceof db.ContinuityConflict) return Response.json({ error: error.message }, { status: 409 })
+                    log.error('Continuity event storage failed')
+                    return Response.json({ error: 'Continuity storage unavailable' }, { status: 503 })
+                }
+            }
             if (
                 pathname.startsWith('/v1/traces') ||
                 pathname.startsWith('/v1/logs') ||
@@ -554,6 +589,9 @@ function isLoopback(address: string) {
 }
 
 async function handleApiRoute(req: Request, url: URL, peerAddress: string): Promise<Response> {
+    if (url.pathname === '/api/continuity' && req.method === 'GET') {
+        return Response.json(db.continuity.view(process.env.ATFLOWS_CONTINUITY_SCOPE || 'local'))
+    }
     const pathname = url.pathname
     const method = req.method
 

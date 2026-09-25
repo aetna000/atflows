@@ -1,7 +1,21 @@
 # Continuity observability
 
-Created: 2026-09-25. Status: current-product audit and offline consumer fixtures
-implemented. Production continuity features and public evaluation remain planned.
+## Owner correction — product first, 2026-09-25
+
+Production implementation is now authorized. AtMem's
+`specs/benchmarking/002-agent-continuity/product-first-correction.md` PC-004–PC-006
+governs the boundary: the benchmark only stimulates and measures; it cannot
+implement missing identity, retry-cost accounting or recovery visibility.
+The old baseline-before-product and no-UI clauses below are superseded. Preserve
+existing baseline records and gaps, then implement supported features in normal
+packages/apps. Recovery-specific dashboard views, setup and documentation are
+required; general redesign and release are not authorized. AtFlows remains an
+observer, never the restart decision-maker. Installed acceptance must work with
+the benchmark and both source checkouts unavailable.
+
+Created: 2026-09-25. Status: current-product audit, offline consumer fixtures and
+isolated unmodified-server HTTP observations implemented. Production continuity
+features and public evaluation remain planned.
 
 ## Purpose
 

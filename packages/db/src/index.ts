@@ -2,6 +2,8 @@ import { Database } from 'bun:sqlite'
 import path from 'path'
 import fs from 'fs'
 import os from 'os'
+import { continuityStore } from './continuity'
+export { validateContinuity, ContinuityConflict } from './continuity'
 
 const DATA_DIR = process.env.DATA_DIR || path.join(os.homedir(), '.atflows')
 const DB_PATH = process.env.DB_PATH || path.join(DATA_DIR, 'data.db')
@@ -14,6 +16,7 @@ if (!fs.existsSync(DATA_DIR)) {
 }
 
 const db = new Database(DB_PATH, { create: true })
+export const continuity = continuityStore(db)
 
 // Enable WAL so concurrent writers (OTLP ingest, proxy logging) and readers
 // (dashboard polling, WebSocket fanout) don't serialize through a single
@@ -678,9 +681,9 @@ export function setCodexConnectionNickname(nickname: string) {
 }
 
 export function getDataCounts() {
-    const count = (table: 'traces' | 'logs' | 'metrics') =>
+    const count = (table: 'traces' | 'logs' | 'metrics' | 'continuity_events') =>
         (db.query(`SELECT COUNT(*) AS cnt FROM ${table}`).get() as { cnt: number }).cnt
-    return { traces: count('traces'), logs: count('logs'), metrics: count('metrics') }
+    return { traces: count('traces'), logs: count('logs'), metrics: count('metrics'), continuity_events: count('continuity_events') }
 }
 
 export function getDemoDataCounts() {
@@ -700,7 +703,7 @@ export const clearDemoData = db.transaction(() => {
 
 export const clearAllData = db.transaction(() => {
     const counts = getDataCounts()
-    db.exec('DELETE FROM traces; DELETE FROM logs; DELETE FROM metrics; DELETE FROM stats_cache;')
+    db.exec('DELETE FROM traces; DELETE FROM logs; DELETE FROM metrics; DELETE FROM stats_cache; DELETE FROM continuity_events;')
     return counts
 })
 
