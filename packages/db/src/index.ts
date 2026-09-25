@@ -16,15 +16,15 @@ if (!fs.existsSync(DATA_DIR)) {
 }
 
 const db = new Database(DB_PATH, { create: true })
-export const continuity = continuityStore(db)
 
 // Enable WAL so concurrent writers (OTLP ingest, proxy logging) and readers
 // (dashboard polling, WebSocket fanout) don't serialize through a single
 // rollback journal. busy_timeout gives statements a grace period before
 // surfacing SQLITE_BUSY to the caller.
-db.exec('PRAGMA journal_mode=WAL')
 db.exec('PRAGMA busy_timeout=5000')
+db.exec('PRAGMA journal_mode=WAL')
 db.exec('PRAGMA synchronous=NORMAL')
+export const continuity = continuityStore(db)
 
 // Parse a JSON column that may be NULL, empty, or malformed (e.g. a
 // passthrough body that wasn't actually JSON). Never throws.

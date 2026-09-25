@@ -1,6 +1,33 @@
 import { test, expect } from 'bun:test'
 import { Database } from 'bun:sqlite'
 import { continuityStore } from '../../packages/db/src/continuity'
+import { mkdtempSync } from 'node:fs'
+import { tmpdir } from 'node:os'
+import { join } from 'node:path'
+
+test('production startup waits for an existing writer before continuity schema creation', async () => {
+    const directory = mkdtempSync(join(tmpdir(), 'atflows-startup-lock-'))
+    const filename = join(directory, 'data.db')
+    const writer = new Database(filename)
+    writer.exec('PRAGMA journal_mode=WAL; CREATE TABLE retained(id INTEGER); BEGIN IMMEDIATE')
+    const entry = new URL('../../packages/db/src/index.ts', import.meta.url).href
+    const child = Bun.spawn([process.execPath, '--eval', `await import(${JSON.stringify(entry)}); process.exit(0)`], {
+        env: { ...process.env, DATA_DIR: directory, DB_PATH: filename },
+        stdout: 'pipe', stderr: 'pipe',
+    })
+    try {
+        await Bun.sleep(500)
+        writer.exec('COMMIT')
+        const exit = await child.exited
+        const stderr = await new Response(child.stderr).text()
+        if (exit !== 0) throw new Error(`Startup child exited ${exit}: ${stderr}`)
+        expect(exit).toBe(0)
+        expect(writer.query("SELECT name FROM sqlite_master WHERE name='continuity_events'").get()).not.toBeNull()
+    } finally {
+        child.kill()
+        writer.close()
+    }
+})
 
 const event = { format: 'atmem.continuity.v1', event_id: 'e1', workflow_id: 'w1', operation_id: 'o1', run_id: 'r1', attempt_id: 'a1', event: 'execute', time: 1000 }
 

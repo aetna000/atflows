@@ -2,8 +2,8 @@
 
 See [the integration guide](integrations/continuity.md) for configuration,
 standalone Python instrumentation, access rules and the **Activity → Resume work**
-dashboard. This is a development-branch feature, not a claim about the published
-0.1.2 artifact.
+dashboard. This feature is included in the 0.1.3 release candidate; publication
+is confirmed by the matching GitHub release and PyPI artifact.
 
 AtFlows observes attempts and reported cost. AtMem owns governed execution and
 receipts. Losing an observation does not stop or authorize work. Missing costs

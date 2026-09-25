@@ -31,6 +31,7 @@ const SERVER_FILE = path.join(ROOT_DIR, 'src', 'server.ts')
 const TEST_DIR = __dirname
 
 const HEALTH_URL = 'http://localhost:3000/api/health'
+const TEST_PROXY_PORT = process.env.ATFLOWS_TEST_PROXY_PORT || '18081'
 const MAX_WAIT_MS = 10000
 const POLL_INTERVAL_MS = 200
 
@@ -88,7 +89,7 @@ function startServer() {
         serverProcess = spawn('bun', ['run', SERVER_FILE], {
             cwd: ROOT_DIR,
             stdio: ['ignore', 'pipe', 'pipe'],
-            env: { ...process.env, NODE_ENV: 'test', DASHBOARD_PORT: '3000', PROXY_PORT: '8080', DATA_DIR: testDataDir, ATFLOWS_ADMIN_PASSWORD: testPassword, ATFLOWS_ATMEM_AUTH_URL: '' },
+            env: { ...process.env, NODE_ENV: 'test', DASHBOARD_PORT: '3000', PROXY_PORT: TEST_PROXY_PORT, DATA_DIR: testDataDir, ATFLOWS_ADMIN_PASSWORD: testPassword, ATFLOWS_ATMEM_AUTH_URL: '' },
         })
 
         let started = false
@@ -165,7 +166,7 @@ async function runTest(testFile) {
         const testProcess = spawn('bun', ['run', testPath], {
             cwd: ROOT_DIR,
             stdio: 'inherit',
-            env: { ...process.env, ATFLOW_URL: 'http://localhost:3000', ATFLOWS_TEST_COOKIE: testCookie },
+            env: { ...process.env, DATA_DIR: testDataDir, ATFLOW_URL: 'http://localhost:3000', PROXY_URL: `http://127.0.0.1:${TEST_PROXY_PORT}`, ATFLOWS_TEST_COOKIE: testCookie },
         })
 
         testProcess.on('exit', (code) => {

@@ -9,7 +9,7 @@ python -m pip install atflows
 atflows init
 ```
 
-AtFlows `0.1.2` keeps optional AtMem-owned dashboard login and adds clearer navigation between the two local dashboards. AtFlows uses Bun (>=1.1.0) to run its local server. Install Bun before starting the command. The first launch prepares the bundled runtime in `~/.cache/atflows` and needs package network access.
+AtFlows `0.1.3` adds [continuity observability](docs/continuity-observability.md), [grouped event charts](docs/event-overview.md), and AtMem-aligned typography. It retains optional AtMem-owned dashboard login. AtFlows uses Bun (>=1.1.0); install it before standalone startup, or use AtMem's managed setup. The first launch prepares the bundled runtime in `~/.cache/atflows` and needs package network access.
 
 `atflows init` creates a temporary Local Administrator password, starts the server, and opens the sign-in page with it filled in. Choose a permanent password to finish setup. If access is lost, run `atflows users recover-administrator`; it issues a new temporary password. OTLP ingestion and the model proxy remain available to configured clients.
 
@@ -25,7 +25,7 @@ Both listeners bind to `127.0.0.1` by default. `DASHBOARD_HOST` and `PROXY_HOST`
 
 See the [setup and connection guide](docs/integrations/atflows-basics.md) and the [integration catalog](docs/integrations/README.md) for provider routes, telemetry, and tool-specific instructions.
 Working recipes cover [Claude Code](docs/integrations/claude-code.md), [OpenClaw](docs/integrations/openclaw.md), [LangChain](docs/integrations/langchain.md), [Pydantic AI](docs/integrations/pydantic-ai.md), and [AtBots](docs/integrations/atbots.md). Choose a connection in the dashboard for your running addresses and guided steps.
-See the [0.1.2 release notes](https://github.com/aetna000/atflows/blob/main/docs/releases/v0.1.2.md) for changes and current limitations.
+See the [0.1.3 release notes](docs/releases/v0.1.3.md) for changes and current limitations.
 
 ---
 

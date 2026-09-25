@@ -7,6 +7,7 @@
   } from '$lib/stores/timeline.svelte'
   import { formatTime, formatUtcIso, formatLatency, formatCost } from '$lib/utils/format'
   import EmptyState from '$lib/components/shared/EmptyState.svelte'
+  let { items = timelineItems }: { items?: TimelineItem[] } = $props()
 
   function getTypeClass(type: string): string {
     switch (type) {
@@ -34,10 +35,10 @@
 </script>
 
 <div class="timeline-list" data-testid="timeline-list">
-  {#if timelineItems.length === 0}
+  {#if items.length === 0}
     <EmptyState message="No timeline items. Send requests through the proxy or OTLP endpoints." />
   {:else}
-    {#each timelineItems as item (item.id + item.type)}
+    {#each items as item (item.id + item.type)}
       <div
         class="timeline-item"
         class:selected={selectedItem.value?.id === item.id &&
