@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "atflows"
-version = "0.1.3"
+version = "0.1.4b2"
 description = "AtFlows: local LLM observability, tracing and cost tracking"
 readme = "README.md"
 requires-python = ">=3.10"
@@ -23,5 +23,10 @@ Repository = "https://github.com/aetna000/atflows"
 Upstream = "https://github.com/HelgeSverre/llmflow"
 
 [tool.setuptools]
-packages = ["atflows"]
 include-package-data = true
+
+[tool.setuptools.packages.find]
+include = ["atflows", "atflows.*"]
+
+[tool.setuptools.package-data]
+"atflows.integrations.hermes" = ["plugin.yaml"]

@@ -6,6 +6,7 @@ test('grouped event bars filter the list and preserve unknown identities', async
         authenticated: true, password_change_required: false,
         account: { id: 'chart-test', username: 'chart-test', role: 'administrator' },
     } }))
+    await page.route('**/api/timeline/filters', route => route.fulfill({ json: { services: ['codex'] } }))
     await page.route('**/api/timeline?*', route => route.fulfill({ json: [
         { id: '1', type: 'log', timestamp: 1720000000000, title: 'First event', tool: 'codex', model: 'model-a' },
         { id: '2', type: 'log', timestamp: 1720000001000, title: 'Second event', tool: 'codex', model: 'model-b' },

@@ -1,6 +1,6 @@
 {
   "name": "atflows",
-  "version": "0.1.3",
+  "version": "0.1.4-beta.2",
   "description": "See what your LLM calls cost. One command. No signup.",
   "private": false,
   "type": "module",
@@ -43,6 +43,7 @@
     "packages/pricing/pricing.fallback.json",
     "public/",
     "docs/integrations/",
+    "atflows/integrations/hermes/",
     "LICENSE",
     "LICENSE-MIT-LLMFLOW",
     "NOTICE"

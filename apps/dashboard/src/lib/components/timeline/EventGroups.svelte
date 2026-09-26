@@ -19,6 +19,7 @@
       <option value="tool">Tool</option><option value="service_name">Service</option>
       <option value="model">Model</option><option value="type">Event type</option>
       <option value="hour">Hour</option>
+      <option value="session_id">Session</option>
     </select></label>
   </div>
   <p>{items.length} loaded events · Latest 100 matching your filters, not all-history totals. Click a bar to inspect its events. Hours use local time.</p>

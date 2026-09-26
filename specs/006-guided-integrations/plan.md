@@ -62,6 +62,55 @@ See [data-model.md](./data-model.md), [contracts/setup-api.md](./contracts/setup
 6. Optional read-only AtFlows AtBot help after feature 003 is available.
 7. OpenClaw direct setup shipped in 0.1b6 after feature 005 receiver and wheel tests; guided apply and per-connection evidence remain follow-up work.
 
+## Hermes coordinated delivery — 2026-09-26
+
+Extend this existing feature, paired with AtMem Spec 037; no new spec numbering.
+Audit pinned Hermes lifecycle/telemetry hooks first and publish a field-level
+coverage table. Use the existing receiver or supported product instrumentation;
+no benchmark-side observer may compensate for missing product functionality.
+AtMem owns memory provider installation/activation and scoped credentials.
+AtFlows owns the optional observation connection, persisted traces and charts.
+
+Add the Hermes catalog/recipe in `packages/integrations/src/`, reuse authorized
+setup endpoints in `apps/server/src/` and existing Connect components in
+`apps/dashboard/src/lib/components/connect/`. Extend existing CLI entry points
+after locating their actual paths, not a parallel installer. Both surfaces invoke
+the same planner, with backups and conflict-safe undo. Preserve other exporters.
+
+Use explicit source IDs and observed timestamps, UTC storage and local display.
+Reuse existing grouped execution views; missing tokens/cost/tool events remain
+unknown. Require secret-redaction gates before accepting this new telemetry.
+Test AtFlows alone and with AtMem from installed artifacts, including outages
+and concurrent profiles. Record exact companion versions rather than infer
+compatibility from matching version numbers. Target a coordinated **0.1.4b2**
+preview only after redaction gates pass, publish/verify AtFlows before AtMem
+2.3.8b2 pins it, then retain 0.1.4 as the stable maintenance target with AtMem
+2.3.8. These are planned versions, not authorization or a publication claim.
+
+Implement `contracts/hermes-observation.md` before catalog promotion. The current
+receiver requires actual changes, not only tests: unknown usage/cost availability
+in storage and charts; receiver-side metadata/redaction filtering; idempotent
+event insertion and conflict reporting; request-versus-turn event classification;
+explicit session correlation without process-ID fallback. T060–T064 own these
+changes. Preserve existing non-Hermes behavior through migration/regression tests.
+The plugin is packaged under `atflows/integrations/hermes/`, with its shared
+planner in `packages/integrations/src/hermes.ts`. T056 depends on T005/T019 and
+Hermes-specific extensions of T007/T008, including protected directory writes.
+
+Follow-up design review left T065–T067 open: the global redaction specification,
+receiver source recognition/trust, exact profile handoff/canonical encoding and
+alignment with Spec 010 unknown-cost storage. Complete these before affected
+implementation. Planning alignment is not a release or full-product approval.
+
 ## Post-Design Constitution Check
+
+### Bounded visibility repair
+
+Complete T068–T070 independently of observer qualification. Retain the existing
+uncommitted database-backed timeline service endpoint and add refresh/failure
+coverage. Add a planned Hermes catalog entry and readable blocker guidance;
+keep native-observer T055–T067 open. Review this bounded change read-only before
+implementation and again after tests. No provider settings or credentials change.
+Validate built UI and installed artifact; record exactly which service was updated.
 
 All gates remain satisfied if setup writes stay local, versions and compatibility are tested, and the catalog never treats a health check as captured traffic. Hosted write access is excluded until feature 001.

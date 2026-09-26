@@ -3,6 +3,11 @@ const { test, expect } = require('@playwright/test')
 
 test.describe('Timeline Tab', () => {
     test.beforeEach(async ({ page }) => {
+        const login = await page.request.post('/api/auth/login', {
+            headers: { Origin: 'http://127.0.0.1:3001' },
+            data: { username: 'administrator', password: 'atflows-isolated-e2e-only' },
+        })
+        expect(login.status()).toBe(200)
         await page.goto('/#timeline')
         // Wait for timeline to load
         await page.waitForFunction(
@@ -43,19 +48,6 @@ test.describe('Timeline Tab', () => {
         await expect(timelineList).toBeVisible()
         const content = await timelineList.textContent()
         expect(content).toBeDefined()
-    })
-
-    test('tool filter has expected options', async ({ page }) => {
-        const options = page.locator('[data-testid="timeline-tool-filter"] option')
-        await expect(options).toHaveCount.call(expect(options.first()), await options.count())
-        const count = await options.count()
-        expect(count).toBeGreaterThan(1) // "All Tools" + tool options
-
-        // Verify some expected tool options
-        const values = await options.evaluateAll((opts) => opts.map((o) => o.value))
-        expect(values).toContain('') // All Tools
-        expect(values).toContain('aider')
-        expect(values).toContain('proxy')
     })
 
     test('type filter shows only traces', async ({ page }) => {

@@ -4,7 +4,27 @@ This table distinguishes shipped work from requirements still on the roadmap. Re
 
 ## Delivery order
 
-### Next maintenance release: 0.1.4 secret redaction
+### Current beta: 0.1.4b1 secret redaction and Hermes observation
+
+Coordinated integration priority: first-class Hermes setup and observation under
+[Spec 006](../specs/006-guided-integrations/spec.md), T055–T067, paired with
+AtMem Spec 037 / planned 2.3.8b2. Deliver guided configuration, CLI parity,
+real-event verification and grouped activity with tested capture coverage.
+This beta does not replace the 0.1.4 stable redaction commitment; AtFlows remains
+optional for AtMem users and independently usable without AtMem.
+
+Development implementation (T068–T073): native Hermes CLI metadata observation,
+shared dashboard/CLI preview/apply/status/undo, authenticated bounded receiver,
+nullable usage, Timeline/session grouping and exact retained-service filters
+are implemented and tested with the installed artifact on macOS. See
+[native validation](../specs/006-guided-integrations/hermes-native-validation.md).
+Explicit AtMem correlation, generic telemetry redaction, cross-platform and
+full upgrade/parity gates remain open; this is not a public release claim.
+
+Preview ordering: publish/verify **AtFlows 0.1.4b2** first, then pin it in
+**AtMem 2.3.8b2**.
+Stable maintenance targets remain 0.1.4 and 2.3.8. These targets do not authorize
+publication and do not describe current shipped functionality.
 
 Scheduled 2026-09-26 with AtMem **2.3.8**:
 [issue #6](https://github.com/aetna000/atflows/issues/6). This security fix takes

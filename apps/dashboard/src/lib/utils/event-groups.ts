@@ -1,6 +1,6 @@
 import type { TimelineItem } from '../stores/timeline.svelte'
 
-export type EventGrouping = 'tool' | 'service_name' | 'model' | 'type' | 'hour'
+export type EventGrouping = 'tool' | 'service_name' | 'model' | 'type' | 'hour' | 'session_id'
 
 export function eventGroup(item: TimelineItem, by: EventGrouping): string {
   if (by === 'hour') {

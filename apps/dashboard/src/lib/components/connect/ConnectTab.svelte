@@ -1,5 +1,6 @@
 <script lang="ts">
   import { onMount } from 'svelte'
+  import HermesConnect from './HermesConnect.svelte'
   import { api } from '$lib/api/client'
   import { marked } from 'marked'
   import DOMPurify from 'dompurify'
@@ -21,6 +22,8 @@
     canAutoConfigure: boolean
     validatedAt?: string
     validatedWith?: string
+    blocker?: string
+    gates?: string[]
   }
 
   let integrations = $state<Integration[]>([])
@@ -137,7 +140,7 @@
   }
 
   function statusLabel(status: Integration['status']) {
-    return status === 'available' ? 'Working' : 'Available soon'
+    return status === 'available' ? 'Working' : status === 'planned' ? 'Not implemented' : 'Needs validation'
   }
 
   function routeLabel(mode: Integration['mode']) {
@@ -228,7 +231,7 @@
 <section class="connect-layout" data-testid="connect-tab">
   <div class="connect-intro">
     <h2>Connect a tool</h2>
-    <p>{workingCount} working · {integrations.length - workingCount} available soon</p>
+    <p>{workingCount} working · {integrations.length - workingCount} not ready</p>
   </div>
 
   {#if error}<p class="connect-error" role="alert">{error}</p>{/if}
@@ -259,12 +262,18 @@
         {#if selected.validatedAt}<p class="connect-validation">Checked {selected.validatedAt}: {selected.validatedWith}</p>{/if}
 
         <div class="connect-facts">
-          <div><strong>Route</strong><span>{routeLabel(selected.mode)}</span></div>
+          <div><strong>Route</strong><span>{selected.status === 'planned' ? 'Not connected — planned observation adapter' : routeLabel(selected.mode)}</span></div>
           <div><strong>Captured</strong><span>{selected.captures}</span></div>
         </div>
 
         {#if selected.status !== 'available'}
-          <p class="connect-notice" role="status">This setup is awaiting a verified test with an installed AtFlows package. The guide shows current research; setup controls will appear when it works end to end.</p>
+          <p class="connect-notice" role="status">{selected.blocker || 'This setup is awaiting a verified test with an installed AtFlows package. The guide shows current research; setup controls will appear when it works end to end.'}</p>
+          {#if selected.gates?.length}
+            <div class="connect-path" data-testid="integration-readiness-gates">
+              <strong>What remains before connection</strong>
+              <ul>{#each selected.gates as gate}<li>{gate}</li>{/each}</ul>
+            </div>
+          {/if}
         {/if}
 
         {#if selected.status === 'available'}<ol class="connect-wizard">
@@ -338,6 +347,7 @@
           </div>
         {/if}
 
+        {#if selected.id === 'hermes'}<HermesConnect />{/if}
         {#if selected.id === 'openclaw'}
           <div class="connect-path">
             <strong>OpenClaw activity</strong>
@@ -366,7 +376,7 @@
             <button type="button" onclick={() => copy(selected.snippet!, 'settings')}>{copiedField === 'settings' ? 'Copied' : 'Copy settings'}</button>
           </div>
         {/if}
-        <details class="connect-document" open={!!guideOverride}>
+        <details class="connect-document" open={!!guideOverride || selected.status === 'planned'}>
           <summary>{selected.status === 'available' ? 'Detailed instructions' : 'Research and current blocker'} for {guideOverride ? guideOverride.replaceAll('/', ' / ').replaceAll('-', ' ') : selected.name}</summary>
           {#if guideError}<p role="alert">{guideError}</p>{/if}
           {#if guideHtml}<div class="guide-body">{@html guideHtml}</div>{:else if !guideError}<p>Loading instructions…</p>{/if}

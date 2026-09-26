@@ -27,3 +27,19 @@ Stable local ID, user nickname, integration profile, optional matching rule, cre
 ## AtBotHelpRequest
 
 Optional, opt-in request containing the selected guide version, setup diagnostic codes, and redacted evidence. Its answer includes cited source steps, uncertainty, and no write capability.
+
+## HermesObservation (planned)
+
+Versioned event kind/identity, connection/profile/session, optional supplied
+task/turn/request/tool IDs, numeric timing/status, usage availability and cost
+provenance. Nullable/availability fields distinguish unknown from observed zero;
+duplicate receipts and coverage counters are separate from billable observations.
+See `contracts/hermes-observation.md` for exact ownership, missing-field, retry,
+correlation and receiver-redaction rules. Existing storage is not yet compliant.
+
+## Catalog readiness extension
+
+Optional `blocker` and `gates` explain a planned integration without implying
+configuration exists. They contain product status only, never credentials or
+observed user content. Hermes keeps a stable `docs/integrations/hermes.md` URL:
+T069 introduces its status guide; T059 replaces that with validated setup steps.

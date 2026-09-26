@@ -3,6 +3,8 @@ import path from 'path'
 import fs from 'fs'
 import os from 'os'
 import { continuityStore } from './continuity'
+import { HermesStore } from './hermes'
+export { validateHermes, HermesConflict } from './hermes'
 export { validateContinuity, ContinuityConflict } from './continuity'
 
 const DATA_DIR = process.env.DATA_DIR || path.join(os.homedir(), '.atflows')
@@ -25,6 +27,7 @@ db.exec('PRAGMA busy_timeout=5000')
 db.exec('PRAGMA journal_mode=WAL')
 db.exec('PRAGMA synchronous=NORMAL')
 export const continuity = continuityStore(db)
+export const hermes = new HermesStore(db)
 
 // Parse a JSON column that may be NULL, empty, or malformed (e.g. a
 // passthrough body that wasn't actually JSON). Never throws.
@@ -144,12 +147,15 @@ function initSchema() {
         CREATE INDEX IF NOT EXISTS idx_logs_trace_id ON logs(trace_id);
         CREATE INDEX IF NOT EXISTS idx_logs_event_name ON logs(event_name);
         CREATE INDEX IF NOT EXISTS idx_logs_service_name ON logs(service_name);
+        CREATE INDEX IF NOT EXISTS idx_traces_service_name ON traces(service_name);
         CREATE INDEX IF NOT EXISTS idx_logs_severity ON logs(severity_number);
     `)
 
     // Older OTLP JSON senders can set timeUnixNano=0 while providing a valid
     // observedTimeUnixNano. Restore those records to the visible timeline.
-    db.exec('UPDATE logs SET timestamp=observed_timestamp WHERE timestamp=0 AND observed_timestamp>0')
+    if (db.query('SELECT 1 FROM logs WHERE timestamp=0 AND observed_timestamp>0 LIMIT 1').get()) {
+        db.exec('UPDATE logs SET timestamp=observed_timestamp WHERE timestamp=0 AND observed_timestamp>0')
+    }
 
     // Metrics table for OTLP metrics ingestion (v0.2.2+)
     db.exec(`
@@ -681,9 +687,9 @@ export function setCodexConnectionNickname(nickname: string) {
 }
 
 export function getDataCounts() {
-    const count = (table: 'traces' | 'logs' | 'metrics' | 'continuity_events') =>
+    const count = (table: 'traces' | 'logs' | 'metrics' | 'continuity_events' | 'hermes_events') =>
         (db.query(`SELECT COUNT(*) AS cnt FROM ${table}`).get() as { cnt: number }).cnt
-    return { traces: count('traces'), logs: count('logs'), metrics: count('metrics'), continuity_events: count('continuity_events') }
+    return { traces: count('traces'), logs: count('logs'), metrics: count('metrics'), continuity_events: count('continuity_events'), hermes_events: count('hermes_events') }
 }
 
 export function getDemoDataCounts() {
@@ -703,7 +709,7 @@ export const clearDemoData = db.transaction(() => {
 
 export const clearAllData = db.transaction(() => {
     const counts = getDataCounts()
-    db.exec('DELETE FROM traces; DELETE FROM logs; DELETE FROM metrics; DELETE FROM stats_cache; DELETE FROM continuity_events;')
+    db.exec('DELETE FROM traces; DELETE FROM logs; DELETE FROM metrics; DELETE FROM stats_cache; DELETE FROM continuity_events; DELETE FROM hermes_events;')
     return counts
 })
 
@@ -946,6 +952,16 @@ export function getDistinctEventNames() {
             )
             .all() as { event_name: string }[]
     ).map((r) => r.event_name)
+}
+
+export function getTimelineServices(limit = 501): string[] {
+    return (db.query(`
+        SELECT service_name FROM traces WHERE service_name IS NOT NULL AND TRIM(service_name) != ''
+        UNION
+        SELECT service_name FROM logs WHERE service_name IS NOT NULL AND TRIM(service_name) != ''
+        ORDER BY service_name
+        LIMIT ?
+    `).all(limit) as { service_name: string }[]).map((row) => row.service_name)
 }
 
 export function getDistinctLogServices() {

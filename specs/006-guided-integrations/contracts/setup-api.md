@@ -13,3 +13,17 @@ All write-capable routes are loopback-only, reject cross-origin requests, requir
 CLI counterparts must use the same planner and checks: `atflows connect list|show|preview|apply|status|undo`. Exact flags and response schemas are finalized before implementation and covered by contract tests.
 
 Errors distinguish `unsupported_version`, `protocol_unavailable`, `encoding_mismatch`, `server_unreachable`, `endpoint_stale`, `config_conflict`, `file_changed`, `permission_denied`, `missing_provider_auth`, `ambiguous_connection`, and `no_event_yet`. Error bodies never echo secrets.
+
+For the proposed `hermes` key, the planner follows `hermes-observation.md`.
+Preview shows the dedicated plugin directory, actual endpoint, non-secret profile
+mapping, signal coverage and restart requirement. It never reads or returns
+AtMem's connection credential. Apply/undo own only the AtFlows plugin and metadata;
+status distinguishes configuration from actual traffic and reports dropped events.
+T005/T019 CLI work and Hermes-specific target/permission tests precede parity claims.
+
+## Optional catalog readiness fields
+
+Profiles may include `blocker: string` and `gates: string[]`. Planned profiles
+expose no executable endpoint/snippet and have `canAutoConfigure: false`.
+The dashboard renders blockers and gates as status, not setup instructions.
+`planned` means Not implemented; it is not a promise of availability soon.

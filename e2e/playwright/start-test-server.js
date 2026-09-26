@@ -31,6 +31,8 @@ process.env.DB_PATH = TEST_DB_PATH
 process.env.DASHBOARD_PORT = '3001'
 process.env.PROXY_PORT = '8081'
 process.env.NODE_ENV = 'test'
+process.env.ATFLOWS_ATMEM_AUTH_URL = ''
+process.env.ATFLOWS_ADMIN_PASSWORD = 'atflows-isolated-e2e-only'
 
 console.log('Starting test server with:')
 console.log('  DATA_DIR:', process.env.DATA_DIR)

@@ -46,6 +46,7 @@ def main() -> int:
         print(f"atflows {__version__}")
         return 0
     if any(arg in ("-h", "--help") for arg in args):
+        print("Hermes: atflows connect hermes preview|status --endpoint http://127.0.0.1:PORT [--home PATH]; apply --preview ID; undo [--home PATH]\n")
         print("AtFlows local LLM observability\n\nUsage: atflow [status|start|init|users recover-administrator]\n       atflows [status|start|init|users recover-administrator|--help|--version]\n\natflow and atflow status show running servers. atflows starts a server.\nSet ATFLOWS_ATMEM_AUTH_URL to a running AtMem loopback dashboard origin for optional shared login and AtMem-owned users.\nDashboard: http://127.0.0.1:1337 by default (check the startup URL)\nProxy: http://127.0.0.1:8080 by default\nRequires Bun >=1.1.0 to start.")
         return 0
     bun = shutil.which("bun")
@@ -70,6 +71,8 @@ def main() -> int:
             return result.returncode
         ready.touch()
     try:
+        if args[:2] == ["connect", "hermes"]:
+            return subprocess.run([bun, "run", "packages/integrations/src/hermes-cli.ts", *args[2:]], cwd=cache, check=False).returncode
         if setup_password:
             setup_environment = os.environ.copy()
             setup_environment.pop("ATFLOWS_ADMIN_PASSWORD", None)
