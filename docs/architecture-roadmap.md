@@ -1,8 +1,32 @@
 # AtFlows architecture pathway
 
-This table distinguishes shipped work from requirements still on the roadmap. Release `0.1.2` has a Python CLI, a Bun and SQLite runtime, proxy, OTLP/HTTP JSON and protobuf ingest, a Svelte dashboard, local dashboard user roles, and optional AtMem-delegated dashboard login. It has no AtFlows MCP server, automatic AtMem trace ingestion, AtFlows AtBot, or Jev decision integration.
+This table distinguishes shipped work from requirements still on the roadmap. Release `0.1.3` has a Python CLI, a Bun and SQLite runtime, proxy, OTLP/HTTP JSON and protobuf ingest, a Svelte dashboard, local dashboard user roles, optional AtMem-delegated dashboard login, continuity observation and grouped event charts. It has no AtFlows MCP server, automatic AtMem trace ingestion, AtFlows AtBot, or Jev decision integration.
 
 ## Delivery order
+
+### Next maintenance release: 0.1.4 secret redaction
+
+Scheduled 2026-09-26 with AtMem **2.3.8**:
+[issue #6](https://github.com/aetna000/atflows/issues/6). This security fix takes
+priority over new feature tracks; preserve existing continuity behavior and
+historical benchmark provenance.
+
+Create a bounded Spec Kit feature before implementation. Deliver default-on
+redaction for telemetry copies before persistence, diagnostics and export,
+covering proxy and OTLP paths, structured credentials and supported text patterns.
+Keep provider requests and client responses unchanged. Define coverage limits,
+bounded processing and failure behavior without raw fallback logging.
+
+Acceptance uses fake secrets in isolated tests across headers, cookies, bodies,
+URLs, errors, streams, OTLP signals, SQLite/WAL, console output, dashboard/API,
+WebSockets and exporters. Test forwarding fidelity, fresh installation, upgrade
+from 0.1.3, authentication/continuity regressions and performance overhead.
+Specify protection and an explicit cleanup procedure for historical records;
+upgrading alone must not be described as erasing old secrets or backups.
+
+Publish and verify AtFlows 0.1.4 first, then pin it in AtMem 2.3.8. Align both
+release notes and website security/setup guidance. This is planned work, not
+implemented redaction or authorization to publish.
 
 **Priority correction, 2026-09-25:** Spec 010 product continuity observation is
 the immediate priority. Implement shipped identity, retry/recovery accounting,

@@ -1,8 +1,11 @@
 # AtFlows release checklist
 
-**Next-work priority (2026-09-25):** [Spec 010 continuity qualification](../specs/010-continuity-observability/spec.md)
-precedes new feature tracks, as recorded in the [architecture roadmap](architecture-roadmap.md).
-The approved coordinated release targets AtFlows 0.1.3 with AtMem 2.3.7.
+**Next-work priority (2026-09-26):** AtFlows **0.1.4** secret redaction
+([issue #6](https://github.com/aetna000/atflows/issues/6)), coordinated with
+AtMem **2.3.8**, as recorded in the [architecture roadmap](architecture-roadmap.md).
+AtFlows 0.1.3 with AtMem 2.3.7 is the published baseline. The next pair is a
+planning target, not publication authorization. Require redaction, forwarding
+fidelity and legacy-data handling gates, alongside continuity regressions.
 Preserve the original 0.1.2 benchmark artifacts. Product acceptance and repeated
 held-out qualification are separate gates; publishing does not complete the latter.
 
