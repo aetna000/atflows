@@ -16,6 +16,10 @@ const configuredPruneBatch = parseInt(process.env.RETENTION_PRUNE_BATCH || '1000
 const RETENTION_PRUNE_BATCH = Number.isSafeInteger(configuredPruneBatch) && configuredPruneBatch > 0
     ? configuredPruneBatch
     : 1000
+const configuredAggregateCacheTtl = parseInt(process.env.METRIC_AGGREGATE_CACHE_TTL_MS || '30000', 10)
+const METRIC_AGGREGATE_CACHE_TTL_MS = Number.isSafeInteger(configuredAggregateCacheTtl) && configuredAggregateCacheTtl >= 0
+    ? configuredAggregateCacheTtl
+    : 30000
 
 if (!fs.existsSync(DATA_DIR)) {
     fs.mkdirSync(DATA_DIR, { recursive: true })
@@ -101,6 +105,9 @@ function initSchema() {
     db.exec('CREATE INDEX IF NOT EXISTS idx_traces_parent_id ON traces(parent_id)')
     db.exec('CREATE INDEX IF NOT EXISTS idx_traces_session_id ON traces(session_id)')
     db.exec('CREATE INDEX IF NOT EXISTS idx_traces_conversation_id ON traces(conversation_id)')
+    db.exec('CREATE INDEX IF NOT EXISTS idx_traces_model_timestamp ON traces(model, timestamp DESC)')
+    db.exec('CREATE INDEX IF NOT EXISTS idx_traces_status_timestamp ON traces(status, timestamp DESC)')
+    db.exec('CREATE INDEX IF NOT EXISTS idx_traces_service_timestamp ON traces(service_name, timestamp DESC)')
 
     db.exec(`
         CREATE TABLE IF NOT EXISTS stats_cache (
@@ -153,6 +160,9 @@ function initSchema() {
         CREATE INDEX IF NOT EXISTS idx_logs_service_name ON logs(service_name);
         CREATE INDEX IF NOT EXISTS idx_traces_service_name ON traces(service_name);
         CREATE INDEX IF NOT EXISTS idx_logs_severity ON logs(severity_number);
+        CREATE INDEX IF NOT EXISTS idx_logs_service_timestamp ON logs(service_name, timestamp DESC);
+        CREATE INDEX IF NOT EXISTS idx_logs_event_timestamp ON logs(event_name, timestamp DESC);
+        CREATE INDEX IF NOT EXISTS idx_logs_trace_timestamp ON logs(trace_id, timestamp DESC);
     `)
 
     // Older OTLP JSON senders can set timeUnixNano=0 while providing a valid
@@ -193,6 +203,9 @@ function initSchema() {
         CREATE INDEX IF NOT EXISTS idx_metrics_name ON metrics(name);
         CREATE INDEX IF NOT EXISTS idx_metrics_service_name ON metrics(service_name);
         CREATE INDEX IF NOT EXISTS idx_metrics_type ON metrics(metric_type);
+        CREATE INDEX IF NOT EXISTS idx_metrics_name_timestamp ON metrics(name, timestamp DESC);
+        CREATE INDEX IF NOT EXISTS idx_metrics_service_timestamp ON metrics(service_name, timestamp DESC);
+        CREATE INDEX IF NOT EXISTS idx_metrics_type_timestamp ON metrics(metric_type, timestamp DESC);
     `)
 }
 
@@ -272,6 +285,13 @@ const deleteMetricOverflowStmt = db.query(`
         SELECT id FROM metrics ORDER BY timestamp ASC LIMIT $batch
     )
 `)
+
+// Metrics can reach the default million-row cap on a busy workstation. A
+// COUNT(*) plus one-row delete for every new point keeps SQLite scanning and
+// rewriting the largest table continuously. Count once per process and prune a
+// whole batch when the cap is crossed; the retained set remains bounded by the
+// same configured maximum.
+let retainedMetricCount = getMetricCount()
 
 // Hook for real-time updates
 type TraceHook = (trace: TraceSummary) => void
@@ -704,6 +724,7 @@ export function getDemoDataCounts() {
 export const clearDemoData = db.transaction(() => {
     const counts = getDemoDataCounts()
     db.exec("DELETE FROM traces WHERE service_name = 'demo'; DELETE FROM logs WHERE service_name = 'demo'; DELETE FROM metrics WHERE service_name = 'demo';")
+    retainedMetricCount = Math.max(0, retainedMetricCount - counts.metrics)
     db.exec('DELETE FROM stats_cache')
     return counts
 })
@@ -711,6 +732,7 @@ export const clearDemoData = db.transaction(() => {
 export const clearAllData = db.transaction(() => {
     const counts = getDataCounts()
     db.exec('DELETE FROM traces; DELETE FROM logs; DELETE FROM metrics; DELETE FROM stats_cache; DELETE FROM continuity_events; DELETE FROM hermes_events;')
+    retainedMetricCount = 0
     return counts
 })
 
@@ -993,9 +1015,12 @@ export function insertMetric(metric: Metric) {
         $resource_attributes: JSON.stringify(metric.resource_attributes || {}),
     })
 
-    const count = getMetricCount()
-    if (count > MAX_METRICS) {
-        deleteMetricOverflowStmt.run({ $batch: Math.min(RETENTION_PRUNE_BATCH, count - MAX_METRICS) })
+    retainedMetricCount += 1
+    if (retainedMetricCount > MAX_METRICS) {
+        const result = deleteMetricOverflowStmt.run({
+            $batch: Math.min(RETENTION_PRUNE_BATCH, retainedMetricCount),
+        })
+        retainedMetricCount -= Number(result.changes)
     }
 
     if (onInsertMetric) {
@@ -1101,12 +1126,32 @@ export function getMetricCount(filters: Partial<MetricFilters> = {}) {
     return result.cnt
 }
 
+function cachedMetricAggregate<T>(key: string, calculate: () => T): T {
+    if (METRIC_AGGREGATE_CACHE_TTL_MS > 0) {
+        const cached = db
+            .query('SELECT value, updated_at FROM stats_cache WHERE key = $key')
+            .get({ $key: key }) as { value: string; updated_at: number } | null
+        if (cached && Date.now() - cached.updated_at <= METRIC_AGGREGATE_CACHE_TTL_MS) {
+            try {
+                return JSON.parse(cached.value) as T
+            } catch {
+                db.query('DELETE FROM stats_cache WHERE key = $key').run({ $key: key })
+            }
+        }
+    }
+    const value = calculate()
+    if (METRIC_AGGREGATE_CACHE_TTL_MS > 0) {
+        db.query(`INSERT INTO stats_cache (key, value, updated_at) VALUES ($key, $value, $updated_at)
+            ON CONFLICT(key) DO UPDATE SET value=excluded.value, updated_at=excluded.updated_at`)
+            .run({ $key: key, $value: JSON.stringify(value), $updated_at: Date.now() })
+    }
+    return value
+}
+
 export function getMetricsSummary(filters: { date_from?: number; date_to?: number } = {}) {
     const fromTs = filters.date_from || 0
     const toTs = filters.date_to || Date.now()
-
-    return db
-        .query(
+    const calculate = () => db.query(
             `
         SELECT 
             name,
@@ -1126,11 +1171,12 @@ export function getMetricsSummary(filters: { date_from?: number; date_to?: numbe
     `,
         )
         .all({ $fromTs: fromTs, $toTs: toTs })
+    if (filters.date_from || filters.date_to) return calculate()
+    return cachedMetricAggregate('metrics-summary-v1', calculate)
 }
 
 export function getTokenUsage() {
-    return db
-        .query(
+    return cachedMetricAggregate('metric-token-usage-v1', () => db.query(
             `
         SELECT 
             service_name,
@@ -1142,25 +1188,25 @@ export function getTokenUsage() {
         GROUP BY service_name, model, token_type
     `,
         )
-        .all()
+        .all())
 }
 
 export function getDistinctMetricNames() {
-    return (
+    return cachedMetricAggregate('metric-names-v1', () => (
         db
             .query('SELECT DISTINCT name FROM metrics WHERE name IS NOT NULL ORDER BY name')
             .all() as { name: string }[]
-    ).map((r) => r.name)
+    ).map((r) => r.name))
 }
 
 export function getDistinctMetricServices() {
-    return (
+    return cachedMetricAggregate('metric-services-v1', () => (
         db
             .query(
                 'SELECT DISTINCT service_name FROM metrics WHERE service_name IS NOT NULL ORDER BY service_name',
             )
             .all() as { service_name: string }[]
-    ).map((r) => r.service_name)
+    ).map((r) => r.service_name))
 }
 
 // Analytics functions

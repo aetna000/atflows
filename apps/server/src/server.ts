@@ -100,6 +100,18 @@ function configuredPort(name: string, fallback: number) {
     return value
 }
 
+function boundedQueryInteger(
+    value: string | null,
+    fallback: number,
+    minimum: number,
+    maximum: number,
+) {
+    if (value === null || value === '') return fallback
+    const parsed = Number(value)
+    if (!Number.isSafeInteger(parsed)) return fallback
+    return Math.max(minimum, Math.min(maximum, parsed))
+}
+
 // Ports are an operator-visible contract. Bun may assign an ephemeral port
 // only when a test explicitly passes 0; production startup never searches for
 // a different free port behind the operator's back.
@@ -797,8 +809,8 @@ async function handleApiRoute(req: Request, url: URL, peerAddress: string): Prom
 
         // Traces list
         if (pathname === '/api/traces' && method === 'GET') {
-            const limit = Number(url.searchParams.get('limit') || '50')
-            const offset = Number(url.searchParams.get('offset') || '0')
+            const limit = boundedQueryInteger(url.searchParams.get('limit'), 50, 1, 500)
+            const offset = boundedQueryInteger(url.searchParams.get('offset'), 0, 0, 10_000_000)
 
             const filters: db.TraceFilters = {}
             if (url.searchParams.get('model')) filters.model = url.searchParams.get('model')!
@@ -922,8 +934,8 @@ async function handleApiRoute(req: Request, url: URL, peerAddress: string): Prom
 
         // Sessions list
         if (pathname === '/api/sessions' && method === 'GET') {
-            const limit = Number(url.searchParams.get('limit') || '50')
-            const offset = Number(url.searchParams.get('offset') || '0')
+            const limit = boundedQueryInteger(url.searchParams.get('limit'), 50, 1, 500)
+            const offset = boundedQueryInteger(url.searchParams.get('offset'), 0, 0, 10_000_000)
             return Response.json({
                 sessions: db.getSessions({ limit, offset }),
                 total: db.getSessionCount(),
@@ -962,7 +974,7 @@ async function handleApiRoute(req: Request, url: URL, peerAddress: string): Prom
         }
 
         if (pathname === '/api/timeline' && method === 'GET') {
-            const limit = Number(url.searchParams.get('limit') || '100')
+            const limit = boundedQueryInteger(url.searchParams.get('limit'), 100, 1, 500)
             const filters: db.TraceFilters = {}
             if (url.searchParams.get('q')) filters.q = url.searchParams.get('q')!
             if (url.searchParams.get('tool')) filters.service_name = url.searchParams.get('tool')!
@@ -1043,8 +1055,9 @@ async function handleApiRoute(req: Request, url: URL, peerAddress: string): Prom
 
         // Logs list
         if (pathname === '/api/logs' && method === 'GET') {
-            const limit = Number(url.searchParams.get('limit') || '50')
-            const offset = Number(url.searchParams.get('offset') || '0')
+            const limit = boundedQueryInteger(url.searchParams.get('limit'), 50, 1, 500)
+            const offset = boundedQueryInteger(url.searchParams.get('offset'), 0, 0, 10_000_000)
+            const includeTotal = url.searchParams.get('include_total') !== '0'
 
             const filters: db.LogFilters = {}
             if (url.searchParams.get('service_name'))
@@ -1058,7 +1071,7 @@ async function handleApiRoute(req: Request, url: URL, peerAddress: string): Prom
             if (url.searchParams.get('q')) filters.q = url.searchParams.get('q')!
 
             const logs = db.getLogs({ limit, offset, filters })
-            const total = db.getLogCount(filters)
+            const total = includeTotal ? db.getLogCount(filters) : null
             return Response.json({ logs, total })
         }
 
@@ -1090,8 +1103,9 @@ async function handleApiRoute(req: Request, url: URL, peerAddress: string): Prom
                 return Response.json({ summary })
             }
 
-            const limit = Number(url.searchParams.get('limit') || '50')
-            const offset = Number(url.searchParams.get('offset') || '0')
+            const limit = boundedQueryInteger(url.searchParams.get('limit'), 50, 1, 500)
+            const offset = boundedQueryInteger(url.searchParams.get('offset'), 0, 0, 10_000_000)
+            const includeTotal = url.searchParams.get('include_total') !== '0'
 
             const filters: db.MetricFilters = {}
             if (url.searchParams.get('name')) filters.name = url.searchParams.get('name')!
@@ -1101,7 +1115,7 @@ async function handleApiRoute(req: Request, url: URL, peerAddress: string): Prom
                 filters.metric_type = url.searchParams.get('metric_type')!
 
             const metrics = db.getMetrics({ limit, offset, filters })
-            const total = db.getMetricCount(filters)
+            const total = includeTotal ? db.getMetricCount(filters) : null
             return Response.json({ metrics, total })
         }
 

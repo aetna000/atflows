@@ -55,7 +55,7 @@ export async function loadMetrics() {
   if (tabState.current !== 'metrics') return
 
   try {
-    const params = new URLSearchParams({ limit: '100' })
+    const params = new URLSearchParams({ limit: '100', include_total: '0' })
     if (metricFilters.name) params.set('name', metricFilters.name)
     if (metricFilters.service_name) params.set('service_name', metricFilters.service_name)
     if (metricFilters.metric_type) params.set('metric_type', metricFilters.metric_type)

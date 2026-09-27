@@ -44,7 +44,7 @@ export const filterOptions = $state<FilterOptions>({
 
 export async function loadLogs() {
   try {
-    const params = new URLSearchParams({ limit: '100' })
+    const params = new URLSearchParams({ limit: '100', include_total: '0' })
     if (logFilters.q) params.set('q', logFilters.q)
     if (logFilters.service_name) params.set('service_name', logFilters.service_name)
     if (logFilters.event_name) params.set('event_name', logFilters.event_name)
