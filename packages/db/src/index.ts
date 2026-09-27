@@ -12,6 +12,10 @@ const DB_PATH = process.env.DB_PATH || path.join(DATA_DIR, 'data.db')
 const MAX_TRACES = parseInt(process.env.MAX_TRACES || '10000', 10)
 const MAX_LOGS = parseInt(process.env.MAX_LOGS || '100000', 10)
 const MAX_METRICS = parseInt(process.env.MAX_METRICS || '1000000', 10)
+const configuredPruneBatch = parseInt(process.env.RETENTION_PRUNE_BATCH || '1000', 10)
+const RETENTION_PRUNE_BATCH = Number.isSafeInteger(configuredPruneBatch) && configuredPruneBatch > 0
+    ? configuredPruneBatch
+    : 1000
 
 if (!fs.existsSync(DATA_DIR)) {
     fs.mkdirSync(DATA_DIR, { recursive: true })
@@ -220,9 +224,8 @@ const insertTraceStmt = db.query(`
 `)
 
 const deleteOverflowStmt = db.query(`
-    DELETE FROM traces
-    WHERE id NOT IN (
-        SELECT id FROM traces ORDER BY timestamp DESC LIMIT $limit
+    DELETE FROM traces WHERE id IN (
+        SELECT id FROM traces ORDER BY timestamp ASC LIMIT $batch
     )
 `)
 
@@ -243,9 +246,8 @@ const insertLogStmt = db.query(`
 `)
 
 const deleteLogOverflowStmt = db.query(`
-    DELETE FROM logs
-    WHERE id NOT IN (
-        SELECT id FROM logs ORDER BY timestamp DESC LIMIT $limit
+    DELETE FROM logs WHERE id IN (
+        SELECT id FROM logs ORDER BY timestamp ASC LIMIT $batch
     )
 `)
 
@@ -266,9 +268,8 @@ const insertMetricStmt = db.query(`
 `)
 
 const deleteMetricOverflowStmt = db.query(`
-    DELETE FROM metrics
-    WHERE id NOT IN (
-        SELECT id FROM metrics ORDER BY timestamp DESC LIMIT $limit
+    DELETE FROM metrics WHERE id IN (
+        SELECT id FROM metrics ORDER BY timestamp ASC LIMIT $batch
     )
 `)
 
@@ -465,7 +466,7 @@ export function insertTrace(trace: Trace) {
 
     const count = getTraceCount()
     if (count > MAX_TRACES) {
-        deleteOverflowStmt.run({ $limit: MAX_TRACES })
+        deleteOverflowStmt.run({ $batch: Math.min(RETENTION_PRUNE_BATCH, count - MAX_TRACES) })
     }
 
     // Trigger hook for real-time updates
@@ -816,7 +817,7 @@ export function insertLog(log: Log) {
 
     const count = getLogCount()
     if (count > MAX_LOGS) {
-        deleteLogOverflowStmt.run({ $limit: MAX_LOGS })
+        deleteLogOverflowStmt.run({ $batch: Math.min(RETENTION_PRUNE_BATCH, count - MAX_LOGS) })
     }
 
     if (onInsertLog) {
@@ -994,7 +995,7 @@ export function insertMetric(metric: Metric) {
 
     const count = getMetricCount()
     if (count > MAX_METRICS) {
-        deleteMetricOverflowStmt.run({ $limit: MAX_METRICS })
+        deleteMetricOverflowStmt.run({ $batch: Math.min(RETENTION_PRUNE_BATCH, count - MAX_METRICS) })
     }
 
     if (onInsertMetric) {

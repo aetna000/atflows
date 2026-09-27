@@ -2,7 +2,7 @@
 
 ## Quick Start
 
-The current server defaults to dashboard port 1337 unless `DASHBOARD_PORT` is set. Check the startup output for the actual address; the server may select a free port if the requested one is busy. The model proxy defaults to port 8080.
+The server defaults to dashboard port 1337 unless `DASHBOARD_PORT` is set. The model proxy defaults to port 8080 unless `PROXY_PORT` is set. AtFlows refuses to start when either selected port is occupied; it does not silently choose another port.
 
 
 ### 1. Start AtFlows

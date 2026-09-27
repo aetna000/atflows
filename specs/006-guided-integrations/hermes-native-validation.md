@@ -1,5 +1,49 @@
 # Native Hermes observation — 2026-09-27
 
+## Coordinated live browser-path acceptance — 2026-09-27
+
+This section supersedes the older local-deployment statement below that the
+main Hermes Home was intentionally not configured.
+
+The user's main Hermes Home is configured with both the AtMem provider and the
+AtFlows native observer. A real dashboard Chat turn was sent through the
+browser-facing `/api/pty` WebSocket using the same raw PTY frames and terminal
+rendering protocol as Hermes's web client. The final post-review Hermes session
+`20260927_104227_0dd071` asked `How old am I? Answer with only the age.` and
+displayed/persisted `45` using local Ollama `qwen3:4b`.
+
+AtFlows stored native event
+`f0d4cbbd3fef4f778bbf2a5c81075e94c48eb95670642650f3652d6ccbd585bb`
+for that turn under scoped connection
+`0d6344af-3db6-4643-bf00-ce81be2bdc03`. The observation is `kind=request`,
+`provider=custom`, `model=qwen3:4b`, `status=ok`, with 2,050 input and 652
+output tokens. No monetary cost was invented. This event was emitted by Hermes,
+not by a benchmark shim.
+
+The Timeline dashboard now labels this opaque internal source as
+`Hermes · local agent`, changes the filter caption to `All agents / services`,
+and preserves unknown future source names. Internal connection identifiers are
+still used for exact filtering but are not exposed as the primary human label.
+AtMem and AtFlows remain separate products joined by observed execution, not by
+sharing one storage table.
+
+Live canonical ports were verified with one listener each: AtMem `8768`,
+AtFlows dashboard `1337`, AtFlows proxy `8080`, and Hermes dashboard `9119`.
+All four health/page requests returned HTTP 200. AtFlows no longer chooses a
+random fallback when either canonical port is occupied.
+
+Post-change gates:
+
+```text
+AtFlows typecheck: 0 errors, 3 pre-existing warnings
+Timeline/source-label tests: 5 passed, 12 assertions
+Live native Hermes event: present with qwen3:4b usage above
+```
+
+This proves a real local browser-originated request, source labeling, and native
+observation. It does not claim exactly-once delivery, complete tool coverage for
+a turn that invoked no tools, a dollar cost, or Windows/Linux qualification.
+
 ## Scope
 
 Product code implements observation; tests only install/configure it, run Hermes

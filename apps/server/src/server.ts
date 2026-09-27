@@ -5,7 +5,6 @@ import fs from 'fs'
 import os from 'os'
 import crypto from 'crypto'
 import { gunzipSync } from 'node:zlib'
-import getPort from 'get-port'
 import { getIntegrationCatalog } from '@atflows/integrations'
 import { previewCodexSetup, applyCodexSetup, undoCodexSetup, codexSetupStatus, getLatestCodexChangeId } from '@atflows/integrations/local-config'
 import { createLocalAuth, requiredDashboardRole, allowsRole } from './auth'
@@ -93,8 +92,19 @@ interface TokenUsage {
     total_tokens: number
 }
 
-const PROXY_PORT = await getPort({ port: Number(process.env.PROXY_PORT || 8080) })
-const DASHBOARD_PORT = await getPort({ port: Number(process.env.DASHBOARD_PORT || 1337) })
+function configuredPort(name: string, fallback: number) {
+    const value = Number(process.env[name] || fallback)
+    if (!Number.isInteger(value) || value < 0 || value > 65535) {
+        throw new Error(`${name} must be an integer between 0 and 65535`)
+    }
+    return value
+}
+
+// Ports are an operator-visible contract. Bun may assign an ephemeral port
+// only when a test explicitly passes 0; production startup never searches for
+// a different free port behind the operator's back.
+const PROXY_PORT = configuredPort('PROXY_PORT', 8080)
+const DASHBOARD_PORT = configuredPort('DASHBOARD_PORT', 1337)
 const DASHBOARD_HOST = process.env.DASHBOARD_HOST || '127.0.0.1'
 const PROXY_HOST = process.env.PROXY_HOST || '127.0.0.1'
 const localAuth = process.env.ATFLOWS_ATMEM_AUTH_URL

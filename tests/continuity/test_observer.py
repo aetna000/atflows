@@ -4,11 +4,38 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 import threading
 import json
 import os
+from pathlib import Path
+import sys
+from types import SimpleNamespace
 
 from atflows.continuity import ContinuityObserver
 
 
 class ObserverTests(unittest.TestCase):
+    def test_hermes_local_tui_is_observed(self):
+        from atflows.integrations.hermes.observer import Observer
+
+        home = Path('/private/tmp/hermes-observer-home').resolve()
+        observer = Observer({
+            'connection_id': '11111111-1111-4111-8111-111111111111',
+            'token': '11' * 32,
+            'endpoint': 'http://127.0.0.1:1337',
+        }, str(home), home)
+        previous = sys.modules.get('hermes_constants')
+        sys.modules['hermes_constants'] = SimpleNamespace(get_hermes_home=lambda: home)
+        try:
+            observer.observe(
+                'post_api_request', platform='tui', session_id='session',
+                api_request_id='request', model='model', provider='custom',
+            )
+            self.assertEqual(observer.pending.qsize(), 1)
+            self.assertEqual(observer.pending.get_nowait()['kind'], 'request')
+        finally:
+            if previous is None:
+                sys.modules.pop('hermes_constants', None)
+            else:
+                sys.modules['hermes_constants'] = previous
+
     def test_actual_http_proxy_redirect_and_acknowledgement_boundaries(self):
         paths = []
         reply = {'accepted': True}

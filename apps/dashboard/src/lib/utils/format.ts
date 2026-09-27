@@ -43,6 +43,15 @@ export function formatLatency(ms: number | null | undefined): string {
   return (ms / 1000).toFixed(1) + 's'
 }
 
+/** Human label for a recorded runtime while preserving its exact filter key. */
+export function formatAgentSource(source: string | null | undefined): string {
+  if (!source) return 'Unknown agent or service'
+  if (source.startsWith('hermes-native:')) return 'Hermes · local agent'
+  if (source === 'openclaw-gateway') return 'OpenClaw · gateway'
+  if (source === 'codex_cli_rs' || source === 'codex-cli') return 'Codex · CLI'
+  return source
+}
+
 export function escapeHtml(str: string): string {
   const div = document.createElement('div')
   div.textContent = str

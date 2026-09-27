@@ -126,9 +126,10 @@ export function hermesStatus(store: HermesStore, endpoint: string, input?: strin
             error: report.error === null ? null : 'receiver_unavailable_or_rejected', updated_at: Number.isSafeInteger(report.updated_at) ? report.updated_at : null }
     } catch { /* No producer status until it runs. */ }
     const stale = connection.endpoint !== endpoint
+    const state = stale ? 'endpoint_stale' : !authorized ? 'credential_revoked' : !enabled ? 'disabled_in_hermes' : observer?.error ? 'degraded' : summary.last_event ? 'observed' : 'awaiting_traffic'
     return { home, target, endpoint: connection.endpoint, current_endpoint: endpoint, connection_id: receipt.connection_id,
-        configured: enabled && authorized && !stale, state: stale ? 'endpoint_stale' : !authorized ? 'credential_revoked' : !enabled ? 'disabled_in_hermes' : observer?.error ? 'degraded' : summary.last_event ? 'observed' : 'awaiting_traffic',
-        summary, observer, restart_required: true, capture: 'Metadata only; request success/failure and terminal tools. Cost unknown. No prompt/tool content.' }
+        configured: enabled && authorized && !stale, state,
+        summary, observer, restart_required: state === 'awaiting_traffic' || state === 'endpoint_stale' || state === 'disabled_in_hermes', capture: 'Metadata only; request success/failure and terminal tools. Cost unknown. No prompt/tool content.' }
 }
 export function previewHermes(dataDir: string, endpoint: string, input?: string) {
     const home = homePath(input)

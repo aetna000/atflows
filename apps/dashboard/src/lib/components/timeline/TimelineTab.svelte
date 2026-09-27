@@ -19,6 +19,7 @@
   import { tabState, setTab } from '$lib/stores/tabs.svelte'
   import { downloadJson } from '$lib/utils/export'
   import { authAccount } from '$lib/stores/auth.svelte'
+  import { formatAgentSource } from '$lib/utils/format'
 
   let searchInput = $state('')
   let debounceTimer: ReturnType<typeof setTimeout>
@@ -84,15 +85,15 @@
     oninput={handleSearchInput}
   />
   <select
-    aria-label="Filter by recorded tool or service"
+    aria-label="Filter by recorded agent, tool, or service"
     id="toolFilter"
     data-testid="timeline-tool-filter"
     value={timelineFilters.tool}
     onchange={handleToolChange}
   >
-    <option value="">All tools / services</option>
+    <option value="">All agents / services</option>
     {#each timelineServices as service}
-      <option value={service}>{service}</option>
+      <option value={service}>{formatAgentSource(service)}</option>
     {/each}
   </select>
   <select

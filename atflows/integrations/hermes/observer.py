@@ -102,12 +102,12 @@ class Observer:
             if self.closed.is_set():
                 return
             from hermes_constants import get_hermes_home
-            if str(get_hermes_home().resolve()) != self.home or payload.get("platform") not in (None, "", "cli"):
+            if str(get_hermes_home().resolve()) != self.home or payload.get("platform") not in (None, "", "cli", "tui"):
                 return
             session = payload.get("session_id")
             if hook == "post_tool_call" and session not in self.sessions:
                 return
-            if hook != "post_tool_call" and payload.get("platform") == "cli" and isinstance(session, str):
+            if hook != "post_tool_call" and payload.get("platform") in ("cli", "tui") and isinstance(session, str):
                 if len(self.sessions) >= 1024:
                     self.sessions.clear()
                 self.sessions.add(session)
