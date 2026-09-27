@@ -1,6 +1,16 @@
 // @ts-check
 const { test, expect } = require('@playwright/test')
 
+async function clickActivityTab(page, testId) {
+    await page.getByText('Activity', { exact: true }).click()
+    await page.locator(`[data-testid="${testId}"]`).click()
+}
+
+async function toggleTheme(page) {
+    await page.getByText('Settings', { exact: true }).click()
+    await page.locator('[data-testid="theme-toggle"]').click()
+}
+
 test.describe('Navigation & URL Hash Persistence', () => {
     test('default load shows Timeline tab', async ({ page }) => {
         await page.goto('/')
@@ -21,15 +31,15 @@ test.describe('Navigation & URL Hash Persistence', () => {
         await page.waitForLoadState('networkidle')
 
         // Click Traces tab
-        await page.click('[data-testid="tab-traces"]')
+        await clickActivityTab(page, 'tab-traces')
         await expect(page).toHaveURL(/#traces/)
 
         // Click Logs tab
-        await page.click('[data-testid="tab-logs"]')
+        await clickActivityTab(page, 'tab-logs')
         await expect(page).toHaveURL(/#logs/)
 
         // Click Metrics tab
-        await page.click('[data-testid="tab-metrics"]')
+        await clickActivityTab(page, 'tab-metrics')
         await expect(page).toHaveURL(/#metrics/)
 
         // Click Models tab
@@ -41,7 +51,7 @@ test.describe('Navigation & URL Hash Persistence', () => {
         await expect(page).toHaveURL(/#analytics/)
 
         // Click Timeline tab to complete the loop
-        await page.click('[data-testid="tab-timeline"]')
+        await clickActivityTab(page, 'tab-timeline')
         await expect(page).toHaveURL(/#timeline/)
     })
 
@@ -107,14 +117,14 @@ test.describe('Navigation & URL Hash Persistence', () => {
         const initialTheme = await page.locator('html').getAttribute('data-theme')
 
         // Click theme toggle
-        await page.click('[data-testid="theme-toggle"]')
+        await toggleTheme(page)
 
         // Theme should change
         const afterToggle = await page.locator('html').getAttribute('data-theme')
         expect(afterToggle !== initialTheme).toBeTruthy()
 
         // Toggle again
-        await page.click('[data-testid="theme-toggle"]')
+        await toggleTheme(page)
 
         // Should be back to initial
         const afterSecondToggle = await page.locator('html').getAttribute('data-theme')
@@ -125,7 +135,7 @@ test.describe('Navigation & URL Hash Persistence', () => {
         await page.goto('/')
 
         // Toggle to dark theme
-        await page.click('[data-testid="theme-toggle"]')
+        await toggleTheme(page)
 
         // Wait for theme attribute to change (indicates toggle completed)
         const html = page.locator('html')
@@ -138,6 +148,7 @@ test.describe('Navigation & URL Hash Persistence', () => {
     test('all tabs exist in navigation', async ({ page }) => {
         await page.goto('/')
 
+        await page.getByText('Activity', { exact: true }).click()
         await expect(page.locator('[data-testid="tab-timeline"]')).toBeVisible()
         await expect(page.locator('[data-testid="tab-traces"]')).toBeVisible()
         await expect(page.locator('[data-testid="tab-logs"]')).toBeVisible()
@@ -151,11 +162,11 @@ test.describe('Navigation & URL Hash Persistence', () => {
         await expect(page.locator('#timelineTab')).toHaveClass(/active/)
 
         // Navigate through tabs using pushState (not replaceState) to create history entries
-        await page.click('[data-testid="tab-traces"]')
+        await clickActivityTab(page, 'tab-traces')
         await expect(page.locator('#tracesTab')).toHaveClass(/active/)
         await expect(page).toHaveURL(/#traces/)
 
-        await page.click('[data-testid="tab-logs"]')
+        await clickActivityTab(page, 'tab-logs')
         await expect(page.locator('#logsTab')).toHaveClass(/active/)
         await expect(page).toHaveURL(/#logs/)
 

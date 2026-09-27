@@ -1,5 +1,5 @@
 name: atflows
-version: "0.1.4-beta.2"
+version: "0.1.4-beta.3"
 description: "Local metadata-only AtFlows observer; preserves model and memory providers."
 requires_hermes: "==0.21.5"
 provides_hooks:

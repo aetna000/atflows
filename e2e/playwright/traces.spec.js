@@ -170,25 +170,19 @@ test.describe('Traces Tab', () => {
         const row = page.locator('[data-testid="trace-row"]').first()
         await expect(row).toHaveClass(/selected/)
 
-        // Detail panel should update - wait for title to change from default
-        const detailTitle = page.locator('[data-testid="trace-detail-title"]')
-        await expect(detailTitle).not.toHaveText('Select a trace', { timeout: 5000 })
+        const detail = page.getByRole('region', { name: 'Selected trace' })
+        await expect(detail).toBeVisible()
+        await expect(detail).toContainText('Trace details')
     })
 
     test('trace detail panel shows info section', async ({ page }) => {
         await page.click('[data-testid="trace-row"]:first-child')
 
-        // Wait for title to update, indicating selection completed
-        const detailTitle = page.locator('[data-testid="trace-detail-title"]')
-        await expect(detailTitle).not.toHaveText('Select a trace', { timeout: 5000 })
-
-        // Info section should be visible with content
-        const infoSection = page.locator('[data-testid="trace-info"]')
-        await expect(infoSection).toBeVisible()
-
-        const info = await infoSection.textContent()
-        expect(info).toBeDefined()
-        expect(info?.includes('{')).toBeTruthy()
+        const detail = page.locator('[data-testid="traces-detail-panel"]')
+        await expect(detail).toBeVisible()
+        await expect(detail).toContainText('Span details')
+        await expect(detail).toContainText('Trace ID')
+        await expect(detail).toContainText('{}')
     })
 
     test('search input updates and filters work', async ({ page }) => {
