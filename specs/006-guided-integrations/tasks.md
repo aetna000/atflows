@@ -128,3 +128,47 @@ Ship the smallest truthful path first: Connect catalog plus Codex telemetry reci
 - [X] T052 Validate a pinned Pydantic AI agent turn and a pinned AtBots task against an installed AtFlows package; verify model proxy behavior and recorded usage before promoting either profile (FR-009, SC-005). Agent telemetry spans remain outside this proxy recipe.
 - [X] T053 Validate LangChain Python ChatOpenAI and Claude Code against an installed AtFlows wheel; publish exact model proxy and OTLP recipes, including the beta trace and content-capture limits.
 - [X] T054 Exclude proxy GET/HEAD preflight calls from model traces so AtBots `/v1/models` checks do not inflate the Models tab.
+
+## Phase 10: First-class Hermes integration (AtMem Spec 037 coordination)
+
+- [ ] T055 Audit pinned Hermes hooks and installed discovery; record source versions, supported observation route, identity/usage/tool fields and gaps in `specs/006-guided-integrations/research.md`. Align the versioned correlation contract with AtMem Spec 037 before implementation (FR-022–026).
+- [ ] T056 Add Hermes catalog and safe profile-aware planner in `packages/integrations/src/hermes.ts`; reuse server setup APIs and CLI entry points. Depends on T005/T019 and Hermes-specific target/permission extensions of T007/T008. Test preview/apply/verify/undo, existing exporters, custom Homes, two profiles, ports and interrupted edits. Do not mark Working before T059 (FR-022/023).
+- [ ] T057 Implement the audited product observation route in existing server/receiver or integration packages; record exact paths after T055. Test reliable cross-project IDs, bounded export, outages, duplicate delivery, unknown usage and secret canaries before persistence/export. Coordinate with 0.1.4 redaction work (FR-024–026).
+- [ ] T058 Extend existing Connect and grouped-run/dashboard components under `apps/dashboard/src/` with Hermes status, truthful signal coverage, timeline/charts and companion links. Test that aggregates match retained events and health checks do not count as agent activity (FR-024/025; SC-013).
+- [ ] T059 Run clean installed standalone and AtMem-linked fresh/upgrade/undo journeys with real Hermes sessions, no benchmark imports. Store sanitized receipts and exact OS/version coverage in `specs/006-guided-integrations/research.md`; write `docs/integrations/hermes.md`, update roadmap and release docs, and reconcile AtMem Spec 037 `parity.md` (SC-012/013). Depends on T055–T058 and secret-redaction gates; required before claiming Hermes integration parity.
+
+### Review-required foundation (before T057/T058/T059 completion)
+
+- [ ] T060 Implement missing-versus-zero usage/cost availability in `packages/otlp/src/traces.js`, additive storage migration in `packages/db/src/index.ts` and dashboard aggregates under `apps/dashboard/src/`; test historical zeros, failed calls, partial usage, unavailable pricing and known-subtotal/unknown-count rendering (FR-024, SC-013).
+- [ ] T061 Implement receiver-side Hermes allowlisting, bounded error codes and coordinated redaction before persistence/logs/WebSockets/export; test hostile attributes, prompt events, error strings and secret canaries independently of plugin filtering. Require issue #6 global redaction gates before release (FR-026).
+- [ ] T062 Implement the versioned event identity and idempotent/conflicting-duplicate handling from `contracts/hermes-observation.md` in receiver/storage; test shared request IDs across failure/success, transport replay, ambiguous attempts, explicit status 429 and exclusion of turn summaries from model usage/count/cost (FR-024).
+- [ ] T063 Package the bounded observer under `atflows/integrations/hermes/`; verify wheel inclusion and native hook discovery. Implement explicit session/profile correlation and shared AtMem test vectors; do not equate native turn IDs with numeric memory-provider counters. Test missing IDs, no process fallback, tool request IDs, stalled receivers, queue exhaustion and interrupted-tool coverage (FR-024/025, SC-013).
+- [ ] T064 Complete fresh/upgrade storage and installed telemetry gates for T060–T063 before T059; retain sanitized raw receipts and request final read-only Claude review of the implemented code. No runtime qualification follows from the planning review.
+
+### Follow-up design gates (before affected implementation)
+
+- [x] T065 Create the bounded default-on redaction Spec Kit required by roadmap issue #6, using an unused spec number. Define global filtering as the safety floor and Hermes allowlisting as an additional layer; review read-only before T061 or any release.
+- [ ] T066 Finalize receiver recognition of Hermes records in `contracts/hermes-observation.md`: specify version markers, connection labels versus authenticated identity, behavior for unmarked/untrusted traffic and the non-bypassable global redaction floor. Define copied-plugin dependencies/version negotiation and canonical event-ID encoding/test vectors before T061/T062/T063.
+- [ ] T067 Pin the AtMem-to-AtFlows profile handoff, setup order/late connection behavior, canonical session hash encoding and cross-repository test-vector ownership in both contracts. Reconcile T060 with Spec 010's existing unknown-cost semantics rather than introducing a parallel model. Resolve before cross-project T063 implementation.
+
+### Bounded visibility repair (not native-observer completion)
+
+### Standalone native adapter refinement
+
+T065's specification exists as 011. T066 is resolved by the reviewed dedicated
+schema plus executable shared encoding vector. T067 and the mapped portion of
+T063 remain blocked on explicit AtMem profile handoff; they do not gate independent
+AtFlows observation. T060 continues to own generic OTLP availability migration;
+native nullable storage does not claim that migration complete.
+
+- [x] T071 Build the native-label subset of Spec 011 S002 bounded redaction, strict Hermes schema, authenticated
+  native receiver, additive nullable/idempotent storage and shared vectors.
+- [x] T072 Package native observer and shared CLI/dashboard preview/apply/status/undo
+  planner; test conflicts, permissions, profiles, expiry, revoked credentials and outages.
+- [x] T073 Surface native events and unknown usage in Timeline/Connect, qualify
+  installed artifact with pinned Hermes and local model, obtain final read-only
+  review, deploy tested local adapter and document remaining global/mapped gates.
+
+- [x] T068 Review and finish recorded-service timeline filtering, including exact selection, old/log-only/custom sources, refresh race and option-endpoint failure tests (FR-027).
+- [x] T069 Add a discoverable planned Hermes profile and maintained setup-status guide; keep pending adapter actions unavailable and explain AtMem versus AtFlows responsibilities (FR-028).
+- [x] T070 Run contract/UI/build and installed-artifact checks, obtain read-only Claude review, and record evidence and remaining native-observer work. Deploy locally only with preserved rollback/runtime data; no release claim. See `visibility-validation.md`, including the non-passing full provider suite.

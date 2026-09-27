@@ -4,12 +4,13 @@ import { tabState } from './tabs.svelte'
 
 export interface TimelineItem {
   id: string
-  type: 'trace' | 'log' | 'metric'
+  type: 'trace' | 'log' | 'metric' | 'hermes'
   timestamp: number
   title: string
   subtitle?: string
   model?: string
   service_name?: string
+  session_id?: string
   tool?: string
   status?: string
   duration_ms?: number
@@ -27,6 +28,16 @@ export interface TimelineFilters {
   type: string
   dateRange: string
   date_from: number | null
+}
+
+export const timelineServices = $state<string[]>([])
+export const timelineStatus = $state({ itemsError: '', servicesError: '', servicesTruncated: false })
+let loadSequence = 0
+
+function updateServices(services: string[]) {
+  const selected = timelineFilters.tool
+  const values = [...new Set([...services, ...(selected ? [selected] : [])])].sort()
+  timelineServices.splice(0, timelineServices.length, ...values)
 }
 
 export const timelineItems = $state<TimelineItem[]>([])
@@ -61,22 +72,42 @@ function getDateRange(range: string): number | null {
 
 export async function loadTimeline() {
   if (tabState.current !== 'timeline') return
+  const sequence = ++loadSequence
+  const current = () => sequence === loadSequence && tabState.current === 'timeline'
+  let resultServices: string[] = []
+  let discoveredServices: string[] | null = null
+  const params = new URLSearchParams({ limit: '100' })
+  if (timelineFilters.q) params.set('q', timelineFilters.q)
+  if (timelineFilters.tool) params.set('tool', timelineFilters.tool)
+  if (timelineFilters.type) params.set('type', timelineFilters.type)
 
-  try {
-    const params = new URLSearchParams({ limit: '100' })
-    if (timelineFilters.q) params.set('q', timelineFilters.q)
-    if (timelineFilters.tool) params.set('tool', timelineFilters.tool)
-    if (timelineFilters.type) params.set('type', timelineFilters.type)
+  const from = getDateRange(timelineFilters.dateRange)
+  if (from) params.set('date_from', String(from))
 
-    const from = getDateRange(timelineFilters.dateRange)
-    if (from) params.set('date_from', String(from))
-
-    const data = await api.get<TimelineItem[]>(`/api/timeline?${params}`)
-    timelineItems.length = 0
-    timelineItems.push(...(data || []))
-  } catch (e) {
-    console.error('Failed to load timeline:', e)
-  }
+  await Promise.all([
+    api.get<TimelineItem[]>(`/api/timeline?${params}`).then(data => {
+      if (!current()) return
+      timelineStatus.itemsError = ''
+      timelineItems.splice(0, timelineItems.length, ...(data || []))
+      resultServices = (data || []).map(item => item.service_name || '').filter(name => name.trim())
+      updateServices([...(discoveredServices || timelineServices), ...resultServices])
+    }).catch(() => {
+      if (!current()) return
+      timelineItems.length = 0
+      timelineStatus.itemsError = 'Could not load events for these filters. Change a filter or try again.'
+    }),
+    api.get<{ services: string[]; truncated?: boolean }>('/api/timeline/filters').then(filters => {
+      if (!current()) return
+      timelineStatus.servicesError = ''
+      timelineStatus.servicesTruncated = !!filters.truncated
+      discoveredServices = filters.services
+      updateServices([...filters.services, ...resultServices])
+    }).catch(() => {
+      if (!current()) return
+      timelineStatus.servicesError = 'Could not refresh service choices. Existing choices and available events are still shown.'
+      updateServices(timelineServices)
+    }),
+  ])
 }
 
 export async function selectTimelineItem(item: TimelineItem) {
@@ -98,7 +129,7 @@ export async function selectTimelineItem(item: TimelineItem) {
     } else if (item.type === 'log') {
       const detail = await api.get<unknown>(`/api/logs/${item.id}`)
       selectedItemData.value = detail
-    } else if (item.type === 'metric') {
+    } else if (item.type === 'metric' || item.type === 'hermes') {
       selectedItemData.value = item.data || item
     }
   } catch (e) {
@@ -123,12 +154,17 @@ export function clearFilters() {
 }
 
 export function initTimelineSync() {
-  onMessage((msg) => {
+  let timer: ReturnType<typeof setTimeout> | undefined
+  const unsubscribe = onMessage((msg) => {
     if (tabState.current !== 'timeline') return
 
-    if (msg.type === 'new_trace' || msg.type === 'new_log') {
-      // Reload timeline to get new items in proper order
-      loadTimeline()
+    if (msg.type === 'new_trace' || msg.type === 'new_log' || msg.type === 'hermes_event') {
+      if (timer) return
+      timer = setTimeout(() => {
+        timer = undefined
+        void loadTimeline()
+      }, 1000)
     }
   })
+  return () => { unsubscribe(); clearTimeout(timer) }
 }

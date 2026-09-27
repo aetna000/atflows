@@ -5,11 +5,13 @@ import fs from 'fs'
 import os from 'os'
 import crypto from 'crypto'
 import { gunzipSync } from 'node:zlib'
-import getPort from 'get-port'
 import { getIntegrationCatalog } from '@atflows/integrations'
 import { previewCodexSetup, applyCodexSetup, undoCodexSetup, codexSetupStatus, getLatestCodexChangeId } from '@atflows/integrations/local-config'
 import { createLocalAuth, requiredDashboardRole, allowsRole } from './auth'
 import { createAtMemAuth } from './atmem-auth'
+import { hermesReceiver, boundedJson } from './hermes'
+import { previewHermes, applyHermes, undoHermes, hermesStatus } from '../../../packages/integrations/src/hermes'
+const receiveHermes = hermesReceiver(db.hermes, () => { void broadcast({ type: 'hermes_event', payload: {} }) })
 
 // CommonJS workspace packages
 const { calculateCost } = require('@atflows/pricing')
@@ -90,8 +92,19 @@ interface TokenUsage {
     total_tokens: number
 }
 
-const PROXY_PORT = await getPort({ port: Number(process.env.PROXY_PORT || 8080) })
-const DASHBOARD_PORT = await getPort({ port: Number(process.env.DASHBOARD_PORT || 1337) })
+function configuredPort(name: string, fallback: number) {
+    const value = Number(process.env[name] || fallback)
+    if (!Number.isInteger(value) || value < 0 || value > 65535) {
+        throw new Error(`${name} must be an integer between 0 and 65535`)
+    }
+    return value
+}
+
+// Ports are an operator-visible contract. Bun may assign an ephemeral port
+// only when a test explicitly passes 0; production startup never searches for
+// a different free port behind the operator's back.
+const PROXY_PORT = configuredPort('PROXY_PORT', 8080)
+const DASHBOARD_PORT = configuredPort('DASHBOARD_PORT', 1337)
 const DASHBOARD_HOST = process.env.DASHBOARD_HOST || '127.0.0.1'
 const PROXY_HOST = process.env.PROXY_HOST || '127.0.0.1'
 const localAuth = process.env.ATFLOWS_ATMEM_AUTH_URL
@@ -355,6 +368,7 @@ function startDashboardServer() {
             }
 
             // OTLP routes
+            if (pathname === '/v1/hermes/events') return receiveHermes(req, server.requestIP(req)?.address || '')
             if (pathname === '/v1/continuity/events') {
                 const secret = process.env.ATFLOWS_CONTINUITY_TOKEN || ''
                 const scope = process.env.ATFLOWS_CONTINUITY_SCOPE || 'local'
@@ -597,8 +611,25 @@ async function handleApiRoute(req: Request, url: URL, peerAddress: string): Prom
 
     try {
         // Health check
+        if (pathname.startsWith('/api/integrations/hermes/')) {
+            if (!isLoopback(peerAddress)) return Response.json({ error: 'local_access_only' }, { status: 403 })
+            const endpoint = `http://127.0.0.1:${boundDashboardPort}`
+            try {
+                if (pathname.endsWith('/status') && method === 'GET') return Response.json(hermesStatus(db.hermes, endpoint, url.searchParams.get('home') || undefined))
+                if (method !== 'POST' || req.headers.get('origin') !== url.origin || req.headers.get('x-atflows-action') !== 'configure-hermes') return Response.json({ error: 'local_action_required' }, { status: 403 })
+                const body = await boundedJson(req) as Record<string, unknown>
+                if (!body || typeof body !== 'object' || (body.home !== undefined && typeof body.home !== 'string')) throw Error('invalid_request')
+                if (pathname.endsWith('/preview')) return Response.json(previewHermes(db.DATA_DIR, endpoint, body.home as string | undefined))
+                if (pathname.endsWith('/apply') && typeof body.preview_id === 'string') return Response.json(applyHermes(db.hermes, db.DATA_DIR, body.preview_id))
+                if (pathname.endsWith('/undo')) return Response.json(undoHermes(db.hermes, db.DATA_DIR, body.home as string | undefined))
+                throw Error('invalid_action')
+            } catch (error) {
+                const code = (error as Error).message
+                return Response.json({ error: /^[a-z_]+$/.test(code) ? code : 'setup_failed_check_home_permissions_and_configuration' }, { status: 409 })
+            }
+        }
         if (pathname === '/api/health' && method === 'GET') {
-            return Response.json({ status: 'ok', timestamp: Date.now(), instance_id: instanceId })
+            return Response.json({ status: 'ok', timestamp: Date.now(), instance_id: instanceId, hermes_database_id: db.hermes.databaseId() })
         }
 
         if (pathname === '/api/settings/database' && method === 'GET') {
@@ -925,6 +956,11 @@ async function handleApiRoute(req: Request, url: URL, peerAddress: string): Prom
         }
 
         // Timeline
+        if (pathname === '/api/timeline/filters' && method === 'GET') {
+            const services = [...new Set([...db.getTimelineServices(), ...db.hermes.list(undefined, 10000).map(e => `hermes-native:${e.connection_id}`)])].sort()
+            return Response.json({ services: services.slice(0, 500), truncated: services.length > 500 })
+        }
+
         if (pathname === '/api/timeline' && method === 'GET') {
             const limit = Number(url.searchParams.get('limit') || '100')
             const filters: db.TraceFilters = {}
@@ -984,6 +1020,19 @@ async function handleApiRoute(req: Request, url: URL, peerAddress: string): Prom
             }
 
             // Sort by timestamp descending
+            if (!type || type === 'hermes') {
+                for (const e of db.hermes.list(undefined, 10000)) {
+                    const source = `hermes-native:${e.connection_id}`
+                    if (filters.service_name && filters.service_name !== source) continue
+                    if (filters.date_from && e.ended_at < filters.date_from) continue
+                    const title = `Hermes ${e.kind}: ${e.kind === 'tool' ? e.tool : e.model}`
+                    if (filters.q && !title.toLowerCase().includes(filters.q.toLowerCase())) continue
+                    items.push({ id: e.event_id, type: 'hermes', timestamp: e.ended_at, title, subtitle: source, service_name: source, tool: source,
+                        model: e.model, session_id: e.session_id, status: e.outcome, duration_ms: e.ended_at - e.started_at,
+                        tokens: e.input_tokens === null || e.output_tokens === null ? undefined : e.input_tokens + e.output_tokens,
+                        data: e })
+                }
+            }
             items.sort(
                 (a, b) =>
                     (b as { timestamp: number }).timestamp - (a as { timestamp: number }).timestamp,

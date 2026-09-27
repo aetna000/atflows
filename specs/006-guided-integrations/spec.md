@@ -128,6 +128,68 @@ A user can ask AtFlows AtBot why an integration is not working and receive an ex
 - **FR-020**: The primary supported-local flow MUST require no manual file discovery, endpoint typing, or terminal command; the user chooses a tool, reviews one prepared change, applies it, and sees a specific next action to generate the first event.
 - **FR-021**: The Connect area MUST recommend the simplest compatible path for the selected tool, keeping advanced choices available without making the user choose between proxy and telemetry jargon before seeing the recommendation.
 
+### Hermes amendment — 2026-09-26
+
+Coordinates with AtMem `specs/037-hermes-integration/` for its 2.3.8b2 target.
+These requirements are planned, not a claim of working Hermes support.
+
+- **FR-022**: Hermes MUST have a first-class Connect entry and equivalent CLI
+  inspect/preview/apply/verify/undo actions backed by the same setup planner.
+  Detect the actual host profile, compatibility and running AtFlows endpoints;
+  do not require hand-editing configuration in the supported local path.
+- **FR-023**: Setup MUST preserve model-provider settings, existing exporters,
+  native memory and AtMem-owned provider configuration. Select a supported
+  observation route using a pinned host-hook audit; do not assume native OTLP
+  exists or force a model proxy that changes agent behavior. Offer separately
+  verified manual routes for unsupported automatic setup environments.
+- **FR-024**: Hermes records MUST carry reliable connection/profile/session/run
+  identifiers where the host supplies them. Group activity and display timeline,
+  latency, failures, tokens and costs for observed signals. Missing fields remain
+  unknown; no invented tool spans, guessed retry identities or cost double counts.
+  Correlate AtMem decisions by explicit IDs, never prompt similarity.
+- **FR-025**: Both dashboards MUST distinguish configured, reachable, awaiting
+  traffic, observed and degraded states. Provide last observed event, actual
+  endpoint and specific repair actions. AtFlows failure MUST NOT change AtMem
+  authorization or block ordinary agent memory operation, agent turns or model
+  requests. Hook callbacks enqueue without network waits; export is bounded;
+  report dropped/unavailable telemetry rather than claim complete evidence.
+- **FR-026**: Apply the coordinated secret-redaction requirements before Hermes
+  telemetry persistence/export; content capture remains explicit opt-in. Never
+  log scoped AtMem credentials. Standalone AtFlows must work without AtMem;
+  cross-dashboard links appear only for configured companions.
+
+The proposed `contracts/hermes-observation.md` defines mandatory receiver,
+identity, usage and redaction gates, not optional benchmark-only checks.
+- **SC-012**: Clean installed fresh and upgrade journeys connect real Hermes
+  activity without benchmark code, then repeat setup and undo without losing
+  unrelated configuration. Test custom profiles, occupied ports, stale endpoints,
+  outages, two concurrent profiles and supported OS environments. Record exact
+  versions and captured signal coverage before promoting the catalog entry.
+- **SC-013**: A real session can be located by matching supported IDs in both
+  dashboards; grouped views and charts match retained source events. Secret
+  canaries never appear in persisted/exported telemetry or diagnostics. A health
+  check alone cannot satisfy this gate.
+
+### Connect and timeline visibility correction — 2026-09-26
+
+- **FR-027**: Timeline tool/service choices MUST come from retained trace and log
+  service identities, not a fixed product list or the currently displayed page.
+  Filtering MUST match the exact recorded identity, preserve the selected value
+  during refresh, and not hide timeline records when option loading fails.
+  Bound dropdown discovery to 500 names, disclose truncation, retain the selected
+  identity and names from displayed results, and allow exact-name entry when
+  truncated; throttle event-driven refreshes.
+- **FR-028**: Hermes MUST be discoverable in Connect even before its native observer
+  qualifies. Show the concrete missing observation adapter and setup gates, and
+  distinguish it from the AtMem memory provider. Do not label it Working or offer
+  invented setup commands, a forced proxy, or an enabled connect action.
+  This visibility milestone does not satisfy FR-022 or SC-012/013.
+
+Acceptance: recorded Hermes/custom/older/log-only sources appear automatically;
+selecting one sends its exact identity and limits results. Failed option refresh
+does not erase successful results. Hermes search opens readable setup status and
+a maintained guide without claiming that installing AtMem connects AtFlows.
+
 ### Key Entities
 
 - **Integration profile**: Tool name, supported connection modes, compatibility status, prerequisites, documentation, and last validation date.

@@ -3,6 +3,8 @@ import path from 'path'
 import fs from 'fs'
 import os from 'os'
 import { continuityStore } from './continuity'
+import { HermesStore } from './hermes'
+export { validateHermes, HermesConflict } from './hermes'
 export { validateContinuity, ContinuityConflict } from './continuity'
 
 const DATA_DIR = process.env.DATA_DIR || path.join(os.homedir(), '.atflows')
@@ -10,6 +12,10 @@ const DB_PATH = process.env.DB_PATH || path.join(DATA_DIR, 'data.db')
 const MAX_TRACES = parseInt(process.env.MAX_TRACES || '10000', 10)
 const MAX_LOGS = parseInt(process.env.MAX_LOGS || '100000', 10)
 const MAX_METRICS = parseInt(process.env.MAX_METRICS || '1000000', 10)
+const configuredPruneBatch = parseInt(process.env.RETENTION_PRUNE_BATCH || '1000', 10)
+const RETENTION_PRUNE_BATCH = Number.isSafeInteger(configuredPruneBatch) && configuredPruneBatch > 0
+    ? configuredPruneBatch
+    : 1000
 
 if (!fs.existsSync(DATA_DIR)) {
     fs.mkdirSync(DATA_DIR, { recursive: true })
@@ -25,6 +31,7 @@ db.exec('PRAGMA busy_timeout=5000')
 db.exec('PRAGMA journal_mode=WAL')
 db.exec('PRAGMA synchronous=NORMAL')
 export const continuity = continuityStore(db)
+export const hermes = new HermesStore(db)
 
 // Parse a JSON column that may be NULL, empty, or malformed (e.g. a
 // passthrough body that wasn't actually JSON). Never throws.
@@ -144,12 +151,15 @@ function initSchema() {
         CREATE INDEX IF NOT EXISTS idx_logs_trace_id ON logs(trace_id);
         CREATE INDEX IF NOT EXISTS idx_logs_event_name ON logs(event_name);
         CREATE INDEX IF NOT EXISTS idx_logs_service_name ON logs(service_name);
+        CREATE INDEX IF NOT EXISTS idx_traces_service_name ON traces(service_name);
         CREATE INDEX IF NOT EXISTS idx_logs_severity ON logs(severity_number);
     `)
 
     // Older OTLP JSON senders can set timeUnixNano=0 while providing a valid
     // observedTimeUnixNano. Restore those records to the visible timeline.
-    db.exec('UPDATE logs SET timestamp=observed_timestamp WHERE timestamp=0 AND observed_timestamp>0')
+    if (db.query('SELECT 1 FROM logs WHERE timestamp=0 AND observed_timestamp>0 LIMIT 1').get()) {
+        db.exec('UPDATE logs SET timestamp=observed_timestamp WHERE timestamp=0 AND observed_timestamp>0')
+    }
 
     // Metrics table for OTLP metrics ingestion (v0.2.2+)
     db.exec(`
@@ -214,9 +224,8 @@ const insertTraceStmt = db.query(`
 `)
 
 const deleteOverflowStmt = db.query(`
-    DELETE FROM traces
-    WHERE id NOT IN (
-        SELECT id FROM traces ORDER BY timestamp DESC LIMIT $limit
+    DELETE FROM traces WHERE id IN (
+        SELECT id FROM traces ORDER BY timestamp ASC LIMIT $batch
     )
 `)
 
@@ -237,9 +246,8 @@ const insertLogStmt = db.query(`
 `)
 
 const deleteLogOverflowStmt = db.query(`
-    DELETE FROM logs
-    WHERE id NOT IN (
-        SELECT id FROM logs ORDER BY timestamp DESC LIMIT $limit
+    DELETE FROM logs WHERE id IN (
+        SELECT id FROM logs ORDER BY timestamp ASC LIMIT $batch
     )
 `)
 
@@ -260,9 +268,8 @@ const insertMetricStmt = db.query(`
 `)
 
 const deleteMetricOverflowStmt = db.query(`
-    DELETE FROM metrics
-    WHERE id NOT IN (
-        SELECT id FROM metrics ORDER BY timestamp DESC LIMIT $limit
+    DELETE FROM metrics WHERE id IN (
+        SELECT id FROM metrics ORDER BY timestamp ASC LIMIT $batch
     )
 `)
 
@@ -459,7 +466,7 @@ export function insertTrace(trace: Trace) {
 
     const count = getTraceCount()
     if (count > MAX_TRACES) {
-        deleteOverflowStmt.run({ $limit: MAX_TRACES })
+        deleteOverflowStmt.run({ $batch: Math.min(RETENTION_PRUNE_BATCH, count - MAX_TRACES) })
     }
 
     // Trigger hook for real-time updates
@@ -681,9 +688,9 @@ export function setCodexConnectionNickname(nickname: string) {
 }
 
 export function getDataCounts() {
-    const count = (table: 'traces' | 'logs' | 'metrics' | 'continuity_events') =>
+    const count = (table: 'traces' | 'logs' | 'metrics' | 'continuity_events' | 'hermes_events') =>
         (db.query(`SELECT COUNT(*) AS cnt FROM ${table}`).get() as { cnt: number }).cnt
-    return { traces: count('traces'), logs: count('logs'), metrics: count('metrics'), continuity_events: count('continuity_events') }
+    return { traces: count('traces'), logs: count('logs'), metrics: count('metrics'), continuity_events: count('continuity_events'), hermes_events: count('hermes_events') }
 }
 
 export function getDemoDataCounts() {
@@ -703,7 +710,7 @@ export const clearDemoData = db.transaction(() => {
 
 export const clearAllData = db.transaction(() => {
     const counts = getDataCounts()
-    db.exec('DELETE FROM traces; DELETE FROM logs; DELETE FROM metrics; DELETE FROM stats_cache; DELETE FROM continuity_events;')
+    db.exec('DELETE FROM traces; DELETE FROM logs; DELETE FROM metrics; DELETE FROM stats_cache; DELETE FROM continuity_events; DELETE FROM hermes_events;')
     return counts
 })
 
@@ -810,7 +817,7 @@ export function insertLog(log: Log) {
 
     const count = getLogCount()
     if (count > MAX_LOGS) {
-        deleteLogOverflowStmt.run({ $limit: MAX_LOGS })
+        deleteLogOverflowStmt.run({ $batch: Math.min(RETENTION_PRUNE_BATCH, count - MAX_LOGS) })
     }
 
     if (onInsertLog) {
@@ -948,6 +955,16 @@ export function getDistinctEventNames() {
     ).map((r) => r.event_name)
 }
 
+export function getTimelineServices(limit = 501): string[] {
+    return (db.query(`
+        SELECT service_name FROM traces WHERE service_name IS NOT NULL AND TRIM(service_name) != ''
+        UNION
+        SELECT service_name FROM logs WHERE service_name IS NOT NULL AND TRIM(service_name) != ''
+        ORDER BY service_name
+        LIMIT ?
+    `).all(limit) as { service_name: string }[]).map((row) => row.service_name)
+}
+
 export function getDistinctLogServices() {
     return (
         db
@@ -978,7 +995,7 @@ export function insertMetric(metric: Metric) {
 
     const count = getMetricCount()
     if (count > MAX_METRICS) {
-        deleteMetricOverflowStmt.run({ $limit: MAX_METRICS })
+        deleteMetricOverflowStmt.run({ $batch: Math.min(RETENTION_PRUNE_BATCH, count - MAX_METRICS) })
     }
 
     if (onInsertMetric) {

@@ -66,6 +66,7 @@ Options:
   --version, -v   Show version number
 
 Commands:
+  connect hermes  preview|status --endpoint URL [--home PATH]; apply --preview ID; undo [--home PATH]
   status          Show running dashboard and proxy listeners
   start           Start another AtFlows server
 
@@ -99,7 +100,11 @@ if (args.includes('--version') || args.includes('-v')) {
     process.exit(0)
 }
 
-const serverFile = path.join(__dirname, '..', 'apps', 'server', 'src', 'server.ts')
+const connectingHermes = args[0] === 'connect' && args[1] === 'hermes'
+const serverFile = connectingHermes
+    ? path.join(__dirname, '..', 'packages/integrations/src/hermes-cli.ts')
+    : path.join(__dirname, '..', 'apps', 'server', 'src', 'server.ts')
+if (connectingHermes) args.splice(0, 2)
 
 // Verify server file exists
 if (!fs.existsSync(serverFile)) {

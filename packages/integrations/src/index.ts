@@ -17,6 +17,8 @@ export interface IntegrationProfile {
     canAutoConfigure: boolean
     validatedAt?: string
     validatedWith?: string
+    blocker?: string
+    gates?: string[]
 }
 
 const guide = (name: string) => `/guides/${name}`
@@ -41,6 +43,16 @@ export function getIntegrationCatalog(dashboardUrl: string, proxyUrl: string): I
     })
 
     return [
+        {
+            id: 'hermes', name: 'Hermes', category: 'Agent frameworks', mode: 'telemetry',
+            status: 'available', summary: 'Connect local Hermes without changing its model or memory provider.',
+            captures: 'CLI model attempts, failures and terminal tool metadata. No prompts or tool contents. Usage when supplied; cost unknown.',
+            prerequisite: 'Local Hermes 0.21.5 on macOS or Linux. Restart Hermes after setup. Native Windows is not qualified.',
+            guide: guide('hermes'),
+            steps: ['Review Hermes setup below, then apply.', 'Restart Hermes and send a message.', 'Check connection status, then open Timeline → Hermes events.'],
+            canAutoConfigure: true,
+            validatedAt: '2026-09-27', validatedWith: 'Hermes 0.21.5 native CLI hooks and local Ollama; metadata-only. See guide for artifact evidence and limits.',
+        },
         {
             id: 'codex-cli', name: 'Codex CLI', category: 'Coding tools', mode: 'telemetry',
             status: 'available', summary: 'Send Codex logs, traces, and metrics to AtFlows.',

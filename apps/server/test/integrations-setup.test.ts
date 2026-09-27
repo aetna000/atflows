@@ -67,9 +67,20 @@ test('catalog states the shipped OTLP formats and Helicone route accurately', ()
     expect(catalog.some((item) => item.id === 'export-helicone')).toBe(false)
 })
 
+test('Hermes offers scoped native metadata setup, not a proxy snippet', () => {
+    const hermes = getIntegrationCatalog('http://127.0.0.1:24680', 'http://127.0.0.1:28080').find(item => item.id === 'hermes')!
+    expect(hermes.status).toBe('available')
+    expect(hermes.canAutoConfigure).toBe(true)
+    expect(hermes.endpoint).toBeUndefined()
+    expect(hermes.snippet).toBeUndefined()
+    expect(hermes.captures).toContain('cost unknown')
+    expect(hermes.prerequisite).toContain('0.21.5')
+    expect(hermes.guide).toBe('/guides/hermes')
+})
+
 test('every connection has a bundled guide and unverified routes cannot apply configuration', () => {
     const catalog = getIntegrationCatalog('http://127.0.0.1:24680', 'http://127.0.0.1:28080')
-    expect(catalog.filter((item) => item.status === 'available').map((item) => item.id).sort()).toEqual(['atbots', 'claude-code', 'codex-cli', 'langchain', 'openclaw', 'otlp-json', 'pydantic-ai'])
+    expect(catalog.filter((item) => item.status === 'available').map((item) => item.id).sort()).toEqual(['atbots', 'claude-code', 'codex-cli', 'hermes', 'langchain', 'openclaw', 'otlp-json', 'pydantic-ai'])
     for (const id of ['langchain', 'pydantic-ai', 'atbots', 'claude-code']) {
         const profile = catalog.find((item) => item.id === id)
         expect(profile?.status).toBe('available')

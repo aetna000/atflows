@@ -5,7 +5,7 @@
     selectTimelineItem,
     type TimelineItem,
   } from '$lib/stores/timeline.svelte'
-  import { formatTime, formatUtcIso, formatLatency, formatCost } from '$lib/utils/format'
+  import { formatTime, formatUtcIso, formatLatency, formatCost, formatAgentSource } from '$lib/utils/format'
   import EmptyState from '$lib/components/shared/EmptyState.svelte'
   let { items = timelineItems }: { items?: TimelineItem[] } = $props()
 
@@ -54,7 +54,7 @@
         </div>
         <div class="timeline-item-title">{item.title}</div>
         {#if item.subtitle}
-          <div class="timeline-item-subtitle">{item.subtitle}</div>
+          <div class="timeline-item-subtitle">{formatAgentSource(item.subtitle)}</div>
         {/if}
         <div class="timeline-item-meta">
           {#if item.model}
@@ -72,7 +72,7 @@
             >
           {/if}
           {#if item.service_name}
-            <span class="service-badge">{item.service_name}</span>
+            <span class="service-badge">{formatAgentSource(item.service_name)}</span>
           {/if}
         </div>
       </div>

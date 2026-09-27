@@ -17,6 +17,8 @@ class BuildWithRuntime(build_py):
         for name in ("apps", "packages", "public", "docs/integrations"):
             shutil.copytree(ROOT / name, target / name, dirs_exist_ok=True,
                             ignore=shutil.ignore_patterns("node_modules", "test", "*.test.*", "*.spec.*", "dist", ".svelte-kit"))
+        shutil.copytree(ROOT / "atflows/integrations/hermes", target / "atflows/integrations/hermes",
+                        ignore=shutil.ignore_patterns("__pycache__"))
 
 
 setup(cmdclass={"build_py": BuildWithRuntime})

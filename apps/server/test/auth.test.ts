@@ -9,6 +9,7 @@ test('dashboard routes enforce the four role levels', () => {
     expect(requiredDashboardRole('/api/analytics', 'GET')).toBe('viewer')
     expect(requiredDashboardRole('/api/logs', 'GET')).toBe('investigator')
     expect(requiredDashboardRole('/api/traces/example', 'GET')).toBe('investigator')
+    expect(requiredDashboardRole('/api/timeline/filters', 'GET')).toBe('investigator')
     expect(requiredDashboardRole('/api/settings/database', 'GET')).toBe('administrator')
     expect(requiredDashboardRole('/api/integrations', 'GET')).toBe('administrator')
     expect(requiredDashboardRole('/api/data', 'DELETE')).toBe('administrator')

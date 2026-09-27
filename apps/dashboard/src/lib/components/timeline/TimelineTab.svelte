@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { onMount } from 'svelte'
+  import { onMount, untrack } from 'svelte'
   import TimelineList from './TimelineList.svelte'
   import TimelineDetail from './TimelineDetail.svelte'
   import EventGroups from './EventGroups.svelte'
@@ -10,6 +10,8 @@
   import {
     timelineFilters,
     timelineItems,
+    timelineServices,
+    timelineStatus,
     loadTimeline,
     clearFilters,
     initTimelineSync,
@@ -17,6 +19,7 @@
   import { tabState, setTab } from '$lib/stores/tabs.svelte'
   import { downloadJson } from '$lib/utils/export'
   import { authAccount } from '$lib/stores/auth.svelte'
+  import { formatAgentSource } from '$lib/utils/format'
 
   let searchInput = $state('')
   let debounceTimer: ReturnType<typeof setTimeout>
@@ -32,32 +35,37 @@
   }
 
   function handleToolChange(e: Event) {
+    selectedGroup = ''
     timelineFilters.tool = (e.target as HTMLSelectElement).value
     loadTimeline()
   }
 
   function handleTypeChange(e: Event) {
+    selectedGroup = ''
     timelineFilters.type = (e.target as HTMLSelectElement).value
     loadTimeline()
   }
 
   function handleDateChange(e: Event) {
+    selectedGroup = ''
     timelineFilters.dateRange = (e.target as HTMLSelectElement).value
     loadTimeline()
   }
 
   function handleClear() {
+    selectedGroup = ''
     searchInput = ''
     clearFilters()
   }
 
   onMount(() => {
-    initTimelineSync()
+    const stopSync = initTimelineSync()
+    return () => { stopSync(); clearTimeout(debounceTimer) }
   })
 
   $effect(() => {
     if (tabState.current === 'timeline') {
-      loadTimeline()
+      untrack(() => loadTimeline())
     }
   })
 </script>
@@ -77,16 +85,16 @@
     oninput={handleSearchInput}
   />
   <select
+    aria-label="Filter by recorded agent, tool, or service"
     id="toolFilter"
     data-testid="timeline-tool-filter"
     value={timelineFilters.tool}
     onchange={handleToolChange}
   >
-    <option value="">All Tools</option>
-    <option value="codex-cli">Codex CLI</option>
-    <option value="gemini-cli">Gemini CLI</option>
-    <option value="aider">Aider</option>
-    <option value="proxy">Proxy</option>
+    <option value="">All agents / services</option>
+    {#each timelineServices as service}
+      <option value={service}>{formatAgentSource(service)}</option>
+    {/each}
   </select>
   <select
     id="timelineTypeFilter"
@@ -98,6 +106,7 @@
     <option value="trace">Traces</option>
     <option value="log">Logs</option>
     <option value="metric">Metrics</option>
+    <option value="hermes">Hermes events</option>
   </select>
   <select
     id="timelineDateFilter"
@@ -120,6 +129,14 @@
   </button>
   {#if authAccount.value?.role === 'evidence_collector' || authAccount.value?.role === 'administrator'}<button type="button" class="btn-secondary" onclick={() => downloadJson('timeline', { filters: timelineFilters, records: timelineItems })} disabled={timelineItems.length === 0}>Export JSON</button>{/if}
 </div>
+
+{#if timelineStatus.itemsError}<p role="alert">{timelineStatus.itemsError}</p>{/if}
+{#if timelineStatus.servicesError}<p role="status">{timelineStatus.servicesError}</p>{/if}
+{#if timelineStatus.servicesTruncated}
+  <p role="status">Showing the first 500 recorded service names, plus services in these results and your current selection.</p>
+  <label for="exact-service-filter">Filter by exact service name</label>
+  <input id="exact-service-filter" value={timelineFilters.tool} onchange={handleToolChange} />
+{/if}
 
 <EventGroups items={timelineItems} bind:by={groupBy} bind:selected={selectedGroup} />
 

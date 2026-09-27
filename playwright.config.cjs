@@ -16,6 +16,7 @@ module.exports = defineConfig({
     reporter: 'list',
     use: {
         baseURL: 'http://127.0.0.1:3001',
+        storageState: path.join(TEST_DATA_DIR, 'playwright-auth.json'),
         headless: true,
         viewport: { width: 1280, height: 720 },
         actionTimeout: 20000,
