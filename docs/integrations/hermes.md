@@ -41,8 +41,8 @@ Previews expire after two minutes. No API key is requested.
 
 No prompts, responses, tool arguments/results, raw errors, base URLs or provider
 credentials are exported. Labels are bounded and filtered. This native metadata
-boundary does not claim generic OTLP/proxy logging has passed the separately
-planned global redaction work (issue #6, Spec 011).
+boundary is separate from the generic OTLP/proxy filtering shipped in stable
+0.1.4; see [global coverage and historical-data handling](../telemetry-redaction.md).
 
 ## Compatibility and recovery
 

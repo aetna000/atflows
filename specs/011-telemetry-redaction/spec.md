@@ -36,12 +36,12 @@ paths; issue #6 global tests remain a prerequisite for release.
 
 | Boundary | Hermes native | Global legacy paths |
 | --- | --- | --- |
-| JSON ingress, errors | Strict metadata + redactor planned | Planned |
-| Protobuf/proxy streams | Not accepted by native route | Planned |
-| SQLite/WAL | Canary tests planned | Planned |
-| API/WebSocket | Filter-before-fanout tests planned | Planned |
-| Export | Native export disabled in v1 | Planned |
-| Diagnostics | Fixed codes only; tests planned | Planned |
+| JSON ingress, errors | Strict metadata route | Canary-qualified |
+| Protobuf/proxy streams | Not accepted by native route | Canary-qualified, forwarding unchanged |
+| SQLite/WAL | Native metadata contract | Canary-qualified |
+| API/WebSocket | Shared filtered fanout | Canary-qualified |
+| Export | Native export disabled in v1 | Actual payload/auth qualification |
+| Diagnostics | Fixed codes and shared filter | Canary-qualified |
 
 Independent tests send fake secrets through every boundary above; no matching
 canary occurs in telemetry outputs. Provider forwarding is byte-for-byte unchanged.

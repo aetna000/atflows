@@ -4,7 +4,17 @@ This table distinguishes shipped work from requirements still on the roadmap. Re
 
 ## Delivery order
 
-### Current beta: 0.1.4b3 native Hermes observation
+### Stable 0.1.4 — published 2026-10-20
+
+Stable 0.1.4 includes native Hermes observation and default-on generic telemetry
+filtering. [Spec 011](../specs/011-telemetry-redaction/spec.md) boundary tests,
+installed-artifact checks and a registry upgrade from 0.1.3 pass. See
+[release validation](releases/v0.1.4-validation.md) and
+[filtering limits / historical data](telemetry-redaction.md). It is the stable
+companion for AtMem 2.3.9. The planning history below is retained, not a statement
+of current blockers or authorization for another release.
+
+### Historical beta planning: 0.1.4b3 native Hermes observation
 
 Coordinated integration priority: first-class Hermes setup and observation under
 [Spec 006](../specs/006-guided-integrations/spec.md), T055–T067, paired with
