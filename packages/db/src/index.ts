@@ -4,6 +4,7 @@ import fs from 'fs'
 import os from 'os'
 import { continuityStore } from './continuity'
 import { HermesStore } from './hermes'
+const { redactTelemetry } = require('../../shared/src/redact.js')
 export { validateHermes, HermesConflict } from './hermes'
 export { validateContinuity, ContinuityConflict } from './continuity'
 
@@ -451,6 +452,7 @@ export interface MetricFilters {
 
 // Trace functions
 export function insertTrace(trace: Trace) {
+    trace = redactTelemetry(trace)
     insertTraceStmt.run({
         $id: trace.id,
         $timestamp: trace.timestamp,
@@ -821,6 +823,7 @@ export function getSessionCount(): number {
 
 // Log functions
 export function insertLog(log: Log) {
+    log = redactTelemetry(log)
     insertLogStmt.run({
         $id: log.id,
         $timestamp: log.timestamp,
@@ -999,6 +1002,7 @@ export function getDistinctLogServices() {
 
 // Metric functions
 export function insertMetric(metric: Metric) {
+    metric = redactTelemetry(metric)
     insertMetricStmt.run({
         $id: metric.id,
         $timestamp: metric.timestamp,

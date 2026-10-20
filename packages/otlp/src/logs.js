@@ -215,7 +215,7 @@ function processOtlpLogs(body) {
                     results.accepted++
                 } catch (err) {
                     results.rejected++
-                    results.errors.push(err.message)
+                    results.errors.push('telemetry_rejected')
                 }
             }
         }

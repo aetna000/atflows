@@ -3,6 +3,7 @@ on:
   pull_request:
     paths:
       - 'tests/continuity/**'
+      - 'tests/telemetry-redaction.test.ts'
       - 'apps/server/**'
       - 'packages/**'
       - 'bun.lock'
@@ -21,4 +22,5 @@ jobs:
           bun-version: '1.4.2'
       - run: bun install --frozen-lockfile
       - run: bun --no-env-file test tests/continuity/current-product.test.ts tests/continuity/http-probe.test.ts
+      - run: bun --no-env-file test tests/telemetry-redaction.test.ts
       - run: bunx tsc --noEmit -p apps/server/tsconfig.json

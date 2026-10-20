@@ -1,6 +1,7 @@
 # Default-on telemetry redaction
 
-Status: specified; global proxy/OTLP implementation and release qualification pending.
+Status: implemented and boundary-qualified for the stable 0.1.4 candidate;
+registry publication remains a separate release operation.
 User delegated specification numbering; 011 was unused on 2026-09-27.
 
 ## Objective

@@ -140,4 +140,19 @@ const logger = {
     },
 }
 
+const { redactTelemetry, REJECTED } = require('./redact.js')
+for (const name of Object.keys(logger)) {
+    if (name === 'isVerbose') continue
+    const original = logger[name]
+    logger[name] = (...args) => {
+        let safe
+        try {
+            safe = redactTelemetry(args)
+        } catch {
+            console.log(REJECTED)
+            return name === 'url' ? REJECTED : undefined
+        }
+        return original(...safe)
+    }
+}
 module.exports = logger

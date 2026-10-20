@@ -301,7 +301,11 @@ function transformSpan(span, resourceAttrs, scopeAttrs) {
     // (e.g. "my-agent") and was previously masquerading as the provider
     // whenever instrumentation forgot to emit gen_ai.system.
     const provider =
-        attrs['gen_ai.system'] || attrs['gen_ai.provider.name'] || attrs['openclaw.provider'] || attrs['llm.vendor'] || null
+        attrs['gen_ai.system'] ||
+        attrs['gen_ai.provider.name'] ||
+        attrs['openclaw.provider'] ||
+        attrs['llm.vendor'] ||
+        null
 
     // Extract service name
     const serviceName = resourceAttrs['service.name'] || scopeAttrs?.name || 'otel'
@@ -399,7 +403,7 @@ function processOtlpTraces(body) {
                     results.accepted++
                 } catch (err) {
                     results.rejected++
-                    results.errors.push(err.message)
+                    results.errors.push('telemetry_rejected')
                 }
             }
         }
