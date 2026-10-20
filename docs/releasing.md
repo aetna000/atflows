@@ -1,11 +1,9 @@
 # AtFlows release checklist
 
-**Current beta target (2026-09-27):** AtFlows **0.1.4b3** Hermes observation
-([issue #6](https://github.com/aetna000/atflows/issues/6)), coordinated with
-AtMem **2.3.8**, as recorded in the [architecture roadmap](architecture-roadmap.md).
-AtFlows 0.1.3 with AtMem 2.3.7 is the published baseline. The next pair is
-AtFlows **0.1.4b3** with AtMem **2.3.8b6**. Require redaction, forwarding
-fidelity and legacy-data handling gates, alongside continuity regressions.
+**Stable release target (2026-10-20):** AtFlows **0.1.4**, coordinated with
+AtMem **2.3.9**. Require redaction, forwarding fidelity and legacy-data handling
+gates, alongside continuity regressions. AtMem must not pin this version until
+its published distribution passes a clean installation.
 Preserve the original 0.1.2 benchmark artifacts. Product acceptance and repeated
 held-out qualification are separate gates; publishing does not complete the latter.
 
