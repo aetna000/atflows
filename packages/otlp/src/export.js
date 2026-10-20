@@ -16,6 +16,7 @@
 const https = require('https')
 const http = require('http')
 const log = require('@atflows/shared/logger')
+const { redactTelemetry } = require('@atflows/shared/redact')
 
 const EXPORT_ENDPOINTS = {
     traces: process.env.OTLP_EXPORT_TRACES_ENDPOINT || process.env.OTLP_EXPORT_ENDPOINT,
@@ -310,6 +311,11 @@ function buildMetricsPayload(metrics, serviceName = 'atflows') {
  */
 async function sendToEndpoint(endpoint, payload) {
     if (!endpoint) return { success: false, error: 'No endpoint configured' }
+    try {
+        payload = redactTelemetry(payload)
+    } catch {
+        return { success: false, error: 'telemetry_rejected' }
+    }
 
     return new Promise((resolve) => {
         const url = new URL(endpoint)
@@ -337,13 +343,13 @@ async function sendToEndpoint(endpoint, payload) {
                 if (res.statusCode >= 200 && res.statusCode < 300) {
                     resolve({ success: true, status: res.statusCode })
                 } else {
-                    resolve({ success: false, status: res.statusCode, error: data })
+                    resolve({ success: false, status: res.statusCode, error: 'export_http_error' })
                 }
             })
         })
 
         req.on('error', (err) => {
-            resolve({ success: false, error: err.message })
+            resolve({ success: false, error: 'export_transport_error' })
         })
 
         req.setTimeout(10000, () => {
@@ -360,6 +366,11 @@ async function sendToEndpoint(endpoint, payload) {
  * Export traces to external backend
  */
 async function exportTraces(traces) {
+    try {
+        traces = redactTelemetry(traces)
+    } catch {
+        return { success: false, error: 'telemetry_rejected' }
+    }
     if (!EXPORT_ENDPOINTS.traces || traces.length === 0) return
 
     const payload = buildTracesPayload(traces)
@@ -378,6 +389,11 @@ async function exportTraces(traces) {
  * Export logs to external backend
  */
 async function exportLogs(logs) {
+    try {
+        logs = redactTelemetry(logs)
+    } catch {
+        return { success: false, error: 'telemetry_rejected' }
+    }
     if (!EXPORT_ENDPOINTS.logs || logs.length === 0) return
 
     const payload = buildLogsPayload(logs)
@@ -396,6 +412,11 @@ async function exportLogs(logs) {
  * Export metrics to external backend
  */
 async function exportMetrics(metrics) {
+    try {
+        metrics = redactTelemetry(metrics)
+    } catch {
+        return { success: false, error: 'telemetry_rejected' }
+    }
     if (!EXPORT_ENDPOINTS.metrics || metrics.length === 0) return
 
     const payload = buildMetricsPayload(metrics)
@@ -416,7 +437,12 @@ async function exportMetrics(metrics) {
 function queueTrace(trace) {
     if (!EXPORT_ENABLED || !EXPORT_ENDPOINTS.traces) return
 
-    traceBatch.push(trace)
+    try {
+        traceBatch.push(redactTelemetry(trace))
+    } catch {
+        log.warn('telemetry_rejected')
+        return
+    }
 
     if (traceBatch.length >= BATCH_SIZE) {
         flushTraces()
@@ -431,7 +457,12 @@ function queueTrace(trace) {
 function queueLog(logEntry) {
     if (!EXPORT_ENABLED || !EXPORT_ENDPOINTS.logs) return
 
-    logBatch.push(logEntry)
+    try {
+        logBatch.push(redactTelemetry(logEntry))
+    } catch {
+        log.warn('telemetry_rejected')
+        return
+    }
 
     if (logBatch.length >= BATCH_SIZE) {
         flushLogs()
@@ -446,7 +477,12 @@ function queueLog(logEntry) {
 function queueMetric(metric) {
     if (!EXPORT_ENABLED || !EXPORT_ENDPOINTS.metrics) return
 
-    metricBatch.push(metric)
+    try {
+        metricBatch.push(redactTelemetry(metric))
+    } catch {
+        log.warn('telemetry_rejected')
+        return
+    }
 
     if (metricBatch.length >= BATCH_SIZE) {
         flushMetrics()

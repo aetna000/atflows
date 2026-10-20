@@ -16,6 +16,7 @@ const receiveHermes = hermesReceiver(db.hermes, () => { void broadcast({ type: '
 // CommonJS workspace packages
 const { calculateCost } = require('@atflows/pricing')
 const log = require('@atflows/shared/logger')
+const { redactTelemetry } = require('../../../packages/shared/src/redact.js')
 const { registry } = require('@atflows/providers')
 const {
     AnthropicPassthrough,
@@ -226,7 +227,9 @@ async function pruneDashboardSockets() {
 }
 
 async function broadcast(data: unknown) {
-    const message = JSON.stringify(data)
+    let message: string
+    try { message = JSON.stringify(redactTelemetry(data)) }
+    catch { log.warn('telemetry_rejected'); return }
     await pruneDashboardSockets()
     for (const client of wsClients) {
         try {
@@ -376,7 +379,13 @@ function startDashboardServer() {
                 if (req.method !== 'GET' && pathname !== '/api/spans' && !localAuth.sameOrigin(req)) {
                     return Response.json({ error: 'Origin check failed' }, { status: 403 })
                 }
-                return handleApiRoute(req, url, peer)
+                const response = await handleApiRoute(req, url, peer)
+                if (/^\/api\/(?:traces|spans|logs|metrics|timeline|analytics|models|stats|sessions|cost|tokens|token-usage|continuity|data|demo-data)(?:\/|$)/.test(pathname)
+                    && response.headers.get('content-type')?.includes('application/json')) {
+                    try { return Response.json(redactTelemetry(await response.json()), {status: response.status}) }
+                    catch { return Response.json({error: 'telemetry_rejected'}, {status: 503}) }
+                }
+                return response
             }
 
             // OTLP routes
