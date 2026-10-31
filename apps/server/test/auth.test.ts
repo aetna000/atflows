@@ -3,6 +3,7 @@ import fs from 'node:fs'
 import os from 'node:os'
 import path from 'node:path'
 import { createLocalAuth, requiredDashboardRole, allowsRole } from '../src/auth'
+import { privatePath } from '@atflows/integrations/private-state'
 
 test('dashboard routes enforce the four role levels', () => {
     expect(requiredDashboardRole('/api/stats', 'GET')).toBe('viewer')
@@ -18,6 +19,10 @@ test('dashboard routes enforce the four role levels', () => {
     expect(allowsRole('evidence_collector', 'investigator')).toBe(true)
 })
 
+test('local sign-in refuses to change permissions on the home directory', () => {
+    expect(() => createLocalAuth(os.homedir())).toThrow('dedicated directory')
+})
+
 test('local sign-in uses a protected password record and revocable cookie', async () => {
     const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'atflows-auth-'))
     const before = process.env.ATFLOWS_ADMIN_PASSWORD
@@ -25,7 +30,7 @@ test('local sign-in uses a protected password record and revocable cookie', asyn
     try {
         const auth = createLocalAuth(dir)
         const target = path.join(dir, 'admin-auth.json')
-        expect(fs.statSync(target).mode & 0o777).toBe(0o600)
+        expect(privatePath(target)).toBe(true)
         expect(fs.readFileSync(target, 'utf8')).not.toContain('test-password')
         const login = (password: string, origin = 'http://localhost:3000') => new Request('http://localhost:3000/api/auth/login', {
             method: 'POST', headers: { Origin: origin, 'Content-Type': 'application/json' },
@@ -43,7 +48,7 @@ test('local sign-in uses a protected password record and revocable cookie', asyn
         const duplicateCookie = new Request('http://localhost:3000/api/traces', { headers: { Cookie: `atflows_session=invalid; ${cookie.split(';')[0]}` } })
         expect(auth.authenticated(duplicateCookie)).toBe(true)
         const sessionsFile = path.join(dir, 'admin-sessions.json')
-        expect(fs.statSync(sessionsFile).mode & 0o777).toBe(0o600)
+        expect(privatePath(sessionsFile)).toBe(true)
         expect(fs.readFileSync(sessionsFile, 'utf8')).not.toContain(cookie.split(';')[0].split('=')[1])
         const restarted = createLocalAuth(dir)
         expect(restarted.authenticated(request)).toBe(true)

@@ -6,6 +6,8 @@ import os
 from pathlib import Path
 import secrets
 
+from .private_paths import protect_private_path
+
 
 def admin_file() -> Path:
     return Path(os.environ.get("DATA_DIR", Path.home() / ".atflows")) / "admin-auth.json"
@@ -13,7 +15,13 @@ def admin_file() -> Path:
 
 def set_temporary_password(*, create_only: bool) -> str | None:
     target = admin_file()
+    resolved = target.parent.resolve()
+    if resolved == Path(resolved.anchor) or resolved == Path.home().resolve():
+        raise ValueError("AtFlows private state requires a dedicated directory")
     target.parent.mkdir(parents=True, exist_ok=True, mode=0o700)
+    protect_private_path(target.parent)
+    if target.exists():
+        protect_private_path(target)
     if create_only and target.exists():
         return None
     password = secrets.token_urlsafe(20)
@@ -24,7 +32,7 @@ def set_temporary_password(*, create_only: bool) -> str | None:
     temporary = target.with_name(f".admin-auth-{secrets.token_hex(8)}.json")
     try:
         with temporary.open("x") as file:
-            os.chmod(temporary, 0o600)
+            protect_private_path(temporary)
             json.dump(record, file)
         os.replace(temporary, target)
     finally:

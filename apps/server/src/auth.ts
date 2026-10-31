@@ -1,6 +1,8 @@
 import crypto from 'node:crypto'
 import fs from 'node:fs'
 import path from 'node:path'
+import os from 'node:os'
+import { protectPrivatePaths } from '@atflows/integrations/private-state'
 
 export type Role = 'viewer' | 'investigator' | 'evidence_collector' | 'administrator'
 export type Account = { username: string; display_name: string; role: Role; enabled: boolean; password_change_required: boolean }
@@ -57,6 +59,11 @@ function publicAccount(user: StoredUser): Account {
 }
 
 export function createLocalAuth(dataDir: string) {
+    const resolvedDir = path.resolve(dataDir)
+    const comparable = (value: string) => process.platform === 'win32' ? value.toLowerCase() : value
+    if (comparable(resolvedDir) === comparable(path.parse(resolvedDir).root) || comparable(resolvedDir) === comparable(path.resolve(os.homedir()))) {
+        throw new Error('AtFlows private state requires a dedicated directory below your home or another private location')
+    }
     let setupToken = process.env.ATFLOWS_SETUP_TOKEN || ''
     let setupPassword = process.env.ATFLOWS_SETUP_PREFILL_PASSWORD || ''
     const setupExpires = Date.now() + 60_000
@@ -68,6 +75,7 @@ export function createLocalAuth(dataDir: string) {
     const auditTarget = path.join(dataDir, 'users-audit.jsonl')
     const attempts = new Map<string, { count: number; until: number }>()
     fs.mkdirSync(dataDir, { recursive: true, mode: 0o700 })
+    protectPrivatePaths([dataDir, ...[target, usersTarget, sessionsTarget, auditTarget].filter(file => fs.existsSync(file))])
     const sessions = new Map<string, Session>()
     if (fs.existsSync(sessionsTarget)) {
         try {

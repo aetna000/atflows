@@ -1,0 +1,3 @@
+# Plan
+
+Use a shared local-state protection boundary before creating sensitive records. On Windows apply and verify a protected ACL for the current identity using OS facilities without a shell-interpolated path; reject reparse points and unexpected access grants. On POSIX use owner-only permissions. Keep the existing files and atomic-write semantics, and do not touch paths outside AtFlows state. Validate the boundary with real Windows ACLs as well as POSIX modes and negative cases. Independently correct version-dependent malformed TOML diagnostics without weakening rejection. Run bounded server, dashboard, integration, packaging and installed-artifact gates before coordinating any AtMem pin.
