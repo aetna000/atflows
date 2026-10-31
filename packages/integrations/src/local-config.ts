@@ -2,6 +2,7 @@ import crypto from 'crypto'
 import fs from 'fs'
 import path from 'path'
 import { START_MARKER, codexConfigPath, hashText, planCodexConfig, undoCodexBlock } from './codex'
+import { protectPrivatePaths } from './private-state'
 
 interface PendingPreview {
     target: string
@@ -152,7 +153,7 @@ export function applyCodexSetup(previewId: string, dataDir: string) {
     const changeId = crypto.randomUUID()
     const recordDir = path.join(dataDir, 'integration-changes')
     fs.mkdirSync(recordDir, { recursive: true, mode: 0o700 })
-    fs.chmodSync(recordDir, 0o700)
+    protectPrivatePaths([recordDir, ...fs.readdirSync(recordDir).filter(name => /\.(?:backup|json)$/.test(name)).map(name => path.join(recordDir, name))])
     cleanOldChanges(dataDir)
     const backup = path.join(recordDir, `${changeId}.backup`)
     fs.writeFileSync(backup, current, { flag: 'wx', mode: 0o600 })

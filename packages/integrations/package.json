@@ -16,6 +16,11 @@
       "import": "./src/codex.ts",
       "default": "./src/codex.ts"
     },
+    "./private-state": {
+      "types": "./src/private-state.ts",
+      "import": "./src/private-state.ts",
+      "default": "./src/private-state.ts"
+    },
     "./local-config": {
       "types": "./src/local-config.ts",
       "import": "./src/local-config.ts",

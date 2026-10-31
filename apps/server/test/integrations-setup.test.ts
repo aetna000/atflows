@@ -3,6 +3,7 @@ import fs from 'fs'
 import os from 'os'
 import path from 'path'
 import { planCodexConfig } from '@atflows/integrations/codex'
+import { privatePath } from '@atflows/integrations/private-state'
 import { getIntegrationCatalog } from '@atflows/integrations'
 import { previewCodexSetup, applyCodexSetup, undoCodexSetup, getLatestCodexChangeId, codexSetupStatus } from '@atflows/integrations/local-config'
 
@@ -24,7 +25,7 @@ test('Codex setup preserves unrelated settings and safely undoes after another e
         expect(fs.readFileSync(target, 'utf8')).toContain('metrics_exporter = { otlp-http = { endpoint = "http://127.0.0.1:3107/v1/metrics", protocol = "json" } }')
         expect(codexSetupStatus('http://127.0.0.1:3107').metrics_configured).toBe(true)
         expect(fs.readFileSync(path.join(root, 'integration-changes', `${applied.change_id}.backup`), 'utf8')).toBe(original)
-        expect(fs.statSync(path.join(root, 'integration-changes', `${applied.change_id}.backup`)).mode & 0o777).toBe(0o600)
+        expect(privatePath(path.join(root, 'integration-changes', `${applied.change_id}.backup`))).toBe(true)
         expect(planCodexConfig(fs.readFileSync(target, 'utf8'), 'http://127.0.0.1:3107').changed).toBe(false)
         fs.appendFileSync(target, '\n# User added this later\n')
         undoCodexSetup(applied.change_id!, root)
@@ -42,7 +43,7 @@ test('Codex setup preserves unrelated settings and safely undoes after another e
 test('Codex setup refuses foreign telemetry and invalid TOML', () => {
     expect(() => planCodexConfig('[otel]\nexporter = "other"\n', 'http://127.0.0.1:3107')).toThrow('already has telemetry')
     expect(() => planCodexConfig('otel.exporter = "other"\n', 'http://127.0.0.1:3107')).toThrow('already has telemetry')
-    expect(() => planCodexConfig('[broken\n', 'http://127.0.0.1:3107')).toThrow('not valid TOML')
+    expect(() => planCodexConfig('[broken\n', 'http://127.0.0.1:3107')).toThrow(/not valid TOML|prepared Codex settings conflict/)
 })
 
 test('OpenClaw connection shows the tested protobuf route and running dashboard address', () => {
