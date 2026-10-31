@@ -61,7 +61,12 @@ function publicAccount(user: StoredUser): Account {
 export function createLocalAuth(dataDir: string) {
     const resolvedDir = path.resolve(dataDir)
     const comparable = (value: string) => process.platform === 'win32' ? value.toLowerCase() : value
-    if (comparable(resolvedDir) === comparable(path.parse(resolvedDir).root) || comparable(resolvedDir) === comparable(path.resolve(os.homedir()))) {
+    const home = process.platform === 'win32' ? process.env.USERPROFILE : process.env.HOME
+    const temporaryRoots = [os.tmpdir(), ...(process.platform === 'darwin' ? ['/var/folders', '/private/var/folders'] : [])]
+        .map(root => comparable(path.resolve(root)) + path.sep)
+    if (comparable(resolvedDir) === comparable(path.parse(resolvedDir).root) ||
+        (home && comparable(resolvedDir) === comparable(path.resolve(home))) ||
+        (!home && !temporaryRoots.some(root => comparable(resolvedDir).startsWith(root)))) {
         throw new Error('AtFlows private state requires a dedicated directory below your home or another private location')
     }
     let setupToken = process.env.ATFLOWS_SETUP_TOKEN || ''
