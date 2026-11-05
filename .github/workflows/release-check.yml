@@ -28,7 +28,7 @@ jobs:
         if: runner.os == 'Windows'
         shell: bash
         run: |
-          node - <<'JS'
+          bun - <<'JS'
           const fs = require('node:fs');
           const os = require('node:os');
           const path = require('node:path');
