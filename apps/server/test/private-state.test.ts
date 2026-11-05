@@ -11,7 +11,7 @@ test('private state preserves existing content and rejects another ordinary user
         const file = path.join(directory, 'existing.json')
         fs.writeFileSync(file, 'preserve')
         if (process.platform === 'win32') {
-            const script = `$a=Get-Acl -LiteralPath $env:TEST_PRIVATE_PATH; $s=New-Object Security.Principal.SecurityIdentifier('S-1-5-32-545'); $r=New-Object Security.AccessControl.FileSystemAccessRule($s,'Read','Allow'); $a.AddAccessRule($r); Set-Acl -LiteralPath $env:TEST_PRIVATE_PATH -AclObject $a`
+            const script = `Import-Module (Join-Path $PSHOME 'Modules\\Microsoft.PowerShell.Security\\Microsoft.PowerShell.Security.psd1') -ErrorAction Stop; $a=Get-Acl -LiteralPath $env:TEST_PRIVATE_PATH; $s=New-Object Security.Principal.SecurityIdentifier('S-1-5-32-545'); $r=New-Object Security.AccessControl.FileSystemAccessRule($s,'Read','Allow'); $a.AddAccessRule($r); Set-Acl -LiteralPath $env:TEST_PRIVATE_PATH -AclObject $a`
             const powershell = path.join(process.env.SystemRoot!, 'System32', 'WindowsPowerShell', 'v1.0', 'powershell.exe')
             execFileSync(powershell, ['-NoProfile', '-NonInteractive', '-EncodedCommand', Buffer.from(script, 'utf16le').toString('base64')], { env: { ...process.env, TEST_PRIVATE_PATH: file }, stdio: 'ignore' })
             expect(privatePath(file)).toBe(false)

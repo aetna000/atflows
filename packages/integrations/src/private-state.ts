@@ -5,6 +5,8 @@ import { execFileSync } from 'node:child_process'
 // Pass the path as an environment variable, never as PowerShell source.
 const windowsAcl = String.raw`
 $ErrorActionPreference = 'Stop'
+# A parent PowerShell 7 session can put incompatible modules first in PSModulePath.
+Import-Module (Join-Path $PSHOME 'Modules\Microsoft.PowerShell.Security\Microsoft.PowerShell.Security.psd1') -ErrorAction Stop
 $targets = ConvertFrom-Json -InputObject $env:ATFLOWS_PRIVATE_TARGETS
 foreach ($target in $targets) {
 $item = Get-Item -LiteralPath $target -Force
@@ -42,7 +44,7 @@ if (-not $allowed) { throw 'owner has no access' }
 function windowsPrivate(targets: string[], action: 'protect' | 'check'): void {
     const executable = path.join(process.env.SystemRoot || 'C:\\Windows', 'System32', 'WindowsPowerShell', 'v1.0', 'powershell.exe')
     execFileSync(executable, ['-NoProfile', '-NonInteractive', '-EncodedCommand', Buffer.from(windowsAcl, 'utf16le').toString('base64')], {
-        env: { ...process.env, ATFLOWS_PRIVATE_TARGETS: JSON.stringify(targets.map(target => path.resolve(target))), ATFLOWS_PRIVATE_ACTION: action }, stdio: 'ignore', timeout: 15000,
+        env: { ...process.env, ATFLOWS_PRIVATE_TARGETS: JSON.stringify(targets.map(target => path.resolve(target))), ATFLOWS_PRIVATE_ACTION: action }, stdio: 'pipe', timeout: 15000,
     })
 }
 
@@ -67,7 +69,7 @@ export function protectPrivatePaths(targets: string[]): void {
     }
     if (process.platform === 'win32') {
         try { windowsPrivate(targets, 'protect') }
-        catch { throw new Error('Unable to protect private AtFlows state on this filesystem') }
+        catch (cause) { throw new Error('Unable to protect private AtFlows state on this filesystem', { cause }) }
     }
 }
 
