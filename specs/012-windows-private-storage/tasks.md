@@ -14,3 +14,12 @@
 - [x] T007 Run server, dashboard and compatibility tests on Windows, Linux and macOS (SC-002).
 - [x] T008 Run browser, wheel and fresh-install checks and prepare release notes (SC-003).
 - [ ] T009 Publish the AtFlows candidate and coordinate the AtMem version pin after registry verification (SC-003).
+
+## Stable-release regression qualification — 2026-11-05
+
+- [x] Add recurring macOS/Linux/Windows source, build and packaging gates.
+- [x] Reproduce Windows startup failure from PowerShell 7: inherited module
+      search path selects an incompatible Microsoft.PowerShell.Security module.
+- [x] Load the Windows PowerShell security module from its own system path;
+      retain fail-closed protection and use the same module in test setup.
+- [ ] Pass the complete supported-host matrix and fresh stable artifacts.

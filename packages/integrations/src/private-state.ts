@@ -5,6 +5,8 @@ import { execFileSync } from 'node:child_process'
 // Pass the path as an environment variable, never as PowerShell source.
 const windowsAcl = String.raw`
 $ErrorActionPreference = 'Stop'
+# A parent PowerShell 7 session can put incompatible modules first in PSModulePath.
+Import-Module (Join-Path $PSHOME 'Modules\Microsoft.PowerShell.Security\Microsoft.PowerShell.Security.psd1') -ErrorAction Stop
 $targets = ConvertFrom-Json -InputObject $env:ATFLOWS_PRIVATE_TARGETS
 foreach ($target in $targets) {
 $item = Get-Item -LiteralPath $target -Force

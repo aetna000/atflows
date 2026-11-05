@@ -24,24 +24,6 @@ jobs:
         with:
           python-version: '3.12'
       - run: bun install --frozen-lockfile
-      - name: Diagnose Windows ACL prerequisites on synthetic state
-        if: runner.os == 'Windows'
-        shell: bash
-        run: |
-          bun - <<'JS'
-          const fs = require('node:fs');
-          const os = require('node:os');
-          const path = require('node:path');
-          const cp = require('node:child_process');
-          const source = fs.readFileSync('packages/integrations/src/private-state.ts', 'utf8');
-          const script = source.split('const windowsAcl = String.raw`')[1].split('`')[0];
-          const directory = fs.mkdtempSync(path.join(os.tmpdir(), 'atflows-acl-ci-'));
-          try {
-            cp.execFileSync(path.join(process.env.SystemRoot, 'System32/WindowsPowerShell/v1.0/powershell.exe'),
-              ['-NoProfile', '-NonInteractive', '-EncodedCommand', Buffer.from(script, 'utf16le').toString('base64')],
-              {env: {...process.env, ATFLOWS_PRIVATE_TARGETS: JSON.stringify([directory]), ATFLOWS_PRIVATE_ACTION: 'protect'}, stdio: 'inherit'});
-          } finally { fs.rmSync(directory, {recursive: true, force: true}); }
-          JS
       - run: bun run test
       - run: bun run --filter @atflows/dashboard test
       - run: bun run typecheck
