@@ -1,11 +1,11 @@
 # AtFlows release checklist
 
-**Stable release target (2026-10-20):** AtFlows **0.1.4**, coordinated with
-AtMem **2.3.9**. Require redaction, forwarding fidelity and legacy-data handling
-gates, alongside continuity regressions. AtMem must not pin this version until
-its published distribution passes a clean installation.
-Preserve the original 0.1.2 benchmark artifacts. Product acceptance and repeated
-held-out qualification are separate gates; publishing does not complete the latter.
+**Stable release target (2026-11-05):** AtFlows **0.1.5**, coordinated with
+AtMem **2.3.11**. Promote the published 0.1.5b1 private-state changes without
+changing their runtime behavior. Run server/dashboard, typecheck, browser,
+Python, build and installed-wheel checks. AtMem must not merge the new exact
+pin before this distribution is installable from PyPI. Preserve existing data
+and all benchmark artifacts.
 
 AtFlows is published to PyPI as `atflows`. The publisher credential is stored locally as `PYPI_TOKEN` in the repository-root, Git-ignored `.env`. This file is also present in the adjacent AtMem workspace as `.env.atmem-c709e`. Do not commit, print, paste, or copy the token into release notes or workflow logs. Check that the variable is present before publishing; do not assume it has been exported into the current shell.
 
