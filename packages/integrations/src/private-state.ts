@@ -67,7 +67,7 @@ export function protectPrivatePaths(targets: string[]): void {
     }
     if (process.platform === 'win32') {
         try { windowsPrivate(targets, 'protect') }
-        catch { throw new Error('Unable to protect private AtFlows state on this filesystem') }
+        catch (cause) { throw new Error('Unable to protect private AtFlows state on this filesystem', { cause }) }
     }
 }
 
