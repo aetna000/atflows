@@ -1,7 +1,7 @@
 # AtFlows release checklist
 
 **Stable release target (2026-11-05):** AtFlows **0.1.5**, coordinated with
-AtMem **2.3.11**. Promote the published 0.1.5b1 private-state changes without
+AtMem **2.3.12**. Promote the published 0.1.5b1 private-state changes without
 changing their runtime behavior. Run server/dashboard, typecheck, browser,
 Python, build and installed-wheel checks. AtMem must not merge the new exact
 pin before this distribution is installable from PyPI. Preserve existing data
