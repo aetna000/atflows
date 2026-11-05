@@ -42,7 +42,7 @@ if (-not $allowed) { throw 'owner has no access' }
 function windowsPrivate(targets: string[], action: 'protect' | 'check'): void {
     const executable = path.join(process.env.SystemRoot || 'C:\\Windows', 'System32', 'WindowsPowerShell', 'v1.0', 'powershell.exe')
     execFileSync(executable, ['-NoProfile', '-NonInteractive', '-EncodedCommand', Buffer.from(windowsAcl, 'utf16le').toString('base64')], {
-        env: { ...process.env, ATFLOWS_PRIVATE_TARGETS: JSON.stringify(targets.map(target => path.resolve(target))), ATFLOWS_PRIVATE_ACTION: action }, stdio: 'ignore', timeout: 15000,
+        env: { ...process.env, ATFLOWS_PRIVATE_TARGETS: JSON.stringify(targets.map(target => path.resolve(target))), ATFLOWS_PRIVATE_ACTION: action }, stdio: 'pipe', timeout: 15000,
     })
 }
 
