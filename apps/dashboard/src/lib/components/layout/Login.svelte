@@ -92,12 +92,11 @@
 
 <div class="login-shell">
   <div class="login-brand">
-    <svg class="brand-mark" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-      <path d="M12 6.5 L5.5 17.5 M12 6.5 L18.5 17.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" />
-      <circle cx="12" cy="5" r="2.6" fill="currentColor" />
-      <circle cx="5" cy="18.5" r="2.2" fill="none" stroke="currentColor" stroke-width="1.4" />
-      <circle cx="19" cy="18.5" r="2.2" fill="none" stroke="currentColor" stroke-width="1.4" />
-    </svg>
+    <svg class="brand-mark atmem-mark" viewBox="-154.35 -151.35 308.7 308.7" aria-hidden="true"><g transform="translate(0 2)">
+  <path d="M-91.7 74.24 L0 -88 L91.7 74.24 M-66.7 30 H66.7" fill="none" stroke="currentColor" stroke-width="26" stroke-linejoin="round" />
+  <path d="M-142 96a38 38 0 1 0 76 0a38 38 0 1 0 -76 0ZM-116 96a12 12 0 1 0 24 0a12 12 0 1 0 -24 0ZM66 96a38 38 0 1 0 76 0a38 38 0 1 0 -76 0ZM92 96a12 12 0 1 0 24 0a12 12 0 1 0 -24 0Z" fill="currentColor" fill-rule="evenodd" />
+  <circle class="atmem-dot" cx="0" cy="-88" r="40" />
+</g></svg>
     <strong>AtMem.ai <span class="brand-separator">|</span> AtFlows</strong>
   </div>
   {#if authMode.value === 'atmem'}
@@ -143,7 +142,7 @@
 <style>
   .login-shell { flex: 1; display: grid; grid-template-rows: auto 1fr; }
   .login-brand { display: flex; align-items: center; gap: 9px; height: 64px; padding: 0 28px; border-bottom: 1px solid var(--border-primary); font-family: var(--font-display); font-size: 16px; font-weight: 800; letter-spacing: -0.01em; }
-  .brand-mark { width: 20px; height: 20px; color: var(--accent-primary); flex: none; }
+  .brand-mark { width: 22px; height: 22px; color: var(--text-primary); flex: none; }
   .brand-separator { color: var(--text-secondary); padding: 0 4px; }
   .login-card { width: min(100% - 32px, 430px); align-self: center; justify-self: center; display: grid; gap: 10px; padding: 34px; border: 1px solid transparent; border-radius: 20px; background: var(--bg-secondary); box-shadow: 0 2px 4px rgba(23, 32, 51, 0.05), 0 20px 48px rgba(23, 32, 51, 0.09); }
   .login-card :global(input) { border-radius: 10px; }
