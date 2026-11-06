@@ -9,8 +9,8 @@
             // Apply theme immediately to prevent flash
             ;(function () {
                 const saved = localStorage.getItem('atflows-theme')
-                const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches
-                if (saved === 'dark' || (!saved && prefersDark)) {
+                // Light is the default; dark only when the user chose it
+                if (saved === 'dark') {
                     document.documentElement.setAttribute('data-theme', 'dark')
                 }
             })()
