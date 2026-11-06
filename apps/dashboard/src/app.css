@@ -1,23 +1,30 @@
+/* Architecture Canvas fonts, self-hosted (SIL OFL, see /fonts/*-OFL.txt). */
+@font-face { font-family: "DM Sans"; font-style: normal; font-display: swap; font-weight: 100 1000; src: url("/fonts/dm-sans-latin-wght-normal.woff2") format("woff2"); }
+@font-face { font-family: Manrope; font-style: normal; font-display: swap; font-weight: 200 800; src: url("/fonts/manrope-latin-wght-normal.woff2") format("woff2"); }
 /* CSS Custom Properties for theming */
 :root {
   /* AtMem control/assets/app.css is the typography authority. */
-  --font-sans: Inter, ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-sans: 'DM Sans', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-display: Manrope, 'DM Sans', ui-sans-serif, system-ui, sans-serif;
+  --radius: 14px;
+  --radius-sm: 10px;
+  --shadow-soft: 0 1px 2px rgba(23, 32, 51, 0.04), 0 8px 24px rgba(23, 32, 51, 0.05);
   --font-mono: ui-monospace, 'SFMono-Regular', Consolas, monospace;
   /* Light theme (default) */
-  --bg-primary: #ffffff;
+  --bg-primary: #fafbf9;
   --bg-secondary: #fff;
-  --bg-tertiary: #f5f8f8;
-  --bg-hover: #f5f8f8;
-  --bg-selected: #e7f5f5;
+  --bg-tertiary: #f2f8f6;
+  --bg-hover: #f2f8f6;
+  --bg-selected: #e8f5f2;
 
-  --border-primary: #cbd5d6;
-  --border-secondary: #a9babc;
+  --border-primary: #e1e7ef;
+  --border-secondary: #7a8696;
   --border-light: #ffffff;
 
-  --text-primary: #101314;
-  --text-secondary: #354043;
-  --text-tertiary: #4b5659;
-  --text-muted: #74878a;
+  --text-primary: #172033;
+  --text-secondary: #354055;
+  --text-tertiary: #5f6a7c;
+  --text-muted: #6b7587;
 
   --accent-primary: #1f777c;
   --accent-hover: #17666b;
@@ -261,7 +268,7 @@ h1.logo {
   border: none;
   cursor: pointer;
   padding: 4px;
-  border-radius: 0;
+  border-radius: 99px;
   color: var(--text-tertiary);
   display: flex;
   align-items: center;
@@ -404,7 +411,7 @@ main {
   padding: 9px 11px;
   background: transparent;
   border: none;
-  border-radius: 0;
+  border-radius: 10px;
   cursor: pointer;
   font-size: 14px;
   font-weight: 500;
@@ -446,7 +453,7 @@ main {
   padding: 8px;
   background: var(--bg-secondary);
   border: 1px solid var(--border-primary);
-  border-radius: 0;
+  border-radius: var(--radius);
   margin-bottom: 8px;
 }
 
@@ -454,7 +461,7 @@ main {
 .filter-bar select {
   padding: 6px 8px;
   border: 1px solid var(--border-secondary);
-  border-radius: 0;
+  border-radius: 10px;
   font-size: 12px;
   background: var(--bg-secondary);
   color: var(--text-primary);
@@ -481,7 +488,7 @@ main {
   padding: 6px 12px;
   background: var(--bg-tertiary);
   border: 1px solid var(--border-secondary);
-  border-radius: 0;
+  border-radius: 10px;
   font-size: 12px;
   cursor: pointer;
   color: var(--text-secondary);
@@ -735,7 +742,7 @@ tr.trace-row.selected {
 .metric-card {
   background: var(--bg-secondary);
   border: 1px solid var(--border-primary);
-  border-radius: 0;
+  border-radius: var(--radius);
   padding: 10px 12px;
 }
 
@@ -773,7 +780,7 @@ tr.trace-row.selected {
   flex: 1;
   background: var(--bg-secondary);
   border: 1px solid var(--border-primary);
-  border-radius: 0;
+  border-radius: var(--radius);
   overflow: auto;
 }
 
@@ -836,7 +843,7 @@ tr.trace-row.selected {
 pre {
   background: var(--bg-tertiary);
   border: 1px solid var(--border-primary);
-  border-radius: 0;
+  border-radius: 12px;
   padding: 8px;
   font-size: 11px;
   line-height: 1.4;
@@ -885,13 +892,13 @@ pre {
   padding: 12px;
   background: var(--bg-secondary);
   border: 1px solid var(--border-primary);
-  border-radius: 0;
+  border-radius: var(--radius);
 }
 
 .model-card {
   background: var(--bg-tertiary);
   border: 1px solid var(--border-primary);
-  border-radius: 0;
+  border-radius: var(--radius);
   padding: 12px;
 }
 
@@ -929,7 +936,7 @@ pre {
 
 [data-theme='dark'] ::-webkit-scrollbar-thumb {
   background: var(--border-secondary);
-  border-radius: 0;
+  border-radius: 99px;
 }
 
 [data-theme='dark'] ::-webkit-scrollbar-thumb:hover {
@@ -1127,7 +1134,7 @@ pre {
   padding: 8px;
   background: var(--bg-tertiary);
   border: 1px solid var(--border-primary);
-  border-radius: 0;
+  border-radius: 10px;
   margin-bottom: 6px;
   font-size: 11px;
 }
@@ -1153,14 +1160,14 @@ pre {
   padding: 8px;
   background: var(--bg-secondary);
   border: 1px solid var(--border-primary);
-  border-radius: 0;
+  border-radius: var(--radius);
   margin-bottom: 12px;
 }
 
 .analytics-controls select {
   padding: 6px 10px;
   border: 1px solid var(--border-secondary);
-  border-radius: 0;
+  border-radius: 10px;
   font-size: 12px;
   background: var(--bg-secondary);
   color: var(--text-primary);
@@ -1186,7 +1193,7 @@ pre {
 .analytics-card {
   background: var(--bg-secondary);
   border: 1px solid var(--border-primary);
-  border-radius: 0;
+  border-radius: var(--radius);
   overflow: hidden;
 }
 
@@ -1423,8 +1430,18 @@ header, .stat, .tab-btn, .tab-content, .card, button, input, select { box-shadow
 header { border-color: var(--border-primary); border-radius: 0; padding: 13px 20px; }
 .container { padding: 0; }
 main { padding: 20px; }
-h1.logo { font-size: 16px; font-weight: 600; letter-spacing: 0; }
+h1.logo { font-size: 16px; font-weight: 800; letter-spacing: -0.01em; font-family: var(--font-display); }
 .logo-icon { color: var(--accent-primary); }
 .atmem-dashboard-link { color: var(--accent-primary); font-size: 12px; font-weight: 600; text-decoration: none; white-space: nowrap; }
 .atmem-dashboard-link:hover, .atmem-dashboard-link:focus-visible { text-decoration: underline; }
 button:focus-visible, input:focus-visible, select:focus-visible { outline: 2px solid var(--accent-primary); outline-offset: 2px; }
+
+
+/* Architecture Canvas: display type for headings. */
+h1, h2, h3 { font-family: var(--font-display); letter-spacing: -0.01em; }
+
+/* Architecture Canvas: Miro-like, few edges. Cards float on soft shadows; text fields keep a boundary. */
+.metric-card, .model-card, .analytics-card { border-color: transparent; box-shadow: var(--shadow-soft); background: var(--bg-secondary); }
+.filter-bar, .analytics-controls { border-color: transparent; background: var(--bg-tertiary); }
+.tab.active, .tab[aria-selected='true'] { border-radius: 10px; }
+.brand-home, .brand-home * { font-family: var(--font-display); letter-spacing: -0.01em; }
