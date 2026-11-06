@@ -15,7 +15,7 @@ test.describe('Navigation & URL Hash Persistence', () => {
     test('default load shows Timeline tab', async ({ page }) => {
         await page.goto('/')
 
-        await expect(page).toHaveTitle('AtMem.ai | AtFlow')
+        await expect(page).toHaveTitle('AtMem.ai | AtFlows')
         await expect(page.locator('link[rel="icon"]')).toHaveAttribute('href', '/favicon.svg')
         await expect(page.getByRole('link', { name: 'Open AtMem dashboard in a new tab' })).toHaveCount(0)
 

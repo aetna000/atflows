@@ -128,8 +128,13 @@ button, input, select, textarea {
   font-family: inherit;
 }
 
-h1, h2, h3, .logo, .tab, .nav-menu > summary, .nav-menu-items button {
-  font-family: var(--font-mono);
+h1, h2, h3, .logo {
+  font-family: var(--font-display);
+  letter-spacing: -0.01em;
+}
+
+.tab, .nav-menu > summary, .nav-menu-items button {
+  font-family: var(--font-sans);
   letter-spacing: 0;
 }
 
@@ -375,7 +380,7 @@ main {
 }
 
 .nav-menu { position: relative; }
-.nav-menu summary, .nav-menu-items button { cursor: pointer; font: 500 14px/1.5 var(--font-mono); color: var(--text-secondary); }
+.nav-menu summary, .nav-menu-items button { cursor: pointer; font: 500 14px/1.5 var(--font-sans); color: var(--text-secondary); }
 .nav-menu summary {
   display: block;
   padding: 9px 11px;
