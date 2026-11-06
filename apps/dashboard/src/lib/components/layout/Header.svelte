@@ -72,12 +72,11 @@
     <div class="header-left">
       <h1 class="logo" data-testid="logo">
         <button type="button" class="brand-home" aria-label="AtMem.ai AtFlows home" title="Go to home" onclick={() => setTab('timeline')}>
-          <svg class="logo-icon" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-            <path d="M12 6.5 L5.5 17.5 M12 6.5 L18.5 17.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" />
-            <circle cx="12" cy="5" r="2.6" fill="currentColor" />
-            <circle cx="5" cy="18.5" r="2.2" fill="none" stroke="currentColor" stroke-width="1.4" />
-            <circle cx="19" cy="18.5" r="2.2" fill="none" stroke="currentColor" stroke-width="1.4" />
-          </svg>
+          <svg class="logo-icon atmem-mark" viewBox="-154.35 -151.35 308.7 308.7" aria-hidden="true"><g transform="translate(0 2)">
+  <path d="M-91.7 74.24 L0 -88 L91.7 74.24 M-66.7 30 H66.7" fill="none" stroke="currentColor" stroke-width="26" stroke-linejoin="round" />
+  <path d="M-142 96a38 38 0 1 0 76 0a38 38 0 1 0 -76 0ZM-116 96a12 12 0 1 0 24 0a12 12 0 1 0 -24 0ZM66 96a38 38 0 1 0 76 0a38 38 0 1 0 -76 0ZM92 96a12 12 0 1 0 24 0a12 12 0 1 0 -24 0Z" fill="currentColor" fill-rule="evenodd" />
+  <circle class="atmem-dot" cx="0" cy="-88" r="40" />
+</g></svg>
           <span>AtMem.ai</span><span class="brand-separator">|</span><span>AtFlows</span>
           <span id="connectionStatus" class="status-dot" class:connected={authAccount.value?.role === 'viewer' || connectionStatus.value === 'connected'} class:disconnected={authAccount.value?.role !== 'viewer' && connectionStatus.value === 'disconnected'} data-testid="connection-status" title={authAccount.value?.role === 'viewer' ? 'summary access active' : connectionStatus.value}></span>
         </button>

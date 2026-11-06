@@ -20,14 +20,14 @@ for (const theme of ['light', 'dark']) {
             }
             return { body: read('body'), logo: read('h1.logo'), navigation: read('.tab'), menu: read('.nav-menu > summary') }
         })
-        expect(styles.body.family).toBe('Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif')
+        // Architecture Canvas: DM Sans body and navigation, Manrope display headings.
+        expect(styles.body.family).toBe('"DM Sans", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif')
         expect(styles.body.size).toBe('15px')
         expect(styles.body.line).toBe('22.5px')
-        expect(styles.logo.family.replaceAll('"', '')).toBe('ui-monospace, SFMono-Regular, Consolas, monospace')
+        expect(styles.logo.family.replaceAll('"', '')).toBe('Manrope, DM Sans, ui-sans-serif, system-ui, sans-serif')
         expect(styles.logo.size).toBe('16px')
-        expect(styles.logo.weight).toBe('600')
-        expect(['normal', '0px']).toContain(styles.logo.spacing)
-        expect(styles.navigation.family).toBe(styles.logo.family)
-        expect(styles.menu.family).toBe(styles.logo.family)
+        expect(styles.logo.weight).toBe('800')
+        expect(styles.navigation.family).toBe(styles.body.family)
+        expect(styles.menu.family).toBe(styles.body.family)
     })
 }
