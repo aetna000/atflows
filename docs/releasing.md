@@ -1,6 +1,6 @@
 # AtFlows release checklist
 
-**Stable release target (2026-11-07):** AtFlows **0.1.7**, coordinated with
+**Stable release target (2026-11-07):** AtFlows **0.1.8**, coordinated with
 AtMem **2.3.13**. A dashboard appearance release: the AtMem.ai Architecture
 Canvas theme, light by default, with no change to collection, storage or login. Run server/dashboard, typecheck, browser,
 Python, build and installed-wheel checks. AtMem must not merge the new exact

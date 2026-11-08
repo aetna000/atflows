@@ -10,6 +10,8 @@ for (const theme of ['light', 'dark']) {
             authenticated: true, password_change_required: false,
             account: { id: 'typography', username: 'typography', role: 'administrator' },
         } }))
+        const favicon = await page.request.get('/favicon.svg')
+        expect(await favicon.text()).toContain('#F3A2B4')
         await page.goto('/')
         await expect(page.locator('h1.logo')).toBeVisible()
         await page.evaluate((value) => document.documentElement.setAttribute('data-theme', value), theme)
