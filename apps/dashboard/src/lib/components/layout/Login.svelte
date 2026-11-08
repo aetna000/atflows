@@ -156,7 +156,7 @@
   .password-field { display: flex; min-width: 0; }
   .password-field input { flex: 1; min-width: 0; }
   .password-toggle { margin: 0; padding: 0 12px; border: 1px solid var(--border-secondary); border-left: 0; border-radius: 0 10px 10px 0; background: var(--bg-tertiary); color: var(--text-primary); font: inherit; cursor: pointer; }
-  button { margin-top: 12px; padding: 12px; border: 1px solid var(--accent-primary); background: var(--accent-primary); color: var(--bg-primary); font: inherit; font-weight: 700; cursor: pointer; }
+  button { margin-top: 12px; padding: 12px; border: 1px solid var(--accent-primary); background: #F3A2B4; color: #172033; font: inherit; font-weight: 700; cursor: pointer; }
   button:disabled { opacity: .6; cursor: wait; }
   .login-error { color: var(--error); }
   .atmem-link { color: var(--accent-primary); font-weight: 700; }

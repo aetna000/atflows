@@ -13,9 +13,9 @@
   /* Light theme (default) */
   --bg-primary: #fafbf9;
   --bg-secondary: #fff;
-  --bg-tertiary: #f2f8f6;
-  --bg-hover: #f2f8f6;
-  --bg-selected: #e8f5f2;
+  --bg-tertiary: #fdf4f7;
+  --bg-hover: #fdf4f7;
+  --bg-selected: #fcecf1;
 
   --border-primary: #e1e7ef;
   --border-secondary: #7a8696;
@@ -26,8 +26,8 @@
   --text-tertiary: #5f6a7c;
   --text-muted: #6b7587;
 
-  --accent-primary: #1f777c;
-  --accent-hover: #17666b;
+  --accent-primary: #8b3650;
+  --accent-hover: #752b42;
 
   --success: #059669;
   --error: #dc2626;
@@ -53,12 +53,12 @@
 }
 
 [data-theme='dark'] {
-  /* AtMem-inspired dark surfaces and teal accents */
+  /* AtMem-inspired dark surfaces and pink accents */
   --bg-primary: #0d1011;
   --bg-secondary: #0d1011;
   --bg-tertiary: #151a1c;
-  --bg-hover: #1d2628;
-  --bg-selected: #193436;
+  --bg-hover: #30212a;
+  --bg-selected: #38212b;
 
   --border-primary: #344448;
   --border-secondary: #596b6e;
@@ -69,8 +69,8 @@
   --text-tertiary: #8fa4a7;
   --text-muted: #6d8285;
 
-  --accent-primary: #5fd0d6;
-  --accent-hover: #8ce2e5;
+  --accent-primary: #F3A2B4;
+  --accent-hover: #f8bdcc;
 
   --success: #22c55e;
   --error: #ef4444;
@@ -1078,7 +1078,7 @@ pre {
 .tool-gemini-cli,
 .timeline-item-icon.tool-gemini-cli {
   background: #dbeafe;
-  color: #1f777c;
+  color: #8b3650;
 }
 [data-theme='dark'] .tool-gemini-cli,
 [data-theme='dark'] .timeline-item-icon.tool-gemini-cli {
@@ -1341,7 +1341,7 @@ pre {
   background: #16a34a;
 }
 .h-bar-fill.tool-gemini-cli {
-  background: #1f777c;
+  background: #8b3650;
 }
 .h-bar-fill.tool-aider {
   background: #d97706;
@@ -1354,7 +1354,7 @@ pre {
   background: #4ade80;
 }
 [data-theme='dark'] .h-bar-fill.tool-gemini-cli {
-  background: #8ce2e5;
+  background: #f8bdcc;
 }
 [data-theme='dark'] .h-bar-fill.tool-aider {
   background: #fbbf24;
@@ -1452,5 +1452,5 @@ h1, h2, h3 { font-family: var(--font-display); letter-spacing: -0.01em; }
 .brand-home, .brand-home * { font-family: var(--font-display); letter-spacing: -0.01em; }
 
 /* AtMem.ai lockup shared with the website and the other AtMem.ai apps. */
-.atmem-dot { fill: #1F777C; }
-[data-theme='dark'] .atmem-dot { fill: #5FD0D6; }
+.atmem-dot { fill: #F3A2B4; }
+[data-theme='dark'] .atmem-dot { fill: #F3A2B4; }
