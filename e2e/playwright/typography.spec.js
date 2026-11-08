@@ -13,6 +13,8 @@ for (const theme of ['light', 'dark']) {
         await page.goto('/')
         await expect(page.locator('h1.logo')).toBeVisible()
         await page.evaluate((value) => document.documentElement.setAttribute('data-theme', value), theme)
+        await expect(page.locator('.atmem-dot').first()).toHaveCSS('fill', 'rgb(243, 162, 180)')
+        await page.screenshot({path: `test-results/pink-${theme}.png`, fullPage: true})
         const styles = await page.evaluate(() => {
             const read = (selector) => {
                 const style = getComputedStyle(document.querySelector(selector))
